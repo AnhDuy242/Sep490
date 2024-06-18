@@ -7,5 +7,6 @@ namespace BE.Controllers.Authentication
     [ApiController]
     public class Authentication : ControllerBase
     {
+
     }
 }
