@@ -1,0 +1,77 @@
+/* src/assets/new.css */
+
+/* Container Styling */
+.container {
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  padding: 2rem;
+  /* background-color: #f0f0f0; */
+  border-radius: 10px;
+}
+/* Heading Styling */
+.heading {
+  text-align: left;
+  margin-bottom: 2rem;
+  font-weight: bold;
+  color: #1976d2;
+}
+
+/* Card Styling */
+.card {
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 450px;  /*Tăng chiều cao của thẻ */
+  width: 100%; /* Đảm bảo thẻ chiếm toàn bộ chiều rộng cột */
+}
+
+.card:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Card Media Styling */
+.cardMedia {
+  height: 60%; /* Tăng chiều cao hình ảnh */
+  object-fit: cover;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Card Content Styling */
+.cardTitle {
+  font-weight: bold;
+  text-align: left;
+  color: #1976d2;
+  margin-top: 1rem;
+  font-size: 1.25rem; /* Tăng kích thước font */
+}
+
+.cardDescription {
+  text-align: left;
+  color: #666;
+  margin: 0.5rem 0;
+  font-size: 1rem; /* Tăng kích thước font */
+}
+
+/* Button Styling */
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.button {
+  background-color: #1976d2;
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border-radius: 5px;
+  transition: background-color 0.3s;
+}
+
+.button:hover {
+  background-color: #115293;
+}

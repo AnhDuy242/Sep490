@@ -1,0 +1,73 @@
+.header-container {
+  display: flex;
+  height: 150px;
+}
+
+.info-class {
+  display: flex;
+
+}
+
+.info-logo img {
+  width: 30px;
+  height: 30px;
+}
+
+.bus-ton {
+  margin-left: 200px;
+}
+
+.card-header {
+  width: 140px;
+  height: 50px;
+
+  margin-top: 50px;
+  display: flex;
+  justify-content: space-evenly;
+}
+.info-logo{
+  padding:10px;
+}
+.logo-image {
+  width: 120px;
+  height: 120px;
+  margin-right: 50px;
+}
+
+.info-text {
+  color: #139eec;
+  width: 200px;
+  font-size: 12px;
+  margin-top:10px;
+}
+
+.language img {
+  border-radius: 100px 100px 100px 100px;
+}
+
+.card-button {
+
+  display: flex;
+  justify-content: space-between;
+
+}
+
+.card-button-num {
+  margin-left: 50px;
+}
+
+.card-button-num button {
+  font-size: 17px;
+  padding: 0.5em 2em;
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  background: dodgerblue;
+  color: white;
+  border-radius: 4px;
+}
+
+.card-button-num button a {
+  text-decoration: none;
+  color: white;
+
+}
