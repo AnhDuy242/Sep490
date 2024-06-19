@@ -1,24 +1,39 @@
 ﻿using SendGrid.Helpers.Mail;
 using SendGrid;
+using System.Net.Mail;
+using System.Net;
 
 namespace BE.Service
 {
     public class SendEmail
     {
-        private readonly string _sendGridApiKey;
+        private readonly string _smtpServer;
+        private readonly int _smtpPort;
+        private readonly string _smtpUser;
+        private readonly string _smtpPass;
 
-        public SendEmail(string sendGridApiKey)
+        public SendEmail(string smtpServer, int smtpPort, string smtpUser, string smtpPass)
         {
-            _sendGridApiKey = sendGridApiKey;
+            _smtpServer = smtpServer;
+            _smtpPort = smtpPort;
+            _smtpUser = smtpUser;
+            _smtpPass = smtpPass;
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
+        public  Task SendEmailAsync(string toEmail, string subject, string body)
         {
-            var client = new SendGridClient(_sendGridApiKey);
-            var from = new EmailAddress("anhndhe160131@fpt.edu.vn", "Your Name");
-            var to = new EmailAddress(toEmail);
-            var msg = MailHelper.CreateSingleEmail(from, to, subject, body, body);
-            var response = await client.SendEmailAsync(msg);
+            var mail = "uchihad.saitama@gmail.com";
+            var pw = "denhokhongdau123@@";
+
+            var client = new SmtpClient("smtp.gmail.com", 587)
+            {
+               
+                EnableSsl = true,
+                Credentials = new NetworkCredential(mail, pw)
+            };
+            client.UseDefaultCredentials = false;
+            return client.SendMailAsync(
+                new MailMessage(from:mail, to:toEmail, subject, body));
         }
     }
 }

@@ -3,16 +3,17 @@
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// Đăng ký EmailService với API Key từ cấu hình
-var sendGridApiKey = builder.Configuration["SendGrid:ApiKey"];
-builder.Services.AddSingleton(new SendEmail(sendGridApiKey));
-
+// Đăng ký EmailService với các thông tin cấu hình SMTP
+builder.Services.AddSingleton(new SendEmail(
+    builder.Configuration["Email:SmtpServer"],
+    int.Parse(builder.Configuration["Email:SmtpPort"]),
+    builder.Configuration["Email:SmtpUser"],
+    builder.Configuration["Email:SmtpPass"]
+));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
