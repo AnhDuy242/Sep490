@@ -4,11 +4,11 @@ import Header from '../../layouts/Header'
 import NavBar from '../../layouts/Navbar'
 import CarouselSlider from '../../layouts/CarouselSlider';
 import Footer from '../../layouts/Footer'
-import DoctorList from './component/DoctorList'
-import Blog from './component/Blog'
-import Article from './component/Article'
-import Service from './component/PolyServ'
-import FeedBack from './component/Feedback'
+import DoctorList from '../Home/component/DoctorList'
+import Blog from '../Home/component/Blog'
+import Article from '../Home/component/Article'
+import Service from '../Home/component/PolyServ'
+import FeedBack from '../Home/component/Feedback'
 function Home() {
   return (
     <div>

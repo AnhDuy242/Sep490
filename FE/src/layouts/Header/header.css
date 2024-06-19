@@ -5,20 +5,22 @@
 
 .info-class {
   display: flex;
-
+  margin-left:100px;
+  width:70%;
+  justify-content: space-evenly;
 }
 
 .info-logo img {
-  width: 30px;
-  height: 30px;
+  width: 60px;
+  height: 60px;
 }
 
 .bus-ton {
   margin-left: 200px;
 }
 
-.card-header {
-  width: 140px;
+.card-header-self {
+  width:200px;
   height: 50px;
 
   margin-top: 50px;
@@ -37,7 +39,7 @@
 .info-text {
   color: #139eec;
   width: 200px;
-  font-size: 12px;
+  font-size: 15px;
   margin-top:10px;
 }
 

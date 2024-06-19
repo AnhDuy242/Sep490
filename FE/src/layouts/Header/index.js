@@ -8,7 +8,7 @@
     import address_icon from '../../assets/images/address_icon.png'
     import styled, { createGlobalStyle } from 'styled-components';
     import { Link } from 'react-router-dom';
-
+    import LoginForm from '../LoginForm'; // Import LoginForm component
     const GlobalStyle = createGlobalStyle`
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
@@ -21,6 +21,42 @@
     `;
 
     function Header() {
+        const [show, setShow] = useState(false);
+
+        const handleClose = () => setShow(false);
+        const handleShow = () => setShow(true);
+    
+        const handleLogin = async (credentials) => {
+            try {
+                const response = await fetch('http://localhost:5000/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(credentials),
+                });
+    
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Login successful', data);
+                    // Handle successful login
+                } else {
+                    console.log('Login failed');
+                    // Handle failed login
+                }
+            } catch (error) {
+                console.error('Error during login:', error);
+            }
+    
+            handleClose();
+        };
+
+
+
+
+
+
+
         return (
             <>
         <GlobalStyle />
@@ -32,33 +68,33 @@
             </NavLink>
             </div>
             <div className="info-class">
-                <div className='card-header'>
+                <div className='card-header-self'>
                     <div className='info-logo'>
                         <img src={phone_icon}></img>
                     </div>
                     <div className='info-text'><b>Số điện thoại<br /> xxxxxxxxx </b></div>
                 </div>
-                <div className='card-header'>
+                <div className='card-header-self'>
                     <div className='info-logo'>
                         <img src={working_time} alt='worktime'></img>
                     </div>
                     <div className='info-text'><b>Giờ làm việc <br/> xxx -xxxxx </b></div>
                 </div>
-                <div className='card-header'>
+                <div className='card-header-self'>
                     <div className='info-logo'>
                         <img src={address_icon} alt='address'></img>
                     </div>
                     <div className='info-text'><b>Địa chỉ <br/>68A Hà Đông</b></div>
                 </div>
-                <div className='card-header'>
+                <div className='card-header-self'>
                     <div className='info-logo language' >
                         <img src={vietnam_icon}></img>
                     </div>
                     <div className='info-text'><b>Ngôn ngữ <br/> Tiếng việt</b></div>
                 </div>
-                <div className=' card-header'>
+                <div className='card-header-self'>
                     <div className="card-button">
-                        <div className='card-button-num'>  <button ><Link to="/***********"> Đăng nhập </Link></button></div>
+                        <div className='card-button-num'>      <button onClick={handleShow}>Đăng nhập</button></div>
                         <div className='card-button-num'>  <button> <Link to="/***********"> Đăng ký </Link></button></div>
                     </div>
                    
@@ -66,6 +102,7 @@
             </div>
             </div>
           </header>
+          <LoginForm show={show} handleClose={handleClose} handleLogin={handleLogin} />
           </>
         );
       }

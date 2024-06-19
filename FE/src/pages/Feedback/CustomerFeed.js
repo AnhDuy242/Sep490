@@ -3,7 +3,7 @@ import React from 'react';
 import { Container, Typography, Card, CardContent, Avatar, Grid } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { motion } from 'framer-motion';
-import avatar from '../../../../assets/images/ava.jpg'
+import avatar from '../../assets/images/ava.jpg'
 
 const testimonials = [
   {

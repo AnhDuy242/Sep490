@@ -5,7 +5,7 @@ import { SocialIcon } from 'react-social-icons'
 
 import "../Footer/Footer.css";
 import 'font-awesome/css/font-awesome.min.css';
-import styled, { createGlobalStyle } from 'styled-components';
+import  { createGlobalStyle } from 'styled-components';
 
 import { Link } from 'react-router-dom';
 

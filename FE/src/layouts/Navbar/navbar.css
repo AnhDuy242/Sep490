@@ -30,19 +30,19 @@ body {
 .nav__item {
   
   font-family: 'Montserrat', sans-serif;
-  margin-left: 30px;;
+  margin-left: 100px;;
 }
 .nav__search-container {
   flex: 1 1 auto; /* Để các mục điều hướng có thể co giãn và xuống dòng khi cần thiết */
   text-align: center; /* Căn giữa nội dung trong mỗi mục điều hướng */
   margin: 5px; /* Khoảng cách giữa các mục điều hướng */
+  margin-left: 200px;
 }
 
 .nav__search {
   padding: 10px 15px;
   border: 1px solid #ccc;
   border-radius: 25px 0 0 25px; /* Bo góc trái */
-  font-size: 16px;
   outline: none;
   transition: border-color 0.3s, box-shadow 0.3s;
   width: 200px;
@@ -53,10 +53,15 @@ body {
   box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
 }
 .nav-search{
-  margin-left:200px;
+  margin-left:100px;
+}
+a:not([href]):not([tabindex]){
+  color: #FFF;
+  cursor: pointer;
 }
 .nav__search-button {
-  padding: 15px;
+
+  padding: 10px;
   border: 1px solid #ccc;
   border-left: none; /* Loại bỏ đường viền bên trái */
   border-radius: 0 25px 25px 0; /* Bo góc phải */
@@ -77,13 +82,14 @@ body {
     font-weight: 500;
     font-size: 18px;
     line-height: 17px;
-  transition: color 0.3s ease;
+  transition: color 0.5s ease;
+  
   
 }
 
 .nav__link:hover {
   color: #626262;
-
+  text-decoration: none;
   
 }
 
@@ -98,9 +104,10 @@ body {
 .nav__toggle {
   display: none; /* Ẩn nút toggle ban đầu */
 }
-.container{
+.container-navbar{
   display: flex;
-  margin-left: 200px;
+  margin-left: 100px;
+  width: 100%;
 }
 
 /* Dropdown */
@@ -111,31 +118,26 @@ body {
   box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
   z-index: 1;
   border-radius: 15px;
-  width:300px;
-   border-radius: 15px 15px 0px 0px;
-
+  width: 300px;
 }
 
 .dropdown-content a {
+  color: black;
   padding: 12px 16px;
   text-decoration: none;
   display: block;
-  color: #626262;
-  
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
 }
 
 .dropdown-content a:hover {
   background-color: #f1f1f1;
-  border-bottom: 2px blue solid;
-  font-size: 15px;
-  font-family: 'Montserrat', sans-serif;
-  border-radius: 15px 15px 0px 0px;
-  color:black;
 }
 
 .nav__item:hover .dropdown-content {
-  display: block; /* Hiển thị dropdown khi hover vào .nav__item */
+  display: block;
 }
+
 .dropdown-link{
   height: 30px;
   padding-left: 3px;
