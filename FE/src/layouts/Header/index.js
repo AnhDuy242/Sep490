@@ -1,113 +1,140 @@
-    import { useState } from 'react'; // Import useState hook
-    import { NavLink } from "react-router-dom";
-    import '../Header/header.css';
-    import NavLogo from '../../assets/images/images.png';
-    import vietnam_icon from '../../assets/images/vietnam_icon.png';
-    import phone_icon from '../../assets/images/Phone_icon.png';
-    import working_time from '../../assets/images/work_time.png';
-    import address_icon from '../../assets/images/address_icon.png'
-    import styled, { createGlobalStyle } from 'styled-components';
-    import { Link } from 'react-router-dom';
-    import LoginForm from '../LoginForm'; // Import LoginForm component
-    const GlobalStyle = createGlobalStyle`
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import '../Header/header.css';
+import NavLogo from '../../assets/images/images.png';
 
-    body {
-        margin: 0;
-        font-family: 'Montserrat', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-    }
-    `;
+import styled, { createGlobalStyle } from 'styled-components';
+import { Link } from 'react-router-dom';
+import LoginForm from '../LoginForm'; // Import LoginForm component
+import RegisterForm from '../RegisterForm';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  IconButton,
+  Button,
+  Box,
+  Modal,
+  Paper,
+} from '@mui/material';
+import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 
-    function Header() {
-        const [show, setShow] = useState(false);
+const GlobalStyle = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-        const handleClose = () => setShow(false);
-        const handleShow = () => setShow(true);
-    
-        const handleLogin = async (credentials) => {
-            try {
-                const response = await fetch('http://localhost:5000/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(credentials),
-                });
-    
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Login successful', data);
-                    // Handle successful login
-                } else {
-                    console.log('Login failed');
-                    // Handle failed login
-                }
-            } catch (error) {
-                console.error('Error during login:', error);
-            }
-    
-            handleClose();
-        };
+  body {
+      margin: 0;
+      font-family: 'Montserrat', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+  }
+`;
 
+function Header() {
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
+  const handleCloseLogin = () => setShowLogin(false);
+  const handleShowLogin = () => setShowLogin(true);
 
+  const handleCloseRegister = () => setShowRegister(false);
+  const handleShowRegister = () => setShowRegister(true);
 
+  const handleLogin = async (credentials) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-
-
-        return (
-            <>
-        <GlobalStyle />
-          <header>
-            <div className="header-container">
-            <div className="logo-class">
-            <NavLink to="/" className="nav__logo">
-            <img src={NavLogo} alt="L321321321" className="logo-image" />
-            </NavLink>
-            </div>
-            <div className="info-class">
-                <div className='card-header-self'>
-                    <div className='info-logo'>
-                        <img src={phone_icon}></img>
-                    </div>
-                    <div className='info-text'><b>Số điện thoại<br /> xxxxxxxxx </b></div>
-                </div>
-                <div className='card-header-self'>
-                    <div className='info-logo'>
-                        <img src={working_time} alt='worktime'></img>
-                    </div>
-                    <div className='info-text'><b>Giờ làm việc <br/> xxx -xxxxx </b></div>
-                </div>
-                <div className='card-header-self'>
-                    <div className='info-logo'>
-                        <img src={address_icon} alt='address'></img>
-                    </div>
-                    <div className='info-text'><b>Địa chỉ <br/>68A Hà Đông</b></div>
-                </div>
-                <div className='card-header-self'>
-                    <div className='info-logo language' >
-                        <img src={vietnam_icon}></img>
-                    </div>
-                    <div className='info-text'><b>Ngôn ngữ <br/> Tiếng việt</b></div>
-                </div>
-                <div className='card-header-self'>
-                    <div className="card-button">
-                        <div className='card-button-num'>      <button onClick={handleShow}>Đăng nhập</button></div>
-                        <div className='card-button-num'>  <button> <Link to="/***********"> Đăng ký </Link></button></div>
-                    </div>
-                   
-                </div>
-            </div>
-            </div>
-          </header>
-          <LoginForm show={show} handleClose={handleClose} handleLogin={handleLogin} />
-          </>
-        );
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Login successful', data);
+        // Handle successful login
+      } else {
+        console.log('Login failed');
+        // Handle failed login
       }
-      
+    } catch (error) {
+      console.error('Error during login:', error);
+    }
 
+    handleCloseLogin();
+  };
 
+  const handleRegister = async (credentials) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(credentials),
+      });
 
-      export default Header;
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Register successful', data);
+        // Handle successful login
+      } else {
+        console.log('Register failed');
+        // Handle failed login
+      }
+    } catch (error) {
+      console.error('Error registering:', error);
+    }
+
+    handleCloseRegister();
+  };
+
+  return (
+    <>
+      <GlobalStyle />
+      <AppBar position="static" color="default">
+        <Toolbar>
+          <NavLink to="/" className="nav__logo">
+            <img src={NavLogo} alt="Logo" className="logo-image" />
+          </NavLink>
+          <Box sx={{ flexGrow: 1 }} />
+          <Box className="info-class" display="flex">
+            <Box className="card-header-self" display="flex" alignItems="center">
+              <Phone />
+              <Typography variant="body2" className="info-text">
+                <b>Số điện thoại<br /> xxxxxxxxx </b>
+              </Typography>
+            </Box>
+            <Box className="card-header-self" display="flex" alignItems="center">
+              <AccessTime />
+              <Typography variant="body2" className="info-text">
+                <b>Giờ làm việc <br /> xxx -xxxxx </b>
+              </Typography>
+            </Box>
+            <Box className="card-header-self" display="flex" alignItems="center">
+              <LocationOn />
+              <Typography variant="body2" className="info-text">
+                <b>Địa chỉ <br />68A Hà Đông</b>
+              </Typography>
+            </Box>
+            <Box className="card-header-self" display="flex" alignItems="center">
+              <Language />
+              <Typography variant="body2" className="info-text">
+                <b>Ngôn ngữ <br /> Tiếng việt</b>
+              </Typography>
+            </Box>
+            <Box className="card-header-self">
+              <Button onClick={handleShowLogin} variant="contained" className='login-button' color="primary">Đăng nhập</Button>
+              <Button onClick={handleShowRegister} variant="contained" color="secondary">Đăng ký</Button>
+            </Box>
+          </Box>
+        </Toolbar>
+      </AppBar>
+      <LoginForm show={showLogin} handleClose={handleCloseLogin} handleLogin={handleLogin} />
+      <RegisterForm show={showRegister} handleClose={handleCloseRegister} handleRegister={handleRegister} />
+    </>
+  );
+}
+
+export default Header;

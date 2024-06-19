@@ -14,7 +14,14 @@
     height:50%;
 }
 .modal-content {
-    height: 130%;
+    height: 160%;
+}
+.google_icon{
+    width: 35px;
+    height: 100%;
+}
+h6.MuiTypography-root.MuiTypography-h6.login-text-label.css-2ulfj5-MuiTypography-root{
+    margin-left:120px;
 }
 .modal-header{
     margin: 0 0 8px;
@@ -36,6 +43,10 @@
     text-transform: none;
 
   
+}
+a.btn.btn-google {
+    position: relative;
+    left: 40%;
 }
 .error-message {
     margin-bottom: 10px; /* Khoảng cách dưới của thông báo lỗi */

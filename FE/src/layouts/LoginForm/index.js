@@ -1,116 +1,143 @@
-// src/components/LoginForm.js
 import React, { useState } from 'react';
-import { Modal, Button, Form, Alert } from 'react-bootstrap';
-import '../../assets/css/bootstrap.min.css';
-import '../../assets/css/bootstrap.css';
-import '../LoginForm/LoginForm.css';
+import { Modal, Box, Button, TextField, Typography, Alert, IconButton, Checkbox, FormControlLabel } from '@mui/material';
+import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
+import { useFormik } from 'formik';
+import * as yup from 'yup';
 import google_icon from '../../assets/images/google.png';
+import '../LoginForm/LoginForm.css'
+
+const validationSchema = yup.object({
+  username: yup
+    .string('Nhập số điện thoại hoặc email')
+    .test('isValidEmailOrPhone', 'Số điện thoại hoặc email không hợp lệ', value => {
+      const phoneRegExp = /^[0-9]{10}$/;
+      const emailRegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return phoneRegExp.test(value) || emailRegExp.test(value);
+    })
+    .required('Số điện thoại hoặc email là bắt buộc'),
+  password: yup
+    .string('Nhập mật khẩu')
+    .min(8, 'Mật khẩu phải có ít nhất 8 ký tự')
+    .required('Mật khẩu là bắt buộc')
+});
 
 const LoginForm = ({ show, handleClose }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // Khai báo setShowPassword
 
-  const handleLogin = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch('http://example.com/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
+  const formik = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values) => {
+      setLoading(true);
+      try {
+        const response = await fetch('http://example.com/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ username: values.username, password: values.password }),
+        });
 
-      const data = await response.json();
+        const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
+        if (!response.ok) {
+          throw new Error(data.message || 'Something went wrong');
+        }
+
+        console.log('Login successful:', data);
+        // Reset form fields and any error state
+        formik.resetForm();
+        setError(null);
+      } catch (error) {
+        setError(error.message || 'Đã xảy ra lỗi khi đăng nhập');
+      } finally {
+        setLoading(false);
       }
-
-      console.log('Login successful:', data);
-      // Reset form fields and any error state
-      setUsername('');
-      setPassword('');
-      setError(null);
-    } catch (error) {
-      setError(error.message || 'Đã xảy ra lỗi khi đăng nhập');
-    } finally {
-      setLoading(false);
     }
-  };
-
-  const onSubmit = (e) => {
-    e.preventDefault();
-    handleLogin();
-  };
+  });
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   return (
-    <Modal show={show} onHide={handleClose}>
-      <Modal.Header className="btn-close">
-        <Modal.Title>Đăng nhập</Modal.Title>
-        <button type="button" onClick={handleClose} className="close-x" aria-label="Close">
-          <span className="x-button" aria-hidden="true">&times;</span>
-        </button>
-      </Modal.Header>
-      <Modal.Body>
-        <div className={`error-container ${error ? 'show' : ''}`}>
-          {error && <Alert variant="danger">{error}</Alert>}
-        </div>
-        <div className='register-block'>
-          <span className='register-text'>Bạn chưa có tài khoản? Đăng ký ngay</span>
-        </div>
-
-        <Form onSubmit={onSubmit}>
-          <Form.Group controlId="formBasicEmail">
-            <Form.Label>Tên đăng nhập</Form.Label>
-            <Form.Control
-              type="text"
-              placeholder="Nhập tên đăng nhập"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="formBasicPassword">
-            <Form.Label>Mật khẩu</Form.Label>
-            <Form.Control
-              type={showPassword ? "text" : "password"}
-              placeholder="Nhập mật khẩu"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <Form.Check
-              type="checkbox"
-              label="Hiển thị mật khẩu"
-              onClick={togglePasswordVisibility}
-            />
-          </Form.Group>
-
-          <Form.Group controlId="signin-by-other">
-            <div className='or'>
-              <hr className="new1" />
-              <div>
-                <span>Hoặc đăng nhập bằng</span>
-              </div>
-              <hr className="new1" />
-            </div>
-            <div className="btn-social">
-              <a className="btn btn-google" href="/identity/externallogin/?provider=Google"><img src={google_icon} alt="Google" /></a>
-            </div>
-          </Form.Group>
-
-          <Button variant="primaryD" type="submit" disabled={loading}>
+    <Modal open={show} onClose={handleClose}>
+      <Box sx={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: 400,
+        bgcolor: 'background.paper',
+        boxShadow: 24,
+        p: 4,
+        borderRadius: 1,
+      }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" className='login-text-label'>Đăng nhập</Typography>
+          <IconButton onClick={handleClose}>
+            <Close />
+          </IconButton>
+        </Box>
+        <Box className={`error-container ${error ? 'show' : ''}`}>
+          {error && <Alert severity="error">{error}</Alert>}
+        </Box>
+        <Typography variant="body2" gutterBottom>
+          Bạn chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+        </Typography>
+        <form onSubmit={formik.handleSubmit}>
+          <TextField
+            label="Nhập số điện thoại hoặc email"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            name="username"
+            value={formik.values.username}
+            onChange={formik.handleChange}
+            error={formik.touched.username && Boolean(formik.errors.username)}
+            helperText={formik.touched.username && formik.errors.username}
+          />
+          <TextField
+            label="Mật khẩu"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={formik.values.password}
+            onChange={formik.handleChange}
+            error={formik.touched.password && Boolean(formik.errors.password)}
+            helperText={formik.touched.password && formik.errors.password}
+            InputProps={{
+              endAdornment: (
+                <IconButton onClick={togglePasswordVisibility}>
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              ),
+            }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={showPassword} onChange={togglePasswordVisibility} />}
+            label="Hiển thị mật khẩu"
+          />
+          <Box sx={{ textAlign: 'center', my: 2 }}>
+            <Typography variant="body2">Hoặc đăng nhập bằng</Typography>
+          </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
+            <Button variant="outlined" startIcon={<img src={google_icon} alt="Google" className='google_icon' />} href="/identity/externallogin/?provider=Google">
+              Google
+            </Button>
+          </Box>
+          <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
             {loading ? 'Đang xử lý...' : 'Đăng nhập'}
           </Button>
-        </Form>
-      </Modal.Body>
+        </form>
+      </Box>
     </Modal>
   );
 };

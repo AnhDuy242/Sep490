@@ -1,14 +1,10 @@
 import React from "react";
-import ReactDOM from "react-dom";
 import Carousel from "react-elastic-carousel";
-import Item from "./Item";
-import "../CarouselSlider/Carousel.css";
-import img1 from "../../assets/images/carousel_image_1.jpg"
-import img2 from "../../assets/images/carousel_image_2.jpg"
-import img3 from "../../assets/images/carousel_image_3.jpg"
-
-
-import { Link } from 'react-router-dom'
+import { Box, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
+import img1 from "../../assets/images/carousel_image_1.jpg";
+import img2 from "../../assets/images/carousel_image_2.jpg";
+import '../CarouselSlider/Carousel.css';
 
 const breakPoints = [
     { width: 80, height: 500, itemsToShow: 1 }
@@ -16,27 +12,22 @@ const breakPoints = [
 
 function Carousel2() {
     return (
-        <>
-            <div className="slider">
-                <Carousel breakPoints={breakPoints}>
-                    <Item maxWidth="100%">   <img src={img1} alt="Carousel Image 1" />
-                        <div className="button-text">
-                            <Link to="/****" style={{ textDecoration: 'none' }}>  <button className="button-slider"><span>Đặt lịch ngay</span></button>  </Link>
-                            <Link to="/**** " style={{ textDecoration: 'none' }}>   <button className="button-slider"><span>Chat trực tiếp</span></button> </Link>
-                        </div>
-                    </Item>
-                    <Item maxWidth="100%">  <img src={img2} alt="Carousel Image 2" /><div className="button-text-2">
-                        <Link to="/****" style={{ textDecoration: 'none' }}>  <button className="button-slider"><span>Đặt lịch ngay</span></button>  </Link>
-                        <Link to="/****" style={{ textDecoration: 'none' }}>   <button className="button-slider"><span>Chat trực tiếp</span></button> </Link>
-                    </div></Item>
-                    <Item maxWidth="100%"><img src={img3} alt="Carousel Image 3" /><div className="button-text-3">
-                        <Link to="/****" style={{ textDecoration: 'none' }}>  <button className="button-slider"><span>Đặt lịch ngay</span></button>  </Link>
-                        <Link to="/****" style={{ textDecoration: 'none' }}>   <button className="button-slider"><span>Chat trực tiếp</span></button> </Link>
-                    </div></Item>
-
-                </Carousel>
-            </div>
-        </>
+        <Box sx={{ position: 'relative', width: '100%', height: '800px', overflow: 'hidden' }}>
+            <img src={img2} alt="My Image" style={{ width: '100%', height: '100%' }} />
+            <Box  sx={{ position: 'absolute', top: '35%', left: '60%', transform: 'translate(-50%, -50%)',display:'grid', width:'200px' }}>
+                <Link to="/link1" className="button-link" style={{ textDecoration: 'none', margin: '10px 10px' }}>
+                    <Button variant="contained" color="primary">
+                      Đặt lịch khám
+                    </Button>
+                </Link>
+                <Link className="button-link" to="/link2" style={{ textDecoration: 'none', margin: '0 10px' }}>
+                    <Button variant="contained" color="secondary">
+                      Tư vấn online
+                    </Button>
+                </Link>
+            </Box>
+        </Box>
     );
 }
+
 export default Carousel2;

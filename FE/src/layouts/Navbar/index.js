@@ -1,103 +1,116 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import './navbar.css';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch } from '@fortawesome/free-solid-svg-icons';
+import { AppBar, Toolbar, IconButton, InputBase, Button, Menu, MenuItem, Box } from '@mui/material';
+import { styled, alpha } from '@mui/material/styles';
+import SearchIcon from '@mui/icons-material/Search';
+import MenuIcon from '@mui/icons-material/Menu';
+import '../Navbar/navbar.css';
+const Search = styled('div')(({ theme }) => ({
+  position: 'relative',
+  borderRadius: theme.shape.borderRadius,
+  backgroundColor: alpha(theme.palette.common.white, 0.15),
+  '&:hover': {
+    backgroundColor: alpha(theme.palette.common.white, 0.25),
+  },
+  marginLeft: 0,
+  width: '100%',
+  [theme.breakpoints.up('sm')]: {
+    marginLeft: theme.spacing(1),
+    width: 'auto',
+  },
+}));
+
+const SearchIconWrapper = styled('div')(({ theme }) => ({
+  padding: theme.spacing(0, 2),
+  height: '100%',
+  position: 'absolute',
+  pointerEvents: 'none',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}));
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  '& .MuiInputBase-input': {
+    padding: theme.spacing(1, 1, 1, 0),
+    paddingLeft: `calc(1em + ${theme.spacing(4)})`,
+    transition: theme.transitions.create('width'),
+    width: '100%',
+    [theme.breakpoints.up('md')]: {
+      width: '20ch',
+    },
+  },
+}));
 
 const Navbar = () => {
-  const [showDropdown, setShowDropdown] = useState(false); // State for dropdown visibility
-  const [searchValue, setSearchValue] = useState(''); // State for search input value
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [searchValue, setSearchValue] = useState('');
 
-  // Function to handle mouse enter event for dropdown
-  const handleDropdownToggle = () => {
-    setShowDropdown(true);
+  const handleDropdownToggle = (event) => {
+    setAnchorEl(event.currentTarget);
   };
 
-  // Function to handle mouse leave event for dropdown
   const handleDropdownClose = () => {
-    setShowDropdown(false);
+    setAnchorEl(null);
   };
 
-  // Function to handle change in search input
   const handleSearchChange = (event) => {
     setSearchValue(event.target.value);
   };
 
-  // Function to handle search button click
   const handleSearchClick = () => {
-    // Perform search functionality here, e.g., navigate to search results page
     console.log('Search clicked with value:', searchValue);
   };
 
   return (
-    <header className="header">
-      <nav className="nav container-navbar">
-        <div className="nav__menu">
-          <ul className="nav__list">
-            <li className="nav__item">
-              <NavLink to="/" className="nav__link">
-                Trang chủ
-              </NavLink>
-            </li>
-            <li className="nav__item">
-              <a
-                className="nav__link"
-                onMouseEnter={handleDropdownToggle}
-               
-              >
-                Chuyên khoa & Dịch vụ
-                {showDropdown && (
-                  <div className="dropdown-content">
-                    <NavLink to="/category1" className="dropdown-link">
-                      Category 1
-                    </NavLink>
-                    <NavLink to="/category2" className="dropdown-link">
-                      Category 2
-                    </NavLink>
-                  </div>
-                )}
-              </a>
-            </li>
-            <li className="nav__item">
-              <NavLink to="/about-us" className="nav__link">
-                Giới thiệu
-              </NavLink>
-            </li>
-            <li className="nav__item">
-              <NavLink to="/doctor" className="nav__link">
-                Đội ngũ bác sĩ
-              </NavLink>
-            </li>
-            <li className="nav__item">
-              <NavLink to="/contact" className="nav__link">
-                Liên hệ
-              </NavLink>
-            </li>
-            <li className="nav__item">
-              <NavLink to="/get-started" className="nav__link nav__cta">
-                Bạn có biết?
-              </NavLink>
-            </li>
-            <li className="nav__item nav__search-container">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="nav__search"
-                value={searchValue}
-                onChange={handleSearchChange}
-              />
-              <button
-                className="nav__search-button"
-                onClick={handleSearchClick}
-              >
-                <FontAwesomeIcon icon={faSearch} />
-              </button>
-            </li>
-          </ul>
-        </div>
-      </nav>
-    </header>
+    <AppBar position="static">
+      <Toolbar>
+        <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+          <MenuIcon />
+        </IconButton>
+        <Box  sx={{ flexGrow: 1, display: 'flex',justifyContent:'space-between' }}>
+          <Button color="inherit" component={NavLink} to="/">Trang chủ</Button>
+          <Button
+            color="inherit"
+            aria-controls="simple-menu"
+            aria-haspopup="true"
+            onClick={handleDropdownToggle}
+          >
+            Chuyên khoa & Dịch vụ
+          </Button>
+          <Menu
+            id="simple-menu"
+            anchorEl={anchorEl}
+            keepMounted
+            open={Boolean(anchorEl)}
+            onClose={handleDropdownClose}
+          >
+            <MenuItem onClick={handleDropdownClose} component={NavLink} to="/category1">Category 1</MenuItem>
+            <MenuItem onClick={handleDropdownClose} component={NavLink} to="/category2">Category 2</MenuItem>
+          </Menu>
+          <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
+          <Button color="inherit" component={NavLink} to="/doctor">Đội ngũ bác sĩ</Button>
+          <Button color="inherit" component={NavLink} to="/contact">Liên hệ</Button>
+          <Button color="inherit" component={NavLink} to="/get-started" >Bạn có biết?</Button>
+        </Box>
+        <Search>
+          <SearchIconWrapper>
+            <SearchIcon />
+          </SearchIconWrapper>
+          <StyledInputBase
+            placeholder="Search..."
+            value={searchValue}
+            onChange={handleSearchChange}
+          />
+        </Search>
+        <Button color="inherit" onClick={handleSearchClick}>
+          <SearchIcon />
+        </Button>
+      </Toolbar>
+    </AppBar>
   );
 };
 
 export default Navbar;
+ 
