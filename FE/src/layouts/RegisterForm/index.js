@@ -13,6 +13,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
   username: yup
@@ -32,6 +33,7 @@ const validationSchema = yup.object({
 const RegisterForm = ({ show, handleClose }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -40,35 +42,40 @@ const RegisterForm = ({ show, handleClose }) => {
       confirmPassword: ''
     },
     validationSchema: validationSchema,
-    onSubmit: async (values) => {
+    onSubmit: (values) => {
       setLoading(true);
-      try {
-        const response = await fetch('http://example.com/register', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            username: values.username,
-            password: values.password,
-          }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Something went wrong');
-        }
-
-        console.log('Registration successful:', data);
-        // Reset form fields and any error state
-        formik.resetForm();
-        setError(null);
-      } catch (error) {
-        setError(error.message || 'Đã xảy ra lỗi khi đăng ký');
-      } finally {
+      // Simulate successful registration and navigate to OTP page
+      setTimeout(() => {
         setLoading(false);
-      }
+        navigate('/otp', { state: { username: values.username } });
+      }, 1000);
+
+      // Commented out fetch request
+      // try {
+      //   const response = await fetch('http://example.com/register', {
+      //     method: 'POST',
+      //     headers: {
+      //       'Content-Type': 'application/json',
+      //     },
+      //     body: JSON.stringify({
+      //       username: values.username,
+      //       password: values.password,
+      //     }),
+      //   });
+
+      //   const data = await response.json();
+
+      //   if (!response.ok) {
+      //     throw new Error(data.message || 'Something went wrong');
+      //   }
+
+      //   console.log('Registration successful:', data);
+      //   navigate('/otp', { state: { username: values.username } });
+      // } catch (error) {
+      //   setError(error.message || 'Đã xảy ra lỗi khi đăng ký');
+      // } finally {
+      //   setLoading(false);
+      // }
     }
   });
 

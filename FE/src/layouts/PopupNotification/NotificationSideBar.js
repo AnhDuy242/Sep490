@@ -3,7 +3,7 @@ import { Drawer, List, ListItem, ListItemText, Box, Typography } from '@mui/mate
 
 const NotificationSidebar = ({ open, onClose, notifications }) => {
     return (
-        <Drawer anchor="right" open={open} onClose={onClose}>
+        <Drawer anchor="right" open={open} onClose={onClose} transitionDuration={500}>
             <Box
                 sx={{ width: 300, padding: 2 }}
                 role="presentation"
