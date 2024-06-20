@@ -1,9 +1,13 @@
-import React, { useState } from 'react';
-import { Drawer, List, ListItem, ListItemText, IconButton } from '@mui/material';
+import React from 'react';
+import { Drawer, List, ListItem, ListItemText, IconButton, Typography, ListItemIcon } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
+import InboxIcon from '@mui/icons-material/Inbox';
+import MailIcon from '@mui/icons-material/Mail';
+import '../../../assets/css/sidebar_admin.css';
+import backgroundImage from '../../../assets/images/background-img.jpg'; // Adjust the path accordingly
 
-const drawerWidth = '25%'; // Độ rộng của sidebar là 25% của màn hình
+const drawerWidth = '300px'; // Fixed width for the sidebar
 
 const useStyles = makeStyles({
   drawer: {
@@ -12,35 +16,51 @@ const useStyles = makeStyles({
   },
   drawerPaper: {
     width: drawerWidth,
-    backgroundColor: '#3f51b5', // Màu nền của sidebar
-    color: 'white', // Màu chữ của sidebar
+    backgroundColor: '#3f51b5', // Background color of the sidebar
+    color: 'white', // Text color of the sidebar
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center', // Center the content vertically
+    backgroundImage: `url(${backgroundImage})`, // Background image for the sidebar
+    backgroundSize: 'cover', // Cover the entire sidebar
+    backgroundRepeat: 'no-repeat', // Prevent the background from repeating
+    backgroundPosition: 'center', // Center the background image
+    overflow: 'hidden', // Prevent horizontal scroll
   },
   menuButton: {
-    marginRight: 16, // Khoảng cách giữa icon và nội dung
+    marginRight: 16, // Space between the icon and content
+  },
+  listItem: {
+    display: 'flex',
+    justifyContent: 'center', // Center the content horizontally within the list item
+    alignItems: 'center', // Center the content vertically within the list item
+  },
+  list: {
+    width: '100%', // Ensure the list takes the full width of the sidebar
+     color:'white'
+  },
+  title: {
+    margin: '20px 0', // Space around the title
+    padding: '10px', // Padding inside the title
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background for the title
+    width: '100%', // Ensure the title takes the full width of the sidebar
+    textAlign: 'center', // Center the text horizontally
+    color:'white'
   },
 });
 
 const Sidebar = () => {
   const classes = useStyles();
-  const [isOpen, setIsOpen] = useState(true); // Sidebar luôn mở khi vào ứng dụng
-
-  const toggleDrawer = (open) => (event) => {
-    if (event && event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift')) {
-      return;
-    }
-    setIsOpen(open);
-  };
 
   const list = (
-    <div
-      className={classes.drawerPaper}
-      onClick={toggleDrawer(false)}
-      onKeyDown={toggleDrawer(false)}
-    >
+    <div className={classes.list}>
       <List>
-        {['Item 1', 'Item 2', 'Item 3'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemText primary={text} />
+        {['Account', 'Notification', 'Employee list'].map((text, index) => (
+          <ListItem button key={text} className={classes.listItem} >
+            <ListItemIcon>
+              {index % 2 === 0 ? <InboxIcon style={{ color: 'white' }} /> : <MailIcon style={{ color: 'white' }} />}
+            </ListItemIcon>
+            <ListItemText primary={text} color='white' />
           </ListItem>
         ))}
       </List>
@@ -49,25 +69,18 @@ const Sidebar = () => {
 
   return (
     <div>
-      <IconButton
-        color="inherit"
-        aria-label="open drawer"
-        edge="start"
-        onClick={toggleDrawer(true)}
-        className={classes.menuButton}
-      >
-        <MenuIcon />
-      </IconButton>
       <Drawer
         className={classes.drawer}
-        variant="persistent" // Hiển thị sidebar luôn hiển thị
+        variant="permanent" // The sidebar is always visible
         anchor="left"
-        open={isOpen}
-        onClose={toggleDrawer(false)}
+        open={true}
         classes={{
           paper: classes.drawerPaper,
         }}
       >
+        <Typography variant="h6" className={classes.title} >
+          <b>Admin screen</b>
+        </Typography>
         {list}
       </Drawer>
     </div>
