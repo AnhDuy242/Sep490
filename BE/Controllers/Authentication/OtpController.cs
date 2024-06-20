@@ -41,5 +41,14 @@ namespace BE.Controllers.Authentication
                 return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
             }
         }
+
+        [HttpPost("smtp")]
+        public async Task<IActionResult> Index([FromBody] string email)
+        {
+            var sub = "alo";
+            var message = "hello";
+            await _emailService.SendEmailAsync(email, sub, message);
+            return Ok("succesfull");
+        }
     }
 }
