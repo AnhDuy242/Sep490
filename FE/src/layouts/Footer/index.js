@@ -9,8 +9,7 @@ import '../Footer/Footer.css';
 function Footer() {
   return (
     <>
-      <GlobalStyle />
-      <Box sx={{ bgcolor: '#00508E', color: '#fff', py: 6, px: 4 }}>
+       <Box sx={{ bgcolor: '#00508E', color: '#fff', py: 6, px: 4 }}>
         <Box sx={{ maxWidth: '1200px', margin: '0 auto' }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
             <Box>

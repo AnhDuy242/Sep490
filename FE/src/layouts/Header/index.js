@@ -81,7 +81,7 @@ function Header() {
 
   return (
     <>
-      <GlobalStyle />
+      
       <AppBar position="static" color="default">
         <Toolbar>
           <NavLink to="/" className="nav__logo">
