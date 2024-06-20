@@ -11,7 +11,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<PopupNotification />} />
+        <Route path="/" element={<Home />} />
 
       </Routes>
 

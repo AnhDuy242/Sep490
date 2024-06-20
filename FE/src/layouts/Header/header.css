@@ -5,9 +5,14 @@
 
 .info-class {
   display: flex;
-  margin-left:100px;
   width:70%;
   justify-content: space-evenly;
+}
+.login-button{
+  width: 100px;
+}
+.card-hehe{
+  margin-left: 50px;
 }
 
 .info-logo img {

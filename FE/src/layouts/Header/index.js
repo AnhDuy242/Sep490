@@ -87,7 +87,7 @@ function Header() {
           <NavLink to="/" className="nav__logo">
             <img src={NavLogo} alt="Logo" className="logo-image" />
           </NavLink>
-          <Box sx={{ flexGrow: 1 }} />
+        
           <Box className="info-class" display="flex">
             <Box className="card-header-self" display="flex" alignItems="center">
               <Phone />
@@ -113,9 +113,10 @@ function Header() {
                 <b>Ngôn ngữ <br /> Tiếng việt</b>
               </Typography>
             </Box>
-            <Box className="card-header-self">
+            <Box className="card-header-self card-hehe">
               <Button onClick={handleShowLogin} variant="contained" className='login-button' color="primary">Đăng nhập</Button>
-              <Button onClick={handleShowRegister} variant="contained" color="secondary">Đăng ký</Button>
+              <div className='card-hehe'></div>
+              <Button onClick={handleShowRegister} variant="contained"className='login-button'  color="secondary">Đăng ký</Button>
             </Box>
           </Box>
         </Toolbar>
