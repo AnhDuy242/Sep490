@@ -2,15 +2,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+// import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Sidebar from './pages/AdminDashBoard/component/side_bar';
-
+import AdminDash from './pages/AdminDashBoard'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     {/* <App /> */}
-    <Sidebar/>
+    {/* <Sidebar/> */}
+    <AdminDash/>
   </React.StrictMode>
 );
 
