@@ -10,20 +10,17 @@ namespace BE.Controllers.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class EmployeeController : ControllerBase
+    public class CreateEmployeeController : ControllerBase
     {
         private readonly Alo2Context _context;
         private readonly ISMSService _smsService;
-        public EmployeeController(ISMSService smsService, Alo2Context context) {
+        public CreateEmployeeController(ISMSService smsService, Alo2Context context) {
             _smsService = smsService;
             _context = context;
         }
         // GET: api/<EmployeeController>
         [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        
 
         // GET api/<EmployeeController>/5
         [HttpGet("{id}")]
@@ -36,12 +33,16 @@ namespace BE.Controllers.Admin
             [HttpPost]
             public async Task<ActionResult<Employee>> CreateEmployee(Employee model)
             {
-                if (!ModelState.IsValid || !CheckPhoneNumberExist(model.Phone))
+                if (!ModelState.IsValid)
                 {
                     return BadRequest(ModelState);
                 }
+                if (!CheckPhoneNumberExist(model.Phone))
+                {
+                    return BadRequest(new { message = "Số điện thoại đã tồn tại" });
+                }
 
-                string password = GenerateRandomPassword();
+            string password = GenerateRandomPassword();
                 string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
 
             

@@ -26,6 +26,8 @@ builder.Services.AddSingleton<ISMSService>(provider =>
         configuration["Twilio:AuthToken"],
         configuration["Twilio:PhoneNumber"]);
 });
+//auto mapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 
