@@ -1,5 +1,4 @@
 import React from "react";
-import Carousel from "react-elastic-carousel";
 import { Box, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
 import img1 from "../../assets/images/carousel_image_1.jpg";

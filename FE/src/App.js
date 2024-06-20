@@ -2,18 +2,16 @@
 import './App.css';
 
 import Home from './pages/Home';
-import Header from '../src/layouts/Header'
-
-import './layouts/Header/index'
+import Header from '../src/layouts/ForgotPassword'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-
+import ForgotPassword from '../src/layouts/ForgotPassword';
+import PopupNotification from '../src/layouts/PopupNotification'
 function App() {
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/Header" element={<Header />} />
+        <Route path="/" element={<PopupNotification />} />
 
       </Routes>
 
