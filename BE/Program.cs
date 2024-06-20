@@ -3,6 +3,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+﻿
+using BE.Service;
+using Twilio.Clients;
+using Twilio;
+using Microsoft.Extensions.Options;
+using BE.Models;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +17,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+// Đăng ký DbContext
+builder.Services.AddDbContext<Alo2Context>(options =>
+options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+// Configure Twilio
+builder.Services.AddSingleton<ISMSService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    return new SMSService(
+        configuration["Twilio:AccountSid"],
+        configuration["Twilio:AuthToken"],
+        configuration["Twilio:PhoneNumber"]);
+});
+//auto mapper
+builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddDbContext<Alo2Context>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -64,3 +85,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
