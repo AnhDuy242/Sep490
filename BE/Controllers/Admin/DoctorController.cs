@@ -147,9 +147,64 @@ namespace BE.Controllers.Admin
         }
 
         // DELETE api/<DoctorController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("{phone}")]
+        public async Task<IActionResult> DeleteMember(string phone)
         {
+            if (_context.Accounts == null || _context.Doctors == null)
+            {
+                return NotFound();
+            }
+            var member = await _context.Accounts.Where(a => a.Phone.Equals(phone)).FirstOrDefaultAsync();
+            var doctor = await _context.Doctors.Where(a => a.Phone.Equals(phone)).FirstOrDefaultAsync();
+            if (member == null)
+            {
+                return NotFound();
+            }
+            _context.Doctors.Remove(doctor);
+            _context.Accounts.Remove(member);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
+        [HttpDelete]
+        public async Task<IActionResult> DeleteMembers([FromBody] List<AccountDoctor> accountDoctors)
+        {
+            if (_context.Accounts == null || _context.Doctors == null)
+            {
+                return NotFound();
+            }
+
+            if (accountDoctors == null || accountDoctors.Count == 0)
+            {
+                return BadRequest("No accounts provided for deletion.");
+            }
+
+            // Extract phone numbers from the provided AccountDoctor list
+            var phones = accountDoctors.Select(ad => ad.Phone).ToList();
+
+            // Find accounts and doctors matching the provided phone numbers
+            var members = await _context.Accounts.Where(a => phones.Contains(a.Phone)).ToListAsync();
+            var doctors = await _context.Doctors.Where(d => phones.Contains(d.Phone)).ToListAsync();
+
+            if (members.Count == 0 && doctors.Count == 0)
+            {
+                return NotFound();
+            }
+
+            if (doctors.Count > 0)
+            {
+                _context.Doctors.RemoveRange(doctors);
+            }
+
+            if (members.Count > 0)
+            {
+                _context.Accounts.RemoveRange(members);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
     }
 }
