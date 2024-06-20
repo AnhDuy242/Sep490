@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Button, TextField, Typography, Grid } from '@mui/material';
 import { Link } from 'react-router-dom';
-import Logo from '../../assets/images/images.png';
 import clinic_image from '../../assets/images/forgot_password_image.png';
-import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 
 const ForgotPasswordForm = () => {
     const [identifier, setIdentifier] = useState('');

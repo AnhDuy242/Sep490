@@ -13,7 +13,6 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import google_icon from '../../assets/images/google.png';
 
 const validationSchema = yup.object({
   username: yup

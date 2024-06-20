@@ -1,20 +1,10 @@
 import React from "react";
-import { createGlobalStyle } from 'styled-components';
 import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { SocialIcon } from 'react-social-icons';
 import '../Footer/Footer.css';
 
-const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-  body {
-    margin: 0;
-    font-family: 'Montserrat', sans-serif;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-`;
 
 function Footer() {
   return (

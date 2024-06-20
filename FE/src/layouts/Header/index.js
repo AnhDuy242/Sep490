@@ -3,8 +3,6 @@ import { NavLink } from 'react-router-dom';
 import '../Header/header.css';
 import NavLogo from '../../assets/images/images.png';
 
-import styled, { createGlobalStyle } from 'styled-components';
-import { Link } from 'react-router-dom';
 import LoginForm from '../LoginForm'; // Import LoginForm component
 import RegisterForm from '../RegisterForm';
 import {
@@ -19,16 +17,7 @@ import {
 } from '@mui/material';
 import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 
-const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
 
-  body {
-      margin: 0;
-      font-family: 'Montserrat', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-  }
-`;
 
 function Header() {
   const [showLogin, setShowLogin] = useState(false);
