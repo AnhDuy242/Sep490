@@ -5,11 +5,8 @@ import {
   DialogContent, DialogContentText, DialogTitle,Avatar,
   Typography
 } from '@mui/material';
-import Stack from '@mui/material/Stack';
 
 import { Delete, Edit, Visibility } from '@mui/icons-material';
-import receptionist_background from '../../assets/images/receptionist_background.jpg';
-import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 const ReceptionistAccount = () => {
   const [accounts, setAccounts] = useState([]);
   const [selectedAccounts, setSelectedAccounts] = useState([]);
