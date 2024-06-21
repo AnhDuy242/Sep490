@@ -8,7 +8,6 @@ import {
 import Stack from '@mui/material/Stack';
 
 import { Delete, Edit, Visibility } from '@mui/icons-material';
-import receptionist_background from '../../assets/images/receptionist_background.jpg';
 import { width } from '@fortawesome/free-solid-svg-icons/fa0';
 const ReceptionistAccount = () => {
   const [accounts, setAccounts] = useState([]);
@@ -17,7 +16,11 @@ const ReceptionistAccount = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentAccount, setCurrentAccount] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
-
+    const [searchType,setSearchType]=useState('');
+    const handleChange = (event) => {
+        setSearchType(event.target.value);
+      };
+    
   useEffect(() => {
     fetchAccounts();
   }, []);
