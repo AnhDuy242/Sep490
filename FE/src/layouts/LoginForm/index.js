@@ -7,7 +7,7 @@ import google_icon from '../../assets/images/google.png';
 import '../LoginForm/LoginForm.css'
 
 const validationSchema = yup.object({
-  username: yup
+  identifier: yup
     .string('Nhập số điện thoại hoặc email')
     .test('isValidEmailOrPhone', 'Số điện thoại hoặc email không hợp lệ', value => {
       const phoneRegExp = /^[0-9]{10}$/;
@@ -28,23 +28,23 @@ const LoginForm = ({ show, handleClose }) => {
 
   const formik = useFormik({
     initialValues: {
-      username: '',
+      identifier: '',
       password: '',
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        const response = await fetch('http://example.com/login', {
+        const response = await fetch('https://localhost:7240/api/Authentication/login', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ username: values.username, password: values.password }),
+          body: JSON.stringify({ identifier: values.identifier, password: values.password }),
         });
 
         const data = await response.json();
-
+        
         if (!response.ok) {
           throw new Error(data.message || 'Something went wrong');
         }
@@ -96,11 +96,11 @@ const LoginForm = ({ show, handleClose }) => {
             variant="outlined"
             fullWidth
             margin="normal"
-            name="username"
-            value={formik.values.username}
+            name="identifier"
+            value={formik.values.identifier}
             onChange={formik.handleChange}
-            error={formik.touched.username && Boolean(formik.errors.username)}
-            helperText={formik.touched.username && formik.errors.username}
+            error={formik.touched.identifier && Boolean(formik.errors.identifier)}
+            helperText={formik.touched.identifier && formik.errors.identifier}
           />
           <TextField
             label="Mật khẩu"

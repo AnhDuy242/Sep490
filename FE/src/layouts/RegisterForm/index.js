@@ -132,7 +132,9 @@ const RegisterForm = ({ show, handleClose }) => {
 
 
   return (
+    
     <Modal open={show} onClose={handleClose}>
+
       <Box
         sx={{
           position: 'absolute',
@@ -145,7 +147,7 @@ const RegisterForm = ({ show, handleClose }) => {
           p: 4,
         }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Box display="flex" justifyContent="space-between" alignItems="center" >
           <Typography variant="h6">Đăng ký</Typography>
           <IconButton onClick={handleClose}>
             <CloseIcon />
@@ -207,7 +209,11 @@ const RegisterForm = ({ show, handleClose }) => {
           )}
         </Box>
 
-        <Dialog open={open} onClose={handleCloseDialog} maxWidth="xs" fullWidth>
+        <Dialog open={open} onClose={(event, reason) => {
+          if (reason !== 'backdropClick') {
+            handleCloseDialog(event, reason);
+          }
+        }} maxWidth="xs" fullWidth>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <DialogTitle>Xác Minh Thành Công</DialogTitle>
             <IconButton onClick={handleCloseDialog}>
@@ -231,7 +237,7 @@ const RegisterForm = ({ show, handleClose }) => {
                 helperText={formikPersonalInfo.touched.name && formikPersonalInfo.errors.name}
                 sx={{ mb: 2 }}
               />
-              <Typography variant="subtitle1" sx={{ mt: 2 }} marginBottom={{ }}>
+              <Typography variant="subtitle1" sx={{ mt: 2 }} marginBottom={{}}>
                 Số điện thoại: {phoneNumberForDialog}
               </Typography>
               <TextField
@@ -319,7 +325,7 @@ const RegisterForm = ({ show, handleClose }) => {
               </Button>
             </Box>
           </DialogContent>
-        </Dialog>;
+        </Dialog>
       </Box>
     </Modal>
   );

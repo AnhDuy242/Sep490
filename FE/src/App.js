@@ -6,13 +6,12 @@ import Header from '../src/layouts/ForgotPassword'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import ForgotPassword from '../src/layouts/ForgotPassword';
 import PopupNotification from '../src/layouts/PopupNotification'
-import otp from '../src/layouts/RegisterForm/OTPVERIFICATION';
 function App() {
 
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<PopupNotification />} />
         <Route path="/otp" element={<otp/>}/>
       </Routes>
 
