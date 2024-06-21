@@ -10,7 +10,7 @@ function AdminDash() {
         <Router>
             <div style={{ display: 'flex' }}>
                 <Sidebar />
-                <div style={{ marginLeft: '300px', width: '100%', padding: '20px' }}>
+                <div style={{ width: '100%', padding: '20px' }}>
                     <Routes>
                         <Route path="/doctor-account" element={<DoctorAccount />} />
                         <Route path="/receptionist-account" element={<ReceptionistAccount/>} />
