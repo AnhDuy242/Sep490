@@ -5,6 +5,7 @@ import {
   DialogContent, DialogContentText, DialogTitle,Avatar,
   Typography
 } from '@mui/material';
+import Stack from '@mui/material/Stack';
 
 import { Delete, Edit, Visibility } from '@mui/icons-material';
 const ReceptionistAccount = () => {
