@@ -1,0 +1,82 @@
+.header-container {
+  display: flex;
+  height: 150px;
+}
+
+.info-class {
+  display: flex;
+  width:70%;
+  justify-content: space-evenly;
+}
+.login-button{
+  width: 100px;
+}
+.card-hehe{
+  margin-left: 50px;
+}
+
+.info-logo img {
+  width: 60px;
+  height: 60px;
+}
+
+.bus-ton {
+  margin-left: 200px;
+}
+
+.card-header-self {
+  width:300px;
+  height: 50px;
+
+  margin-top: 50px;
+  display: flex;
+  justify-content: space-evenly;
+}
+.info-logo{
+  padding:10px;
+}
+.logo-image {
+  width: 120px;
+  height: 120px;
+  margin-right: 50px;
+}
+
+.info-text {
+  color: #139eec;
+  width: 200px;
+  font-size: 15px;
+  margin-top:10px;
+}
+.login-button{
+  margin-right: 30px;
+}
+.language img {
+  border-radius: 100px 100px 100px 100px;
+}
+
+.card-button {
+
+  display: flex;
+  justify-content: space-between;
+
+}
+
+.card-button-num {
+  margin-left: 50px;
+}
+
+.card-button-num button {
+  font-size: 17px;
+  padding: 0.5em 2em;
+  border: transparent;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+  background: dodgerblue;
+  color: white;
+  border-radius: 4px;
+}
+
+.card-button-num button a {
+  text-decoration: none;
+  color: white;
+
+}

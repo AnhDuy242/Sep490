@@ -1,0 +1,133 @@
+.close-x{
+    background-color: transparent;
+    width: 30px;
+    border: 0px;
+}
+
+  .modal-title{
+    font-family: 'Montserrat', sans-serif;
+  }
+.close-x:hover{
+    background-color: transparent;
+}
+.modal-dialog{
+    height:50%;
+}
+.modal-content {
+    height: 160%;
+}
+.google_icon{
+    width: 35px;
+    height: 100%;
+}
+h6.MuiTypography-root.MuiTypography-h6.login-text-label.css-2ulfj5-MuiTypography-root{
+    margin-left:120px;
+}
+.modal-header{
+    margin: 0 0 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 32px;
+    text-transform: none;
+    border-bottom: none;
+    height: 50px;;
+}
+.modal-title{
+   margin-left: 40%;
+   margin-top:20px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 20px;
+    line-height: 32px;
+    text-transform: none;
+
+  
+}
+a.btn.btn-google {
+    position: relative;
+    left: 40%;
+}
+.error-message {
+    margin-bottom: 10px; /* Khoảng cách dưới của thông báo lỗi */
+  }
+
+.or{
+    width: 100%;
+    display: flex;
+    text-align: center;
+    margin-top: 50px;
+}
+.new1{
+    border: 1px solid red;
+    width: 30%;
+
+}
+#formBasicPassword{
+    margin-top: 10px;
+}
+#formBasicEmail{
+    margin-top: 10px;
+}
+a.btn.btn-google {
+   
+}
+.btn-google{
+    width: 100%;
+}
+.btn-google img{
+    width: 40px;
+}
+.form-check{
+    margin-top: 20px;
+}
+button.btn.btn-primaryD {
+    margin-top: 20px;
+    width: 100%;
+    background-color: #1d93e3;
+    border: 1px solid #1d93e3;
+    color: #fff;
+    
+}
+.x-button{
+    color: black;
+}
+
+
+.error-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    padding: 10px; /* padding cho khoảng cách giữa thông báo lỗi và viền ngoài */
+    z-index: 1000; /* chỉ số z để thông báo lỗi hiển thị trên các thành phần khác */
+  
+    visibility: hidden; /* ẩn thông báo lỗi mặc định */
+    pointer-events: none; /* không làm ảnh hưởng tới sự kiện click */
+    transition: visibility 0s, opacity 0.5s ease; /* chuyển tiếp để hiển thị thông báo lỗi */
+  }
+  
+  .error-container.show {
+    visibility: visible; /* hiển thị thông báo lỗi */
+    pointer-events: auto; /* ảnh hưởng tới sự kiện click */
+  }
+.register-text{
+    text-align: center;
+    font-size: 13px;
+  ;
+}
+.register-block{
+    margin-top:70px;
+
+    margin-bottom: 20px;
+   text-align: center;
+}
+.form-label{
+    font-weight: bold;
+}
+.form-control{
+    background-color: #F5F5F5;
+    border-color: #F5F5F5;
+    border-radius: 4px;
+    color: #132432;
+}
