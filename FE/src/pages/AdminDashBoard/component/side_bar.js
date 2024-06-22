@@ -103,7 +103,7 @@ const Sidebar = () => {
           <ListItemIcon>
             <InboxIcon style={{ color: 'white' }} />
           </ListItemIcon>
-          <ListItemText primary="View appoiment" >
+          {/* <ListItemText primary="View appoiment" > */}
         </ListItem>
       </List>
     </div>
