@@ -1,24 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  CircularProgress,
-  IconButton,
-  Checkbox,
-  Typography,
-  TextField,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField,
+  Button, Dialog, DialogActions, DialogContent, DialogTitle,
 } from '@mui/material';
-import { loadDoctors } from '../../services/doctor_service';
+import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import '../../assets/css/doctor_list_table.css';
@@ -28,27 +13,29 @@ const DoctorTable = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+  const [openAddDialog, setOpenAddDialog] = useState(false);
   const [deletePhone, setDeletePhone] = useState('');
+  const [newDoctor, setNewDoctor] = useState({
+    name: '',
+    gender: '',
+    age: '',
+    phone: '',
+    role: 'Doctor', // Set default value for role
+  });
+  const [validationError, setValidationError] = useState('');
 
   useEffect(() => {
     loadDoctors(setDoctors, setLoading, setError);
   }, []);
 
-  const handleDeleteDoctor = async (phone) => {
+  const handleDeleteDoctor = async () => {
     try {
-      const response = await fetch(`https://localhost:7240/api/Doctor/${phone}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to delete doctor with phone ${phone}`);
-      }
-      // Nếu xóa thành công, cập nhật lại danh sách bác sĩ
-      const updatedDoctors = doctors.filter((doctor) => doctor.phone !== phone);
+      await deleteDoctor(deletePhone);
+      const updatedDoctors = doctors.filter((doctor) => doctor.phone !== deletePhone);
       setDoctors(updatedDoctors);
-      handleCloseDeleteDialog(); // Đóng dialog sau khi xóa thành công
+      handleCloseDeleteDialog();
     } catch (error) {
       console.error('Error deleting doctor:', error);
-      // Xử lý lỗi xóa bác sĩ
     }
   };
 
@@ -60,6 +47,38 @@ const DoctorTable = () => {
   const handleCloseDeleteDialog = () => {
     setDeletePhone('');
     setOpenDeleteDialog(false);
+  };
+
+  const handleOpenAddDialog = () => {
+    setOpenAddDialog(true);
+  };
+
+  const handleCloseAddDialog = () => {
+    setNewDoctor({
+      name: '',
+      gender: '',
+      age: '',
+      phone: '',
+      role: 'Doctor', // Reset to default value
+    });
+    setValidationError(''); // Clear validation error
+    setOpenAddDialog(false);
+  };
+
+  const handleAddDoctor = async () => {
+    // Validation
+    if (!newDoctor.name || !newDoctor.gender || !newDoctor.age || !newDoctor.phone) {
+      setValidationError('Tất cả các trường phải được điền đầy đủ.');
+      return;
+    }
+
+    try {
+      const addedDoctor = await addDoctor(newDoctor);
+      setDoctors([...doctors, addedDoctor]);
+      handleCloseAddDialog();
+    } catch (error) {
+      console.error('Error adding doctor:', error);
+    }
   };
 
   if (loading) return <CircularProgress />;
@@ -74,7 +93,7 @@ const DoctorTable = () => {
         fullWidth
         margin="normal"
       />
-      <Button className="btn_add" variant="contained">
+      <Button className="btn_add" variant="contained" onClick={handleOpenAddDialog}>
         Thêm tài khoản
       </Button>
       <Button className="btn_delete">Xóa các lựa chọn</Button>
@@ -109,7 +128,7 @@ const DoctorTable = () => {
                 <TableCell>
                   <IconButton
                     title="Xóa"
-                    onClick={() => handleOpenDeleteDialog(doctor.phone)} // Gọi hàm mở dialog xóa bác sĩ khi nhấp vào biểu tượng xóa
+                    onClick={() => handleOpenDeleteDialog(doctor.phone)}
                   >
                     <DeleteIcon />
                   </IconButton>
@@ -122,7 +141,6 @@ const DoctorTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
-
       {/* Dialog xác nhận xóa */}
       <Dialog
         open={openDeleteDialog}
@@ -141,11 +159,84 @@ const DoctorTable = () => {
             Hủy
           </Button>
           <Button
-            onClick={() => handleDeleteDoctor(deletePhone)}
+            onClick={handleDeleteDoctor}
             color="primary"
             autoFocus
           >
             Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Dialog thêm bác sĩ */}
+      <Dialog
+        open={openAddDialog}
+        onClose={handleCloseAddDialog}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Thêm tài khoản bác sĩ</DialogTitle>
+        <DialogContent>
+          {validationError && (
+            <Typography color="error" variant="body2">
+              {validationError}
+            </Typography>
+          )}
+          <TextField
+            autoFocus
+            margin="dense"
+            id="name"
+            label="Tên"
+            type="text"
+            fullWidth
+            value={newDoctor.name}
+            onChange={(e) => setNewDoctor({ ...newDoctor, name: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="gender"
+            label="Giới tính"
+            type="text"
+            fullWidth
+            value={newDoctor.gender}
+            onChange={(e) => setNewDoctor({ ...newDoctor, gender: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="age"
+            label="Tuổi"
+            type="number"
+            fullWidth
+            value={newDoctor.age}
+            onChange={(e) => setNewDoctor({ ...newDoctor, age: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="phone"
+            label="Số điện thoại"
+            type="text"
+            fullWidth
+            value={newDoctor.phone}
+            onChange={(e) => setNewDoctor({ ...newDoctor, phone: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="role"
+            label="Vai trò"
+            type="text"
+            fullWidth
+            value={newDoctor.role}
+            disabled // Make this field read-only
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseAddDialog} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleAddDoctor} color="primary">
+            Thêm
           </Button>
         </DialogActions>
       </Dialog>
@@ -154,11 +245,6 @@ const DoctorTable = () => {
 };
 
 export default DoctorTable;
-
-
-
-
-
 
 
 
