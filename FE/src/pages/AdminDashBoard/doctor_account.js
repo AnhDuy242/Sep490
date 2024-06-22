@@ -1,8 +1,9 @@
+
 import React, { useState, useEffect } from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField,
-  Button, Dialog, DialogActions, DialogContent, DialogTitle,
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle
 } from '@mui/material';
+import { Autocomplete } from '@mui/lab';  // Import thêm Autocomplete
 import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
@@ -25,6 +26,9 @@ const DoctorTable = () => {
     role: 'Doctor', // Set default value for role
   });
   const [validationError, setValidationError] = useState('');
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredDoctors, setFilteredDoctors] = useState([]);
 
   useEffect(() => {
     loadDoctors(setDoctors, setLoading, setError);
@@ -114,17 +118,36 @@ const DoctorTable = () => {
       console.error('Error deleting doctors:', error);
     }
   };
+
+  const handleSearchChange = (event, value) => {
+    setSearchQuery(value);
+    const filtered = doctors.filter(doctor => 
+      doctor.name.toLowerCase().includes(value.toLowerCase()) || 
+      doctor.phone.includes(value)
+    );
+    setFilteredDoctors(filtered);
+  };
+
   if (loading) return <CircularProgress />;
   if (error) return <p>Error: {error}</p>;
 
   return (
     <>
       <Typography fontSize={50}>Quản lý tài khoản bác sĩ</Typography>
-      <TextField
-        label="Tìm kiếm theo tên hoặc số điện thoại"
-        variant="outlined"
-        fullWidth
-        margin="normal"
+      <Autocomplete
+        freeSolo
+        options={doctors.map(doctor => doctor.name + ' (' + doctor.phone + ')')}
+        inputValue={searchQuery}
+        onInputChange={handleSearchChange}
+        renderInput={(params) => (
+          <TextField 
+            {...params}
+            label="Tìm kiếm theo tên hoặc số điện thoại"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+          />
+        )}
       />
       <Button className="btn_add" variant="contained" onClick={handleOpenAddDialog}>
         Thêm tài khoản
@@ -152,7 +175,7 @@ const DoctorTable = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {doctors.map((doctor) => (
+            {(searchQuery ? filteredDoctors : doctors).map((doctor) => (
               <TableRow key={doctor.id}>
                 <TableCell>
                   <Checkbox
@@ -311,4 +334,5 @@ const DoctorTable = () => {
     </>
   );
 };
+
 export default DoctorTable;
