@@ -87,20 +87,42 @@ export const addDoctor = async (doctor) => {
 //   }
 // };
 
-// Tạo hàm để xóa nhiều bác sĩ
+// // Tạo hàm để xóa nhiều bác sĩ
+// export const deleteMultipleDoctors = async (phones) => {
+//   try {
+//     const response = await fetch('https://localhost:7240/api/Doctor', {
+//       method: 'DELETE',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ phones }), // Gửi một đối tượng JSON chứa mảng các số điện thoại cần xóa
+//     });
+//     if (!response.ok) {
+//       throw new Error('Failed to delete doctors');
+//     }
+//     return await response.json(); // Trả về phản hồi JSON từ API nếu cần
+//   } catch (error) {
+//     console.error('Error deleting doctors:', error);
+//     throw error;
+//   }
+// };
+
 export const deleteMultipleDoctors = async (phones) => {
   try {
+    console.log('Sending delete request with phones:', phones);
     const response = await fetch('https://localhost:7240/api/Doctor', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ phones }), // Gửi một đối tượng JSON chứa mảng các số điện thoại cần xóa
+      body: JSON.stringify({ phones: phones }), // Wrap phones in an object
     });
     if (!response.ok) {
-      throw new Error('Failed to delete doctors');
+      const errorText = await response.text();
+      console.error('Server response:', errorText);
+      throw new Error(`Failed to delete doctors, status: ${response.status}`);
     }
-    return await response.json(); // Trả về phản hồi JSON từ API nếu cần
+    return await response.json();
   } catch (error) {
     console.error('Error deleting doctors:', error);
     throw error;

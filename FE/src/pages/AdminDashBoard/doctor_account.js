@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
 } from '@mui/material';
-import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
+import { loadDoctors, deleteDoctor, addDoctor, deleteMultipleDoctors } from '../../services/doctor_service';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import '../../assets/css/doctor_list_table.css';
@@ -15,6 +15,9 @@ const DoctorTable = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [deletePhone, setDeletePhone] = useState('');
+  const [selectedAccounts, setSelectedAccounts] = useState([]);
+  const [selectedDoctors, setSelectedDoctors] = useState([]);
+  const [openMultipleDeleteDialog, setOpenMultipleDeleteDialog] = useState(false);
   const [newDoctor, setNewDoctor] = useState({
     name: '',
     gender: '',
@@ -38,21 +41,21 @@ const DoctorTable = () => {
       console.error('Error deleting doctor:', error);
     }
   };
-
+  //Dialog xóa 1 bác sĩ
   const handleOpenDeleteDialog = (phone) => {
     setDeletePhone(phone);
     setOpenDeleteDialog(true);
   };
-
+  //đóng dialog xóa 1 bác sĩ
   const handleCloseDeleteDialog = () => {
     setDeletePhone('');
     setOpenDeleteDialog(false);
   };
-
+  //mở dialog thêm bác sĩ
   const handleOpenAddDialog = () => {
     setOpenAddDialog(true);
   };
-
+  //đóng dialog thêm bác sĩ
   const handleCloseAddDialog = () => {
     setNewDoctor({
       name: '',
@@ -80,7 +83,38 @@ const DoctorTable = () => {
       console.error('Error adding doctor:', error);
     }
   };
+  //hàm xử lý checkbox
+  const handleCheckboxChange = (phone) => {
+    if (selectedDoctors.includes(phone)) {
+      setSelectedDoctors(selectedDoctors.filter((p) => p !== phone));
+    } else {
+      setSelectedDoctors([...selectedDoctors, phone]);
+    }
+  };
 
+  //xử lý nút nhấn xóa các lựa chọn
+  const handleOpenMultipleDeleteDialog = () => {
+    setOpenMultipleDeleteDialog(true);
+  };
+  //đóng diaglog xóa nhiều bác sĩ
+  const handleCloseMultipleDeleteDialog = () => {
+    setOpenMultipleDeleteDialog(false);
+  };
+
+  //xóa nhiều bác sĩ
+  const handleDeleteMutipleDoctor = async () => {
+    try {
+      await Promise.all(selectedDoctors.map(async (phone) => {
+        await deleteDoctor(phone);
+      }));
+      const updatedDoctors = doctors.filter((doctor) => !selectedDoctors.includes(doctor.phone));
+      setDoctors(updatedDoctors);
+      setSelectedDoctors([]);
+      handleCloseMultipleDeleteDialog();
+    } catch (error) {
+      console.error('Error deleting doctors:', error);
+    }
+  };
   if (loading) return <CircularProgress />;
   if (error) return <p>Error: {error}</p>;
 
@@ -96,7 +130,13 @@ const DoctorTable = () => {
       <Button className="btn_add" variant="contained" onClick={handleOpenAddDialog}>
         Thêm tài khoản
       </Button>
-      <Button className="btn_delete">Xóa các lựa chọn</Button>
+      <Button
+        className="btn_delete"
+        disabled={selectedDoctors.length === 0}
+        onClick={handleOpenMultipleDeleteDialog}
+      >
+        Xóa các lựa chọn
+      </Button>
       <TableContainer component={Paper}>
         <Table className="table_list">
           <TableHead>
@@ -116,7 +156,10 @@ const DoctorTable = () => {
             {doctors.map((doctor) => (
               <TableRow key={doctor.id}>
                 <TableCell>
-                  <Checkbox />
+                  <Checkbox
+                    checked={selectedDoctors.includes(doctor.phone)}
+                    onChange={() => handleCheckboxChange(doctor.phone)}
+                  />
                 </TableCell>
                 <TableCell>{doctor.name}</TableCell>
                 <TableCell>{doctor.email}</TableCell>
@@ -141,6 +184,32 @@ const DoctorTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      {/*Dialog xóa nhiều lựa chọn*/}
+      <Dialog
+        open={openMultipleDeleteDialog}
+        onClose={handleCloseMultipleDeleteDialog}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Xác nhận xóa nhiều bác sĩ</DialogTitle>
+        <DialogContent>
+          <Typography variant="body1">
+            Bạn có chắc chắn muốn xóa {selectedDoctors.length} bác sĩ đã chọn?
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseMultipleDeleteDialog} color="primary">
+            Hủy
+          </Button>
+          <Button
+            onClick={handleDeleteMutipleDoctor}
+            color="primary"
+            autoFocus
+          >
+            Xóa
+          </Button>
+        </DialogActions>
+      </Dialog>
       {/* Dialog xác nhận xóa */}
       <Dialog
         open={openDeleteDialog}
@@ -243,8 +312,4 @@ const DoctorTable = () => {
     </>
   );
 };
-
 export default DoctorTable;
-
-
-
