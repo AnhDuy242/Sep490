@@ -3,7 +3,7 @@ import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField,
   Button, Dialog, DialogActions, DialogContent, DialogTitle,
 } from '@mui/material';
-import { loadDoctors, deleteDoctor, addDoctor, deleteMultipleDoctors } from '../../services/doctor_service';
+import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
 import '../../assets/css/doctor_list_table.css';
@@ -15,7 +15,6 @@ const DoctorTable = () => {
   const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
   const [deletePhone, setDeletePhone] = useState('');
-  const [selectedAccounts, setSelectedAccounts] = useState([]);
   const [selectedDoctors, setSelectedDoctors] = useState([]);
   const [openMultipleDeleteDialog, setOpenMultipleDeleteDialog] = useState(false);
   const [newDoctor, setNewDoctor] = useState({
