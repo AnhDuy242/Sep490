@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle
+  Typography, TextField, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Checkbox, IconButton, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle
 } from '@mui/material';
-import { Autocomplete } from '@mui/lab';  // Import thêm Autocomplete
+import Autocomplete from '@mui/material/Autocomplete';
 import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
@@ -23,17 +22,20 @@ const DoctorTable = () => {
     gender: '',
     age: '',
     phone: '',
-    role: 'Doctor', // Set default value for role
+    role: 'Doctor',
   });
   const [validationError, setValidationError] = useState('');
 
+  //dùng search và lưu vào mảng
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredDoctors, setFilteredDoctors] = useState([]);
 
+  //load danh sách bác sĩ
   useEffect(() => {
     loadDoctors(setDoctors, setLoading, setError);
   }, []);
 
+  //xóa bác sĩ
   const handleDeleteDoctor = async () => {
     try {
       await deleteDoctor(deletePhone);
@@ -44,35 +46,35 @@ const DoctorTable = () => {
       console.error('Error deleting doctor:', error);
     }
   };
-  //Dialog xóa 1 bác sĩ
+
   const handleOpenDeleteDialog = (phone) => {
     setDeletePhone(phone);
     setOpenDeleteDialog(true);
   };
-  //đóng dialog xóa 1 bác sĩ
+
   const handleCloseDeleteDialog = () => {
     setDeletePhone('');
     setOpenDeleteDialog(false);
   };
-  //mở dialog thêm bác sĩ
+
   const handleOpenAddDialog = () => {
     setOpenAddDialog(true);
   };
-  //đóng dialog thêm bác sĩ
+
   const handleCloseAddDialog = () => {
     setNewDoctor({
       name: '',
       gender: '',
       age: '',
       phone: '',
-      role: 'Doctor', // Reset to default value
+      role: 'Doctor',
     });
-    setValidationError(''); // Clear validation error
+    setValidationError('');
     setOpenAddDialog(false);
   };
 
+  //thêm bác sĩ
   const handleAddDoctor = async () => {
-    // Validation
     if (!newDoctor.name || !newDoctor.gender || !newDoctor.age || !newDoctor.phone) {
       setValidationError('Tất cả các trường phải được điền đầy đủ.');
       return;
@@ -86,7 +88,8 @@ const DoctorTable = () => {
       console.error('Error adding doctor:', error);
     }
   };
-  //hàm xử lý checkbox
+
+  //xử lý check box
   const handleCheckboxChange = (phone) => {
     if (selectedDoctors.includes(phone)) {
       setSelectedDoctors(selectedDoctors.filter((p) => p !== phone));
@@ -95,17 +98,15 @@ const DoctorTable = () => {
     }
   };
 
-  //xử lý nút nhấn xóa các lựa chọn
   const handleOpenMultipleDeleteDialog = () => {
     setOpenMultipleDeleteDialog(true);
   };
-  //đóng diaglog xóa nhiều bác sĩ
+
   const handleCloseMultipleDeleteDialog = () => {
     setOpenMultipleDeleteDialog(false);
   };
 
-  //xóa nhiều bác sĩ
-  const handleDeleteMutipleDoctor = async () => {
+  const handleDeleteMultipleDoctors = async () => {
     try {
       await Promise.all(selectedDoctors.map(async (phone) => {
         await deleteDoctor(phone);
@@ -119,12 +120,14 @@ const DoctorTable = () => {
     }
   };
 
+  //xử lý search auto change
   const handleSearchChange = (event, value) => {
     setSearchQuery(value);
-    const filtered = doctors.filter(doctor => 
-      doctor.name.toLowerCase().includes(value.toLowerCase()) || 
-      doctor.phone.includes(value)
-    );
+    const filtered = doctors
+      .filter(doctor =>
+        doctor.name.toLowerCase().includes(value.toLowerCase()) ||
+        doctor.phone.includes(value)
+      ).slice(0,5); // Giới hạn kết quả hiển thị
     setFilteredDoctors(filtered);
   };
 
@@ -136,11 +139,11 @@ const DoctorTable = () => {
       <Typography fontSize={50}>Quản lý tài khoản bác sĩ</Typography>
       <Autocomplete
         freeSolo
-        options={doctors.map(doctor => doctor.name + ' (' + doctor.phone + ')')}
+        options={filteredDoctors.map(doctor => doctor.name + ' (' + doctor.phone + ')')}
         inputValue={searchQuery}
         onInputChange={handleSearchChange}
         renderInput={(params) => (
-          <TextField 
+          <TextField
             {...params}
             label="Tìm kiếm theo tên hoặc số điện thoại"
             variant="outlined"
@@ -206,7 +209,7 @@ const DoctorTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      {/*Dialog xóa nhiều lựa chọn*/}
+      {/**Xóa nhiều bác sĩ */}
       <Dialog
         open={openMultipleDeleteDialog}
         onClose={handleCloseMultipleDeleteDialog}
@@ -224,7 +227,7 @@ const DoctorTable = () => {
             Hủy
           </Button>
           <Button
-            onClick={handleDeleteMutipleDoctor}
+            onClick={handleDeleteMultipleDoctors}
             color="primary"
             autoFocus
           >
@@ -232,7 +235,7 @@ const DoctorTable = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Dialog xác nhận xóa */}
+      {/*xóa 1 bác sĩ */}
       <Dialog
         open={openDeleteDialog}
         onClose={handleCloseDeleteDialog}
@@ -258,7 +261,7 @@ const DoctorTable = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* Dialog thêm bác sĩ */}
+      {/**Thêm bác sĩ */}
       <Dialog
         open={openAddDialog}
         onClose={handleCloseAddDialog}
@@ -319,7 +322,7 @@ const DoctorTable = () => {
             type="text"
             fullWidth
             value={newDoctor.role}
-            disabled // Make this field read-only
+            disabled
           />
         </DialogContent>
         <DialogActions>
@@ -336,3 +339,6 @@ const DoctorTable = () => {
 };
 
 export default DoctorTable;
+
+
+
