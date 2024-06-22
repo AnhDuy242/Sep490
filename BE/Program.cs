@@ -1,16 +1,21 @@
-﻿
+﻿using CloudinaryDotNet;
 using BE.Service;
 using Twilio.Clients;
 using Twilio;
 using Microsoft.Extensions.Options;
 using BE.Models;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -28,6 +33,15 @@ builder.Services.AddSingleton<ISMSService>(provider =>
 });
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
+
+// Configure Cloudinary
+var cloudinaryAccount = new CloudinaryDotNet.Account(
+    builder.Configuration["Cloudinary:CloudName"],
+    builder.Configuration["Cloudinary:ApiKey"],
+    builder.Configuration["Cloudinary:ApiSecret"]
+);
+var cloudinary = new Cloudinary(cloudinaryAccount);
+builder.Services.AddSingleton(cloudinary);
 
 var app = builder.Build();
 
