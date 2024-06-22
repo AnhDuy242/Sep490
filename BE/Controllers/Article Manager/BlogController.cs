@@ -54,6 +54,8 @@ namespace BE.Controllers.Article_Manager
 
         // POST api/<BlogController>
         [HttpPost]
+        //bắt buộc phải điền tất cả các trường, ảnh đang để dạng array nên hơi daubuoi tí, theo như code thì nó sẽ lấy bức ảnh đầu tiên upload lên
+        //để làm thumbnail, và lấy ảnh từ đầu đến cuối để làm content
         public async Task<IActionResult> CreateBlog([FromForm] BlogCreationModel model)
         {
             try
@@ -110,6 +112,7 @@ namespace BE.Controllers.Article_Manager
 
         // PUT api/<BlogController>/5
         [HttpPut("{id}")]
+        //update thì note cũng tương tự create
         public async Task<IActionResult> UpdateBlog(int id, [FromForm] BlogCreationModel model)
         {
             var blog = await _context.Blogs
