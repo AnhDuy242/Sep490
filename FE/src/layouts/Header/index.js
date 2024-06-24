@@ -13,12 +13,11 @@ import {
   Box,
 } from '@mui/material';
 import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
+import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
 
 const tokenTimeout = 10000; // 1 hour in milliseconds
 
 function Header() {
-  const jwt_decode = require('jwt-decode');
-
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -67,9 +66,23 @@ function Header() {
     try {
       const { token } = await login(username, password);
       updateToken(token);
-      const decoded = jwt_decode(token);
-      console.log(decoded);
 
+      // Decode the token here using jwtDecode
+      const decoded = jwtDecode(token);
+      console.log(decoded);
+      console.log(decoded);
+      if(decoded.role ==='Admin'){
+        navigate('/admin/dashboard');
+        console.log('Da toi admmin dashboard');
+
+      }
+      else if(decoded.role ==='Patient'){
+        navigate('/');
+        console.log('Da toi patient dashboard');
+      }
+      else{
+        console.log('Chua biet la role gi');
+      }
       handleCloseLogin();
       navigate('/');
     } catch (error) {
