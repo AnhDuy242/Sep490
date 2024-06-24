@@ -30,12 +30,12 @@ const ReceptionistAccount = () => {
             // Fetch accounts from API
             const response = await fetch('https://localhost:7240/api/Receptionist');
             const data = await response.json();
-            setAccounts(data);
+            setAccounts(data.$values); // Extract the array of accounts from the $values property
         } catch (error) {
             console.log("Failed fetch");
         }
     };
-
+    
     const filteredAccounts = accounts.filter(account => {
         if (searchType === 'name') {
             return account.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -44,7 +44,6 @@ const ReceptionistAccount = () => {
         }
         return true; // Default: show all if searchType is not 'name' or 'phone'
     });
-
     const handleSelectAllClick = (event) => {
         if (event.target.checked) {
             const newSelecteds = accounts.map((account) => account.phone);
