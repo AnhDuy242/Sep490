@@ -17,6 +17,8 @@ import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 const tokenTimeout = 10000; // 1 hour in milliseconds
 
 function Header() {
+  const jwt_decode = require('jwt-decode');
+
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -65,6 +67,9 @@ function Header() {
     try {
       const { token } = await login(username, password);
       updateToken(token);
+      const decoded = jwt_decode(token);
+      console.log(decoded);
+
       handleCloseLogin();
       navigate('/');
     } catch (error) {
