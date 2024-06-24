@@ -1,7 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Checkbox, Typography, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton,
+  Checkbox, Typography, TextField, Button, Dialog, DialogActions, DialogContent, DialogTitle, Select, MenuItem,
+  FormControl, InputLabel
 } from '@mui/material';
 import { Autocomplete } from '@mui/lab';  // Import thêm Autocomplete
 import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
@@ -121,8 +123,8 @@ const DoctorTable = () => {
 
   const handleSearchChange = (event, value) => {
     setSearchQuery(value);
-    const filtered = doctors.filter(doctor => 
-      doctor.name.toLowerCase().includes(value.toLowerCase()) || 
+    const filtered = doctors.filter(doctor =>
+      doctor.name.toLowerCase().includes(value.toLowerCase()) ||
       doctor.phone.includes(value)
     );
     setFilteredDoctors(filtered);
@@ -140,7 +142,7 @@ const DoctorTable = () => {
         inputValue={searchQuery}
         onInputChange={handleSearchChange}
         renderInput={(params) => (
-          <TextField 
+          <TextField
             {...params}
             label="Tìm kiếm theo tên hoặc số điện thoại"
             variant="outlined"
@@ -282,7 +284,7 @@ const DoctorTable = () => {
             onChange={(e) => setNewDoctor({ ...newDoctor, name: e.target.value })}
             required
           />
-          <TextField
+          {/* <TextField
             margin="dense"
             id="gender"
             label="Giới tính"
@@ -291,7 +293,20 @@ const DoctorTable = () => {
             value={newDoctor.gender}
             onChange={(e) => setNewDoctor({ ...newDoctor, gender: e.target.value })}
             required
-          />
+          /> */}
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="gender-label">Giới tính</InputLabel>
+            <Select
+              labelId="gender-label"
+              id="gender"
+              value={newDoctor.gender}
+              onChange={(e) => setNewDoctor({ ...newDoctor, gender: e.target.value })}
+              label="Giới tính"
+            >
+              <MenuItem value="Male">Nam</MenuItem>
+              <MenuItem value="Female">Nữ</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             margin="dense"
             id="age"
