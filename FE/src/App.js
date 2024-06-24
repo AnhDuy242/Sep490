@@ -13,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/otp" element={<otp/>}/>
+      
       </Routes>
 
     </Router>
