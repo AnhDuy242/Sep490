@@ -39,7 +39,7 @@ export const fetchDoctors = async () => {
 export const loadDoctors = async (setDoctors, setLoading, setError) => {
   try {
     const data = await fetchDoctors(); // Gọi hàm fetchDoctors để lấy dữ liệu
-    setDoctors(data); // Cập nhật dữ liệu vào trạng thái
+    setDoctors(data.$values); // Cập nhật dữ liệu vào trạng thái
   } catch (error) {
     setError(error.message); // Cập nhật lỗi vào trạng thái
   } finally {
