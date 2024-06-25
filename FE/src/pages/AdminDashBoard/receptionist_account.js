@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Container, TextField, Button, IconButton, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, Checkbox, Dialog, DialogActions,
-    DialogContent, DialogTitle, Avatar, Typography, TablePagination, FormControl, InputLabel, Select, MenuItem, FormHelperText
+    DialogContent, DialogContentText, DialogTitle, Avatar, Typography, TablePagination, FormControl, InputLabel, Select, MenuItem, FormHelperText
 } from '@mui/material';
 import { Delete, Edit, Visibility } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
@@ -19,11 +19,15 @@ import './component/ReceptionistAccount.css'; // Import CSS
 const ReceptionistAccount = () => {
     const [accounts, setAccounts] = useState([]);
     const [selected, setSelected] = useState([]);
+    const [selected2,setSelected2] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchType, setSearchType] = useState('name');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [dialogOpen, setDialogOpen] = useState(false);
+    const [confirmOpen, setConfirmOpen] = useState(false); // State to manage confirmation dialog
+    const [confirmOpen2, setConfirmOpen2] = useState(false); // State to manage confirmation dialog
+
     const [currentAccount, setCurrentAccount] = useState(null);
     const [isEditMode, setIsEditMode] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -44,7 +48,7 @@ const ReceptionistAccount = () => {
             try {
                 setLoading(true);
                 await loadReceptionists((data) => {
-                    setAccounts(Array.isArray(data.$values) ? data.$values : []);
+                    setAccounts(Array.isArray(data) ? data : []);
                     setLoading(false);
                 }, setError);
             } catch (error) {
@@ -73,6 +77,7 @@ const ReceptionistAccount = () => {
             setSubmitting(false); // Stop submitting
         }
     };
+
     // Function to handle search input change
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
@@ -87,6 +92,7 @@ const ReceptionistAccount = () => {
     // Function to handle bulk deletion
     const handleBulkDelete = async () => {
         try {
+            setConfirmOpen(false); // Close confirmation dialog
             await deleteMultipleReceptionists(selected);
             setSelected([]);
             await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
@@ -126,20 +132,81 @@ const ReceptionistAccount = () => {
         setSelected(newSelected);
     };
 
-    // Function to handle deleting a single receptionist
-    const handleDelete = async (phone) => {
+    const handleDelete2 = async (account) => {
         try {
-            await deleteReceptionist(phone);
-            await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
+            setSelected2(account); // Store current receptionist in state for confirmation
+            console.log(account);
+            setConfirmOpen2(true); // Open confirmation dialog
+            
         } catch (error) {
             setError(error.message);
         }
     };
-
+    const handleConfirmDelete2 = async () => {
+        try {
+            console.log(selected2.phone);
+            await deleteReceptionist(selected2.phone); // Delete receptionist using stored phone number
+            await loadReceptionists((data) => {
+                setAccounts(Array.isArray(data) ? data : []);
+                setLoading(false);
+            }, setError); // Reload receptionist data
+            setConfirmOpen2(false); // Close confirmation dialog
+           setSelected2(null);
+        } catch (error) {
+            setError(error.message);
+        }
+    };
     // Function to handle closing the dialog
     const handleDialogClose = () => {
         setDialogOpen(false);
     };
+
+    // Function to handle closing the confirmation dialog
+    const handleConfirmClose = () => {
+        setConfirmOpen(false);
+    };
+
+    // Function to handle confirming deletion after dialog
+    const handleConfirmDelete = async () => {
+        try {
+            if (!selected || selected.length === 0) {
+                throw new Error("No receptionists selected for deletion.");
+            }
+            
+            if(selected.length>=2){
+                console.log('Delete more than 1');
+            await deleteMultipleReceptionists(selected); // Assuming deleteMultipleReceptionists handles an array of IDs or objects correctly
+            }else if(selected.length===1){
+                await deleteReceptionist(selected);
+            }
+            setSelected([]);
+            setConfirmOpen(false); // Close confirmation dialog
+            
+            await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
+        } catch (error) {
+            console.error("Error deleting receptionist(s):", error);
+            setError(error.message); // Set error state to display to the user
+        }
+    };
+    
+    const handleConfirmDelete22 = async () => {
+        try {
+            if (!currentAccount || currentAccount.length === 0) {
+                throw new Error("No receptionists selected for deletion.");
+            }
+                await deleteReceptionist(selected);
+            setAccounts([]);
+            setConfirmOpen(false); // Close confirmation dialog
+            
+            await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
+        } catch (error) {
+            console.error("Error deleting receptionist(s):", error);
+            setError(error.message); // Set error state to display to the user
+        }
+    };
+    
+    
+
 
     // Function to handle changing the current page in pagination
     const handlePageChange = (event, newPage) => {
@@ -198,7 +265,6 @@ const ReceptionistAccount = () => {
         }
         return true;
     });
-
     return (
         <div className="full-height-container">
             <Container className="full-height-container" maxWidth={false} style={{ marginLeft: 0 }}>
@@ -231,7 +297,7 @@ const ReceptionistAccount = () => {
                 <Button variant="contained" color="primary" onClick={() => { setIsEditMode(true); handleDialogOpen({}) }} style={{ marginBottom: '1rem' }}>
                     Add Account
                 </Button>
-                <Button variant="contained" color="secondary" onClick={handleBulkDelete} disabled={selected.length === 0} style={{ marginBottom: '1rem', marginLeft: '1rem' }}>
+                <Button variant="contained" color="secondary" onClick={()=> {;setConfirmOpen(true)}} disabled={selected.length === 0} style={{ marginBottom: '1rem', marginLeft: '1rem' }}>
                     Delete Selected
                 </Button>
 
@@ -281,7 +347,7 @@ const ReceptionistAccount = () => {
                                             <IconButton onClick={() => { handleDialogOpen(account); setIsEditMode(false); }}>
                                                 <Visibility />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDelete(account.phone)}>
+                                            <IconButton onClick={() => handleDelete2(account)}>
                                                 <Delete />
                                             </IconButton>
                                         </TableCell>
@@ -300,6 +366,52 @@ const ReceptionistAccount = () => {
                         />
                     </TableContainer>
                 )}
+                   {/* Confirmation Dialog for Delete  button*/}
+                   <Dialog
+                    open={confirmOpen}
+                    onClose={handleConfirmClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            Are you sure you want to delete this receptionist?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleConfirmClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirmDelete} color="primary" autoFocus>
+                            Confirm
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                 {/* Confirmation Dialog for Delete icon */}
+                 <Dialog
+                    open={confirmOpen2}
+                    onClose={handleConfirmClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
+                    <DialogContent>
+                        <DialogContentText id="alert-dialog-description">
+                            Are you sure you want to delete this receptionist?
+                        </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleConfirmClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleConfirmDelete2} color="primary" autoFocus>
+                            Confirm
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                                {/* Edit/Add Dialog */}
+
                 <Dialog open={dialogOpen} onClose={handleDialogClose}>
                     <DialogTitle>{!isEditMode ? 'Edit Account' : 'Add Account'}</DialogTitle>
                     <DialogContent>

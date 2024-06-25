@@ -53,7 +53,7 @@ export const deleteReceptionist = async (phone) => {
     const response = await fetch(`${BASE_URL}/${phone}`, {
       method: 'DELETE',
     });
-
+    
     if (!response.ok) {
       throw new Error(`Failed to delete receptionist with phone ${phone}`);
     }
@@ -86,19 +86,26 @@ export const addReceptionist = async (receptionist) => {
 
 export const deleteMultipleReceptionists = async (phones) => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ phones }), // Gửi một đối tượng JSON chứa mảng các số điện thoại cần xóa
-    });
+    const deletePromises = phones.map((phone) =>
+      fetch(`${BASE_URL}/${phone}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+    );
 
-    if (!response.ok) {
-      throw new Error('Failed to delete receptionists');
-    }
+    const responses = await Promise.all(deletePromises);
+
+    responses.forEach((response) => {
+      if (!response.ok) {
+        throw new Error('Failed to delete one or more receptionists');
+      }
+    });
   } catch (error) {
     console.error('Error deleting receptionists:', error);
     throw error;
   }
 };
+
+

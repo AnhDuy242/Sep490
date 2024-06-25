@@ -81,12 +81,35 @@ namespace BE.Controllers.Admin
 
         // POST api/<ReceptionistController>
         [HttpPost]
-            public void Post([FromBody] string value)
+        public async Task<ActionResult<ReceptionistAccount>> PostReceptionistAccount([FromBody] ReceptionistAccount receptionistAccount)
+        {
+            var account = new Account
             {
-            }
+                Email = receptionistAccount.Email,
+                Phone = receptionistAccount.Phone,
+                Password = receptionistAccount.Password,
+                RoleId = 3 // Giả định RoleId cho receptionist là 3
+            };
 
-            // PUT api/<ReceptionistController>/5
-            [HttpPut("{id}")]
+            var receptionist = new Receptionist
+            {
+                Phone = receptionistAccount.Phone,
+                Name = receptionistAccount.Name,
+                Gender = receptionistAccount.Gender,
+                Age = receptionistAccount.Age
+            };
+
+            _context.Accounts.Add(account);
+            _context.Receptionists.Add(receptionist);
+
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetReceptionistAccount), new { phone = receptionistAccount.Phone }, receptionistAccount);
+        }
+
+
+        // PUT api/<ReceptionistController>/5
+        [HttpPut("{id}")]
             public void Put(int id, [FromBody] string value)
             {
             }
