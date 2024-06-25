@@ -4,23 +4,39 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 ﻿
+
+﻿using CloudinaryDotNet;
 using BE.Service;
+﻿using BE.Service;
 using Twilio.Clients;
 using Twilio;
 using Microsoft.Extensions.Options;
 using BE.Models;
 using Microsoft.EntityFrameworkCore;
+using CloudinaryDotNet;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
 // Add services to the container.
+
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.Preserve;
+});
+
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// Thêm dịch vụ vào container
 builder.Services.AddControllers();
+// Thêm Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 // Đăng ký DbContext
 builder.Services.AddDbContext<Alo2Context>(options =>
-options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-// Configure Twilio
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Cấu hình Twilio
 builder.Services.AddSingleton<ISMSService>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
@@ -72,12 +88,42 @@ builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
+
+// Cấu hình AutoMapper
+builder.Services.AddAutoMapper(typeof(Program));
+
+// Configure Cloudinary
+var cloudinaryAccount = new CloudinaryDotNet.Account(
+    builder.Configuration["Cloudinary:CloudName"],
+    builder.Configuration["Cloudinary:ApiKey"],
+    builder.Configuration["Cloudinary:ApiSecret"]
+);
+var cloudinary = new Cloudinary(cloudinaryAccount);
+builder.Services.AddSingleton(cloudinary);
+// Cấu hình CORS cho phép tất cả mọi thứ
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policyBuilder =>
+    {
+        policyBuilder.AllowAnyOrigin()    // Cho phép mọi nguồn gốc
+                      .AllowAnyMethod()    // Cho phép mọi phương thức HTTP
+                      .AllowAnyHeader();   // Cho phép mọi loại header
+    });
+});
+
+var app = builder.Build();
+
+// Cấu hình middleware của ứng dụng
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
 app.UseCors("AllowAllOrigins");
+
+// Áp dụng chính sách CORS
+app.UseCors("AllowAll");
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -85,4 +131,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-

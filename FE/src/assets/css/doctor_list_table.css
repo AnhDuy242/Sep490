@@ -1,0 +1,59 @@
+/* table_styles.css */
+
+.table_list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    /* Thêm các thuộc tính CSS khác tại đây để tạo kiểu cho bảng */
+  }
+  
+  .table_list th,
+  .table_list td {
+    padding: 10px;
+    text-align: left;
+    border: 1px solid #ddd;
+    /* Thêm các thuộc tính CSS khác cho các cột */
+  }
+  
+  .table_list th {
+    background-color: #f2f2f2;
+    /* Tạo kiểu cho header của bảng */
+  }
+  
+  .table_list tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+    /* Tạo kiểu cho hàng chẵn của bảng */
+  }
+  
+  .table_list tbody tr:hover {
+    background-color: #e0e0e0;
+    /* Tạo kiểu khi hover vào hàng của bảng */
+  }
+  
+  .btn_add {
+    background-color: blue !important; /* Green background */
+    color: white !important;             /* White text color */
+    margin-right: 10px !important;       /* Margin to separate buttons */
+    padding: 10px 20px !important;       /* Padding inside the button */
+    text-transform: none !important;     /* Keep text in original case */
+    border-radius: 4px;                  /* Rounded corners */
+    transition: background-color 0.3s;   /* Smooth background color transition */
+    margin: 20px 20px 20px 0px !important;
+  }
+  
+  .btn_add:hover {
+    background-color: #45A049 !important; /* Darker green on hover */
+  }
+  
+  .btn_delete {
+    background-color: #f44336 !important; /* Red background */
+    color: white !important;              /* White text color */
+    padding: 10px 20px !important;        /* Padding inside the button */
+    text-transform: none !important;      /* Keep text in original case */
+    border-radius: 4px;                   /* Rounded corners */
+    transition: background-color 0.3s;    /* Smooth background color transition */
+  }
+  
+  .btn_delete:hover {
+    background-color: #e53935 !important; /* Darker red on hover */
+  }

@@ -19,8 +19,6 @@ namespace BE.Controllers.Admin
             _context = context;
         }
         // GET: api/<EmployeeController>
-        [HttpGet]
-        
 
         // GET api/<EmployeeController>/5
         [HttpGet("{id}")]
@@ -122,15 +120,6 @@ namespace BE.Controllers.Admin
             return true;
         }
         // PUT api/<EmployeeController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<EmployeeController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+       
     }
 }

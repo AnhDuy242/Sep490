@@ -67,8 +67,7 @@ public partial class Alo2Context : DbContext
             optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
         }
     }
-
-protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
         {
