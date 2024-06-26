@@ -86,11 +86,9 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddAuthorization();
 
-var app = builder.Build();
 
 
 // Cấu hình AutoMapper
-builder.Services.AddAutoMapper(typeof(Program));
 
 // Configure Cloudinary
 var cloudinaryAccount = new CloudinaryDotNet.Account(
@@ -110,6 +108,7 @@ builder.Services.AddCors(options =>
                       .AllowAnyHeader();   // Cho phép mọi loại header
     });
 });
+builder.Services.AddAutoMapper(typeof(Program));
 
 var app = builder.Build();
 

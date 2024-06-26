@@ -1,23 +1,21 @@
-// import logo from './logo.svg';
-import './App.css';
-
-import Home from './pages/Home';
-import Header from '../src/layouts/ForgotPassword'
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import ForgotPassword from '../src/layouts/ForgotPassword';
-import PopupNotification from '../src/layouts/PopupNotification';
-import AdminDashBoard from './pages/AdminDashBoard';
-function App() {
+import Home from './pages/Home';
+import AdminDash from '../src/pages/AdminDashBoard/index'; // Sửa lại đường dẫn nếu cần
+import DoctorAccount from './pages/AdminDashBoard/doctor_account'; // Điều chỉnh đường dẫn tùy vào cấu trúc project của bạn
+import ReceptionistAccount from './pages/AdminDashBoard/receptionist_account'; // Điều chỉnh đường dẫn tùy vào cấu trúc project của bạn
 
+function App() {
   return (
-    <Router>
+  
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/otp" element={<otp/>}/>
-        <Route path='/admin/dashboard' element={<AdminDashBoard/>}/>
+        <Route path="/admin/dashboard" element={<AdminDash />}>
+          <Route path="doctor-account" element={<DoctorAccount />} />
+          <Route path="receptionist-account" element={<ReceptionistAccount />} />
+        </Route>
       </Routes>
-
-    </Router>
+  
   );
 }
 

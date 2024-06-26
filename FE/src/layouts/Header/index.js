@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate,Navigate } from 'react-router-dom';
 import '../Header/header.css';
 import NavLogo from '../../assets/images/images.png';
 import { login, logout } from '../../services/Authentication';
@@ -15,6 +15,7 @@ import {
 import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
 
+
 const tokenTimeout = 10000; // 1 hour in milliseconds
 
 function Header() {
@@ -22,6 +23,7 @@ function Header() {
   const [showRegister, setShowRegister] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
+  const [role, setRole] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,6 +35,8 @@ function Header() {
       if (tokenAge < tokenTimeout) {
         setToken(storedToken);
         setIsLoggedIn(true);
+        const decoded = jwtDecode(storedToken);
+        setRole(decoded.role);
       } else {
         handleTokenExpiration();
       }
@@ -45,12 +49,15 @@ function Header() {
     localStorage.removeItem('tokenTimestamp');
     setToken(null);
     setIsLoggedIn(false);
+    setRole(null);
     navigate('/');
   };
 
   const updateToken = (token) => {
     setToken(token);
     setIsLoggedIn(true);
+    const decoded = jwtDecode(token);
+    setRole(decoded.role);
     localStorage.setItem('token', token);
     localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
     setTimeout(handleTokenExpiration, tokenTimeout);
@@ -66,25 +73,7 @@ function Header() {
     try {
       const { token } = await login(username, password);
       updateToken(token);
-
-      // Decode the token here using jwtDecode
-      const decoded = jwtDecode(token);
-      console.log(decoded);
-      console.log(decoded);
-      if(decoded.role ==='Admin'){
-        navigate('/admin/dashboard');
-        console.log('Da toi admmin dashboard');
-
-      }
-      else if(decoded.role ==='Patient'){
-        navigate('/');
-        console.log('Da toi patient dashboard');
-      }
-      else{
-        console.log('Chua biet la role gi');
-      }
       handleCloseLogin();
-      navigate('/');
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -96,6 +85,7 @@ function Header() {
     localStorage.removeItem('tokenTimestamp');
     setToken(null);
     setIsLoggedIn(false);
+    setRole(null);
     navigate('/');
   };
 
@@ -112,7 +102,6 @@ function Header() {
       if (response.ok) {
         const data = await response.json();
         console.log('Register successful', data);
-        // Optionally log in the user after successful registration
       } else {
         console.log('Register failed');
       }
@@ -125,6 +114,9 @@ function Header() {
 
   return (
     <>
+      {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
+      {role === 'Patient' && <Navigate to="/patient/dashboard/receptionist-account" replace={true} />}
+      
       <AppBar position="static" color="default">
         <Toolbar>
           <NavLink to="/" className="nav__logo">
