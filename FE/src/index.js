@@ -6,12 +6,14 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import Sidebar from './pages/AdminDashBoard/component/side_bar';
 import AdminDash from './pages/AdminDashBoard'
+import View_appointment from './pages/AdminDashBoard/view_appoiment_admin';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     {/* <App /> */}
     {/* <Sidebar/> */}
-    <AdminDash/>
+    <View_appointment/>
+    {/* <AdminDash/> */}
   </React.StrictMode>
 );
 
