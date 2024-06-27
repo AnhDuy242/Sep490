@@ -141,6 +141,7 @@ const ReceptionistAccount = () => {
                 justifyContent: 'center',
                 alignItems: 'center',
                 backgroundColor: '#f0f0f0', // Temporary background color
+                position:'relative'
             }}>
             <Typography variant="h4" style={{ marginBottom: '1rem' }}>Receptionist Manager</Typography>
             <Container style={{ display: 'flex', marginBottom: '1rem' }}>

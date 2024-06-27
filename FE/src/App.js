@@ -7,15 +7,15 @@ import ReceptionistAccount from './pages/AdminDashBoard/receptionist_account'; /
 
 function App() {
   return (
-  
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/admin/dashboard" element={<AdminDash />}>
-          <Route path="doctor-account" element={<DoctorAccount />} />
-          <Route path="receptionist-account" element={<ReceptionistAccount />} />
-        </Route>
-      </Routes>
-  
+
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/admin/dashboard" element={<AdminDash/>}>
+        <Route path="doctor-account" element={<DoctorAccount/>} />
+        <Route path="receptionist-account" element={<ReceptionistAccount/>} />
+      </Route>
+    </Routes>
+
   );
 }
 
