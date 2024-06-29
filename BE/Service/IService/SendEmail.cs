@@ -3,7 +3,7 @@ using SendGrid;
 using System.Net.Mail;
 using System.Net;
 
-namespace BE.Service
+namespace BE.Service.IService
 {
     public class SendEmail
     {
@@ -20,20 +20,20 @@ namespace BE.Service
             _smtpPass = smtpPass;
         }
 
-        public  Task SendEmailAsync(string toEmail, string subject, string body)
+        public Task SendEmailAsync(string toEmail, string subject, string body)
         {
             var mail = "uchihad.saitama@gmail.com";
             var pw = "denhokhongdau123@@";
 
             var client = new SmtpClient("smtp.gmail.com", 587)
             {
-               
+
                 EnableSsl = true,
                 Credentials = new NetworkCredential(mail, pw)
             };
             client.UseDefaultCredentials = false;
             return client.SendMailAsync(
-                new MailMessage(from:mail, to:toEmail, subject, body));
+                new MailMessage(from: mail, to: toEmail, subject, body));
         }
     }
 }
