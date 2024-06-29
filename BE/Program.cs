@@ -14,6 +14,7 @@ using Microsoft.Extensions.Options;
 using BE.Models;
 using Microsoft.EntityFrameworkCore;
 using CloudinaryDotNet;
+using BE.Service.IService;
 
 var builder = WebApplication.CreateBuilder(args);
 
