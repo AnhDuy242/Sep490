@@ -1,7 +1,5 @@
 ﻿using BE.Service;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace BE.Controllers.Authentication
 {

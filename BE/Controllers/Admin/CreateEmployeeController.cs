@@ -1,5 +1,5 @@
-﻿using BE.Models;
-using BE.Models.DTOs;
+﻿using BE.DTOs;
+using BE.Models;
 using BE.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
