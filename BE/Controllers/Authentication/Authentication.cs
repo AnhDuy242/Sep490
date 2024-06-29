@@ -1,4 +1,4 @@
-﻿using BE.Models.DTOs;
+﻿using BE.DTOs;
 using BE.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
