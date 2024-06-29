@@ -5,7 +5,7 @@ namespace BE.Models;
 
 public partial class Doctor
 {
-    public int Id { get; set; }
+    public int DocId { get; set; }
 
     public string Name { get; set; } = null!;
 
@@ -13,17 +13,17 @@ public partial class Doctor
 
     public int Age { get; set; }
 
-    public string Phone { get; set; } = null!;
-
-    public int DepartmentId { get; set; }
-
-    public virtual ICollection<Answer> Answers { get; } = new List<Answer>();
+    public int DepId { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; } = new List<Appointment>();
 
-    public virtual Department Department { get; set; } = null!;
+    public virtual ICollection<Blog> Blogs { get; } = new List<Blog>();
 
-    public virtual ICollection<Notification> Notifications { get; } = new List<Notification>();
+    public virtual Department Dep { get; set; } = null!;
+
+    public virtual Account Doc { get; set; } = null!;
+
+    public virtual ICollection<Question> Questions { get; } = new List<Question>();
 
     public virtual ICollection<Schedule> Schedules { get; } = new List<Schedule>();
 }

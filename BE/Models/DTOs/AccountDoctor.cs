@@ -2,6 +2,7 @@
 {
     public class AccountDoctor
     {
+        public int AccId { get; set; }
         public string? Email { get; set; }
 
         public string Phone { get; set; } = null!;

@@ -5,17 +5,15 @@ namespace BE.Models;
 
 public partial class Receptionist
 {
-    public int Id { get; set; }
+    public int RecepId { get; set; }
 
     public string Name { get; set; } = null!;
 
     public string Gender { get; set; } = null!;
 
-    public int Age { get; set; }
+    public DateTime Dob { get; set; }
 
-    public string Phone { get; set; } = null!;
+    public virtual ICollection<FeedbackRe> FeedbackRes { get; } = new List<FeedbackRe>();
 
-    public virtual ICollection<Feedback> Feedbacks { get; } = new List<Feedback>();
-
-    public virtual ICollection<Notification> Notifications { get; } = new List<Notification>();
+    public virtual Account Recep { get; set; } = null!;
 }

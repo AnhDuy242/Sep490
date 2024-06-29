@@ -27,7 +27,7 @@ namespace BE.Controllers.Article_Manager
         public async Task<IActionResult> GetAllBlogs()
         {
             var blogs = await _context.Blogs
-                .Include(b => b.BlogInfo)
+                .Include(b => b.Imgs)
                 .ToListAsync();
 
             return Ok(blogs);
@@ -40,8 +40,8 @@ namespace BE.Controllers.Article_Manager
         public async Task<IActionResult> GetBlogById(int id)
         {
             var blog = await _context.Blogs
-                .Include(b => b.BlogInfo)
-                .FirstOrDefaultAsync(b => b.Id == id);
+                .Include(b => b.Imgs)
+                .FirstOrDefaultAsync(b => b.BlogId == id);
 
             if (blog == null)
             {
@@ -53,16 +53,16 @@ namespace BE.Controllers.Article_Manager
 
 
         // POST api/<BlogController>
-        [HttpPost]
         //bắt buộc phải điền tất cả các trường, ảnh đang để dạng array nên hơi daubuoi tí, theo như code thì nó sẽ lấy bức ảnh đầu tiên upload lên
         //để làm thumbnail, và lấy ảnh từ đầu đến cuối để làm content
+        [HttpPost]
         public async Task<IActionResult> CreateBlog([FromForm] BlogCreationModel model)
         {
             try
             {
                 var uploadResults = new List<string>();
 
-                // Upload images to Cloudinary
+                // Upload images to Cloudinary and collect URLs
                 foreach (var file in model.Files)
                 {
                     if (file.Length > 0)
@@ -73,7 +73,7 @@ namespace BE.Controllers.Article_Manager
                             File = new FileDescription(file.FileName, stream),
                             PublicId = $"Home/Image/BlogImage/{file.FileName}"
                         };
-                        var uploadResult = _cloudinary.Upload(uploadParams);
+                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
                         uploadResults.Add(uploadResult.SecureUrl.ToString());
                     }
                 }
@@ -82,42 +82,43 @@ namespace BE.Controllers.Article_Manager
                 var blog = new Blog
                 {
                     Title = model.Title,
-                    DoctorId = model.DoctorId,
+                    DocId = model.DoctorId,
+                    Content = model.Content,
                     Date = DateTime.Now,
                     Thumbnail = uploadResults.FirstOrDefault(), // Assign the first uploaded image as thumbnail
-                    AuthorId = model.AuthorId,
-                    BlogInfo = new BlogInfo
-                    {
-                        Content = model.Content,
-                        Img1 = uploadResults.ElementAtOrDefault(0), // Assign images to Img1, Img2, ...
-                        Img2 = uploadResults.ElementAtOrDefault(1),
-                        Img3 = uploadResults.ElementAtOrDefault(2),
-                        Img4 = uploadResults.ElementAtOrDefault(3),
-                        Img5 = uploadResults.ElementAtOrDefault(4)
-                    }
+                    AId = model.AuthorId
+                    // Initialize the collection
                 };
 
+                // Add images to the blog
+                foreach (var url in uploadResults)
+                {
+                    blog.Imgs.Add(new Img { ImgUrl = url });
+                }
+
                 // Add blog to DbContext and save changes
-                _context.Blogs.Add(blog);
+                await _context.Blogs.AddAsync(blog);
                 await _context.SaveChangesAsync();
 
                 return Ok(new { message = "Blog created successfully", blog });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.Message}");
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.InnerException?.Message ?? ex.Message}");
             }
         }
 
 
+
+
         // PUT api/<BlogController>/5
         [HttpPut("{id}")]
-        //update thì note cũng tương tự create
         public async Task<IActionResult> UpdateBlog(int id, [FromForm] BlogCreationModel model)
         {
+            // Lấy blog cùng với các hình ảnh hiện tại
             var blog = await _context.Blogs
-                .Include(b => b.BlogInfo)
-                .FirstOrDefaultAsync(b => b.Id == id);
+                .Include(b => b.Imgs)
+                .FirstOrDefaultAsync(b => b.BlogId == id);
 
             if (blog == null)
             {
@@ -126,6 +127,7 @@ namespace BE.Controllers.Article_Manager
 
             var uploadResults = new List<string>();
 
+            // Tải lên các hình ảnh mới lên Cloudinary
             foreach (var file in model.Files)
             {
                 if (file.Length > 0)
@@ -133,28 +135,36 @@ namespace BE.Controllers.Article_Manager
                     using var stream = file.OpenReadStream();
                     var uploadParams = new ImageUploadParams()
                     {
-                        File = new FileDescription(file.FileName, stream)
+                        File = new FileDescription(file.FileName, stream),
+                        PublicId = $"Home/Image/BlogImage/{file.FileName}"
                     };
                     var uploadResult = _cloudinary.Upload(uploadParams);
                     uploadResults.Add(uploadResult.SecureUrl.ToString());
                 }
             }
 
+            // Cập nhật các thông tin của blog
             blog.Title = model.Title;
-            blog.DoctorId = model.DoctorId;
+            blog.DocId = model.DoctorId;
+            blog.Content = model.Content;
+            blog.Date = DateTime.Now;
             blog.Thumbnail = uploadResults.FirstOrDefault();
-            blog.BlogInfo.Content = model.Content;
-            blog.BlogInfo.Img1 = uploadResults.ElementAtOrDefault(0);
-            blog.BlogInfo.Img2 = uploadResults.ElementAtOrDefault(1);
-            blog.BlogInfo.Img3 = uploadResults.ElementAtOrDefault(2);
-            blog.BlogInfo.Img4 = uploadResults.ElementAtOrDefault(3);
-            blog.BlogInfo.Img5 = uploadResults.ElementAtOrDefault(4);
+            blog.AId = model.AuthorId;
 
+            // Xóa các hình ảnh cũ và thêm các hình ảnh mới
+            blog.Imgs.Clear();
+            foreach (var url in uploadResults)
+            {
+                blog.Imgs.Add(new Img { ImgUrl = url });
+            }
+
+            // Cập nhật blog trong DbContext và lưu thay đổi
             _context.Blogs.Update(blog);
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Blog updated successfully", blog });
         }
+
 
 
         // DELETE api/<BlogController>/5
@@ -164,18 +174,22 @@ namespace BE.Controllers.Article_Manager
             using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var blog = await _context.Blogs.FindAsync(id);
+                var blog = await _context.Blogs
+                    .Include(b => b.Imgs)
+                    .FirstOrDefaultAsync(b => b.BlogId == id);
+
                 if (blog == null)
                 {
                     return NotFound(new { message = "Blog not found" });
                 }
 
-                var blogInfo = await _context.BlogInfos.FindAsync(id);
-                if (blogInfo != null)
+                // Xóa các hình ảnh liên quan đến blog
+                if (blog.Imgs.Any())
                 {
-                    _context.BlogInfos.Remove(blogInfo);
+                    _context.Imgs.RemoveRange(blog.Imgs);
                 }
 
+                // Xóa blog
                 _context.Blogs.Remove(blog);
                 await _context.SaveChangesAsync();
 

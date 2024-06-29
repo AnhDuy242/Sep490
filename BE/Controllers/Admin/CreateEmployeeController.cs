@@ -14,7 +14,8 @@ namespace BE.Controllers.Admin
     {
         private readonly Alo2Context _context;
         private readonly ISMSService _smsService;
-        public CreateEmployeeController(ISMSService smsService, Alo2Context context) {
+        public CreateEmployeeController(ISMSService smsService, Alo2Context context)
+        {
             _smsService = smsService;
             _context = context;
         }
@@ -22,81 +23,84 @@ namespace BE.Controllers.Admin
 
         // GET api/<EmployeeController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public string TestGet(int id)
         {
             return "value";
         }
 
         // POST api/<EmployeeController>
-            [HttpPost]
-            public async Task<ActionResult<Employee>> CreateEmployee(Employee model)
+        [HttpPost]
+        public async Task<ActionResult<Employee>> CreateEmployee(Employee model)
+        {
+            if (!ModelState.IsValid)
             {
-                if (!ModelState.IsValid)
-                {
-                    return BadRequest(ModelState);
-                }
-                if (!CheckPhoneNumberExist(model.Phone))
-                {
-                    return BadRequest(new { message = "Số điện thoại đã tồn tại" });
-                }
+                return BadRequest(ModelState);
+            }
+            if (!CheckPhoneNumberExist(model.Phone))
+
+            {
+                return BadRequest(new { message = "Số điện thoại đã tồn tại" });
+            }
 
             string password = GenerateRandomPassword();
-                string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
+            string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
 
-            
 
-                if (model.Role == "Doctor")
+
+            if (model.Role == "Doctor")
+            {
+                Account account = new Account
                 {
-                    Doctor doctor = new Doctor
-                    {
-                        Name = model.Name,
-                        Gender = model.Gender,
-                        Phone = model.Phone,
-                        Age = model.Age,
-                        DepartmentId = 1
-                    };
-
-                    Account account = new Account
-                    {
-                        Phone = model.Phone,
-                        Password = password,
-                        RoleId = 2
-                    };
+                    Phone = model.Phone,
+                    Password = password,
+                    RoleId = 2
+                };
                 await _context.Accounts.AddAsync(account);
-                await _context.Doctors.AddAsync(doctor);
-                    // Lưu thông tin bác sĩ vào database
-                }
-                else if (model.Role == "Receptionist")
-                {
-                    Receptionist receptionist = new Receptionist
-                    {
-                        Name = model.Name,
-                        Gender = model.Gender,
-                        Phone = model.Phone,
-                        Age = model.Age
-                    };
-                    Account account = new Account
-                    {
-                        Phone = model.Phone,
-                        Password = password,
-                        RoleId = 4
-                    };
-                await _context.Accounts.AddAsync(account);
-                await _context.Receptionists.AddAsync(receptionist);
-                    // Lưu thông tin nhân viên lễ tân vào database
-                }
-
-            
                 await _context.SaveChangesAsync();
-
-                // Gửi tin nhắn SMS cho nhân viên mới đăng ký
-                await _smsService.SendSmsAsync(
-                    "+84" + model.Phone.Substring(1),
-                    $"Chào mừng {model.Name} đến với MedPal! Mật khẩu của bạn là: {password}. Vui lòng truy cập {resetPasswordUrl} để đổi mật khẩu.");
-
-                //return CreatedAtAction(nameof(Get), new { id = employee.Id }, employee);
-                return CreatedAtAction(nameof(Get), new { id = model.Id }, model);
+                Doctor doctor = new Doctor
+                {
+                    DocId = account.AccId,
+                    Name = model.Name,
+                    Gender = model.Gender,
+                    Age = model.Age,
+                    DepId = 1
+                };
+                await _context.Doctors.AddAsync(doctor);
+                // Lưu thông tin bác sĩ vào database
             }
+            else if (model.Role == "Receptionist")
+            {
+                
+                Account account = new Account
+                {
+                    Phone = model.Phone,
+                    Password = password,
+                    RoleId = 4
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.SaveChangesAsync();
+                Receptionist receptionist = new Receptionist
+                {
+                    RecepId = account.AccId,
+                    Name = model.Name,
+                    Gender = model.Gender,
+                    Dob = model.Dob
+                };
+                await _context.Receptionists.AddAsync(receptionist);
+                // Lưu thông tin nhân viên lễ tân vào database
+            }
+
+            await _context.SaveChangesAsync();
+
+
+            // Gửi tin nhắn SMS cho nhân viên mới đăng ký
+            await _smsService.SendSmsAsync(
+                "+84" + model.Phone.Substring(1),
+                $"Chào mừng {model.Name} đến với MedPal! Mật khẩu của bạn là: {password}. Vui lòng truy cập {resetPasswordUrl} để đổi mật khẩu.");
+
+            //return CreatedAtAction(nameof(Get), new { id = employee.Id }, employee);
+            return CreatedAtAction(nameof(TestGet), new { id = model.Id }, model);
+        }
 
         private string GenerateRandomPassword()
         {
@@ -112,14 +116,14 @@ namespace BE.Controllers.Admin
             List<Account> accounts = _context.Accounts.ToList();
             foreach (var account in accounts)
             {
-                if(account.Phone == phoneNumber)
+                if (account.Phone == phoneNumber)
                 {
                     return false;
                 }
             }
             return true;
         }
-        // PUT api/<EmployeeController>/5
+        
        
     }
 }

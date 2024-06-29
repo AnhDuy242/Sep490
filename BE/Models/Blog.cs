@@ -5,19 +5,23 @@ namespace BE.Models;
 
 public partial class Blog
 {
-    public int Id { get; set; }
+    public int BlogId { get; set; }
+
+    public string Content { get; set; } = null!;
 
     public string Title { get; set; } = null!;
 
-    public int DoctorId { get; set; }
+    public int DocId { get; set; }
 
     public DateTime Date { get; set; }
 
-    public string Thumbnail { get; set; } = null!;
+    public string? Thumbnail { get; set; }
 
-    public int AuthorId { get; set; }
+    public int AId { get; set; }
 
-    public virtual ArticleManager Author { get; set; } = null!;
+    public virtual ArticleManager AIdNavigation { get; set; } = null!;
 
-    public virtual BlogInfo? BlogInfo { get; set; }
+    public virtual Doctor Doc { get; set; } = null!;
+
+    public virtual ICollection<Img> Imgs { get; } = new List<Img>();
 }

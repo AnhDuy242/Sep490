@@ -5,9 +5,9 @@ namespace BE.Models;
 
 public partial class Img
 {
-    public int Id { get; set; }
+    public int ImgId { get; set; }
 
-    public string Img1 { get; set; } = null!;
+    public string ImgUrl { get; set; } = null!;
 
-    public virtual ICollection<BlogInfo> Blogs { get; } = new List<BlogInfo>();
+    public virtual ICollection<Blog> Blogs { get; } = new List<Blog>();
 }

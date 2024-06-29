@@ -5,7 +5,7 @@ namespace BE.Models;
 
 public partial class Slot
 {
-    public int Id { get; set; }
+    public int SlotId { get; set; }
 
     public string Time { get; set; } = null!;
 
