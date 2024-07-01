@@ -69,6 +69,7 @@ public partial class Alo2Context : DbContext
             entity.Property(e => e.Email)
                 .IsUnicode(false)
                 .HasColumnName("email");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Password)
                 .IsUnicode(false)
                 .HasColumnName("password");
@@ -95,8 +96,8 @@ public partial class Alo2Context : DbContext
                 .HasColumnName("dob");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("gender");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .HasColumnName("name");
@@ -119,10 +120,7 @@ public partial class Alo2Context : DbContext
             entity.Property(e => e.Note).HasColumnName("note");
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
             entity.Property(e => e.SlotId).HasColumnName("slot_id");
-            entity.Property(e => e.Status)
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("status");
+            entity.Property(e => e.Status).HasColumnName("status");
 
             entity.HasOne(d => d.Doctor).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.DoctorId)
@@ -154,8 +152,8 @@ public partial class Alo2Context : DbContext
                 .HasColumnName("dob");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("gender");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
 
             entity.HasOne(d => d.AIdNavigation).WithOne(p => p.ArticleManager)
@@ -187,23 +185,6 @@ public partial class Alo2Context : DbContext
                 .HasForeignKey(d => d.DocId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Blog_Doctor");
-
-            entity.HasMany(d => d.Imgs).WithMany(p => p.Blogs)
-                .UsingEntity<Dictionary<string, object>>(
-                    "BlogImg",
-                    r => r.HasOne<Img>().WithMany()
-                        .HasForeignKey("ImgId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_Blog_img_Img"),
-                    l => l.HasOne<Blog>().WithMany()
-                        .HasForeignKey("BlogId")
-                        .OnDelete(DeleteBehavior.ClientSetNull)
-                        .HasConstraintName("FK_Blog_img_Blog"),
-                    j =>
-                    {
-                        j.HasKey("BlogId", "ImgId");
-                        j.ToTable("Blog_img");
-                    });
         });
 
         modelBuilder.Entity<Department>(entity =>
@@ -213,10 +194,8 @@ public partial class Alo2Context : DbContext
             entity.ToTable("Department");
 
             entity.Property(e => e.DepId).HasColumnName("dep_id");
-            entity.Property(e => e.Name)
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("name");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
+            entity.Property(e => e.Name).HasColumnName("name");
         });
 
         modelBuilder.Entity<Doctor>(entity =>
@@ -232,8 +211,8 @@ public partial class Alo2Context : DbContext
             entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("gender");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
 
             entity.HasOne(d => d.Dep).WithMany(p => p.Doctors)
@@ -276,10 +255,7 @@ public partial class Alo2Context : DbContext
             entity.Property(e => e.ResId)
                 .ValueGeneratedNever()
                 .HasColumnName("res_id");
-            entity.Property(e => e.Content)
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("content");
+            entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.Date)
                 .HasColumnType("date")
                 .HasColumnName("date");
@@ -302,7 +278,14 @@ public partial class Alo2Context : DbContext
             entity.ToTable("Img");
 
             entity.Property(e => e.ImgId).HasColumnName("img_id");
-            entity.Property(e => e.ImgUrl).HasColumnName("img_url");
+            entity.Property(e => e.BlogId).HasColumnName("blog_id");
+            entity.Property(e => e.ImgUrl)
+                .IsUnicode(false)
+                .HasColumnName("img_url");
+
+            entity.HasOne(d => d.Blog).WithMany(p => p.Imgs)
+                .HasForeignKey(d => d.BlogId)
+                .HasConstraintName("FK_Img_Blog");
         });
 
         modelBuilder.Entity<MedicalNotebook>(entity =>
@@ -311,11 +294,17 @@ public partial class Alo2Context : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Diagnostic).HasColumnName("diagnostic");
+            entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
             entity.Property(e => e.Prescription).HasColumnName("prescription");
             entity.Property(e => e.TestResult)
                 .IsUnicode(false)
                 .HasColumnName("test_result");
+
+            entity.HasOne(d => d.Doctor).WithMany(p => p.MedicalNotebooks)
+                .HasForeignKey(d => d.DoctorId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Medical_notebook_Doctor");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.MedicalNotebooks)
                 .HasForeignKey(d => d.PatientId)
@@ -336,8 +325,8 @@ public partial class Alo2Context : DbContext
                 .HasColumnName("dob");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("gender");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
 
             entity.HasOne(d => d.PatientNavigation).WithOne(p => p.Patient)
@@ -389,7 +378,6 @@ public partial class Alo2Context : DbContext
                 .HasColumnName("dob");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
-                .IsUnicode(false)
                 .HasColumnName("gender");
             entity.Property(e => e.Name).HasColumnName("name");
 
@@ -441,6 +429,7 @@ public partial class Alo2Context : DbContext
 
             entity.Property(e => e.ServiceId).HasColumnName("service_id");
             entity.Property(e => e.DepId).HasColumnName("dep_id");
+            entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
             entity.Property(e => e.Price)
                 .HasColumnType("money")

@@ -9,5 +9,7 @@ public partial class Img
 
     public string ImgUrl { get; set; } = null!;
 
-    public virtual ICollection<Blog> Blogs { get; } = new List<Blog>();
+    public int? BlogId { get; set; }
+
+    public virtual Blog? Blog { get; set; }
 }

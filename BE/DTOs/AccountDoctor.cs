@@ -17,6 +17,7 @@
         public int Age { get; set; }
 
         public string DepartmentName { get; set; } = null!;
+        public bool? IsActive { get; set; }
 
     }
 }

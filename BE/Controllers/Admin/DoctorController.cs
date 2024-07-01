@@ -52,7 +52,8 @@ namespace BE.Controllers.Admin
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
                         // Các thuộc tính khác của Account
-                        DepartmentName = department.Name
+                        DepartmentName = department.Name,
+                        IsActive = accountDoctor.account.IsActive
                     }
                 )
                 .ToListAsync();
@@ -94,7 +95,8 @@ namespace BE.Controllers.Admin
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
                         // Các thuộc tính khác của Account
-                        DepartmentName = department.Name
+                        DepartmentName = department.Name,
+                        IsActive = accountDoctor.account.IsActive
                     }
                 )
                 .Where(a => a.Phone.Equals(phone))
@@ -111,7 +113,7 @@ namespace BE.Controllers.Admin
         
 
         // DELETE api/<DoctorController>/5
-        [HttpDelete("{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> DeleteMember(int id)
         {
             if (_context.Accounts == null || _context.Doctors == null)
@@ -124,13 +126,16 @@ namespace BE.Controllers.Admin
             {
                 return NotFound();
             }
-            _context.Doctors.Remove(doctor);
-            _context.Accounts.Remove(member);
+
+            member.IsActive = false;
+            doctor.IsActive = false;
+            _context.Doctors.Update(doctor);
+            _context.Accounts.Update(member);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
-        [HttpDelete]
+        [HttpPut]
         public async Task<IActionResult> DeleteMembers([FromBody] List<AccountDoctor> accountDoctors)
         {
             if (_context.Accounts == null || _context.Doctors == null)
@@ -150,6 +155,8 @@ namespace BE.Controllers.Admin
             var members = await _context.Accounts.Where(a => id.Contains(a.AccId)).ToListAsync();
             var doctors = await _context.Doctors.Where(d => id.Contains(d.DocId)).ToListAsync();
 
+
+
             if (members.Count == 0 && doctors.Count == 0)
             {
                 return NotFound();
@@ -157,12 +164,20 @@ namespace BE.Controllers.Admin
 
             if (doctors.Count > 0)
             {
-                _context.Doctors.RemoveRange(doctors);
+                foreach(Doctor d in doctors)
+                {
+                    d.IsActive = false;
+                }
+                _context.Doctors.UpdateRange(doctors);
             }
 
             if (members.Count > 0)
             {
-                _context.Accounts.RemoveRange(members);
+                foreach (Account c in members)
+                {
+                    c.IsActive = false;
+                }
+                _context.Accounts.UpdateRange(members);
             }
 
             await _context.SaveChangesAsync();
@@ -170,5 +185,5 @@ namespace BE.Controllers.Admin
             return NoContent();
         }
 
-    }
+                                                                }
 }

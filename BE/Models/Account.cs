@@ -15,6 +15,8 @@ public partial class Account
 
     public int RoleId { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public virtual Admin? Admin { get; set; }
 
     public virtual ArticleManager? ArticleManager { get; set; }

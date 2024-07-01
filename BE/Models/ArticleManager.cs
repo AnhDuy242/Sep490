@@ -13,6 +13,8 @@ public partial class ArticleManager
 
     public DateTime Dob { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public virtual Account AIdNavigation { get; set; } = null!;
 
     public virtual ICollection<Blog> Blogs { get; } = new List<Blog>();

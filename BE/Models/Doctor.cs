@@ -15,6 +15,8 @@ public partial class Doctor
 
     public int DepId { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public virtual ICollection<Appointment> Appointments { get; } = new List<Appointment>();
 
     public virtual ICollection<Blog> Blogs { get; } = new List<Blog>();
@@ -22,6 +24,8 @@ public partial class Doctor
     public virtual Department Dep { get; set; } = null!;
 
     public virtual Account Doc { get; set; } = null!;
+
+    public virtual ICollection<MedicalNotebook> MedicalNotebooks { get; } = new List<MedicalNotebook>();
 
     public virtual ICollection<Question> Questions { get; } = new List<Question>();
 

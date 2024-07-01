@@ -13,5 +13,7 @@ public partial class Admin
 
     public DateTime Dob { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public virtual Account AdminNavigation { get; set; } = null!;
 }

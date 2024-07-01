@@ -13,7 +13,7 @@ public partial class FeedbackRe
 
     public int? PatientId { get; set; }
 
-    public string? Content { get; set; }
+    public string Content { get; set; } = null!;
 
     public DateTime Date { get; set; }
 

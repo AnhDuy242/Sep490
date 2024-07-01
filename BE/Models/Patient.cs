@@ -15,6 +15,8 @@ public partial class Patient
 
     public DateTime Dob { get; set; }
 
+    public bool? IsActive { get; set; }
+
     public virtual ICollection<Appointment> Appointments { get; } = new List<Appointment>();
 
     public virtual ICollection<Feedback> Feedbacks { get; } = new List<Feedback>();

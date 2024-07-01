@@ -71,6 +71,12 @@ namespace BE.Controllers.Article_Manager
                         using var stream = file.OpenReadStream();
                         var uploadParams = new ImageUploadParams()
                         {
+                            /*phải cập nhật thêm, bằng cách lấy token của article_manager để đưa vào thư mục
+                             ví dụ article_manager với a_id = 4 thì hãy lấy giá trị của a_id đưa vào sau tên thư mục
+                            cụ thể đường dẫn có thể là $"Home/Image/BlogImage_{a_id}/{file.FileName}"
+                             để tránh bị trùng lặp ảnh của article manager khác 
+                             
+                             */
                             File = new FileDescription(file.FileName, stream),
                             PublicId = $"Home/Image/BlogImage/{file.FileName}"
                         };
@@ -88,18 +94,24 @@ namespace BE.Controllers.Article_Manager
                     Date = DateTime.Now,
                     Thumbnail = uploadResults.FirstOrDefault(), // Assign the first uploaded image as thumbnail
                     AId = model.AuthorId
-                    // Initialize the collection
                 };
+
+                // Add blog to DbContext
+                await _context.Blogs.AddAsync(blog);
+
+                // Save changes to generate BlogId
+                await _context.SaveChangesAsync();
 
                 // Add images to the blog
                 foreach (var url in uploadResults)
                 {
-                    blog.Imgs.Add(new Img { ImgUrl = url });
+                    var img = new Img { ImgUrl = url, BlogId = blog.BlogId };
+                    _context.Imgs.Add(img);
+                    
                 }
-
-                // Add blog to DbContext and save changes
-                await _context.Blogs.AddAsync(blog);
+                // Save changes for images
                 await _context.SaveChangesAsync();
+
 
                 return Ok(new { message = "Blog created successfully", blog });
             }
@@ -112,59 +124,70 @@ namespace BE.Controllers.Article_Manager
 
 
 
+
         // PUT api/<BlogController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBlog(int id, [FromForm] BlogCreationModel model)
         {
-            // Lấy blog cùng với các hình ảnh hiện tại
-            var blog = await _context.Blogs
-                .Include(b => b.Imgs)
-                .FirstOrDefaultAsync(b => b.BlogId == id);
-
-            if (blog == null)
+            try
             {
-                return NotFound();
-            }
+                // Lấy blog cùng với các hình ảnh hiện tại
+                var blog = await _context.Blogs
+                    .Include(b => b.Imgs)
+                    .FirstOrDefaultAsync(b => b.BlogId == id);
 
-            var uploadResults = new List<string>();
-
-            // Tải lên các hình ảnh mới lên Cloudinary
-            foreach (var file in model.Files)
-            {
-                if (file.Length > 0)
+                if (blog == null)
                 {
-                    using var stream = file.OpenReadStream();
-                    var uploadParams = new ImageUploadParams()
-                    {
-                        File = new FileDescription(file.FileName, stream),
-                        PublicId = $"Home/Image/BlogImage/{file.FileName}"
-                    };
-                    var uploadResult = _cloudinary.Upload(uploadParams);
-                    uploadResults.Add(uploadResult.SecureUrl.ToString());
+                    return NotFound();
                 }
+
+                var uploadResults = new List<string>();
+
+                // Tải lên các hình ảnh mới lên Cloudinary
+                foreach (var file in model.Files)
+                {
+                    if (file.Length > 0)
+                    {
+                        using var stream = file.OpenReadStream();
+                        var uploadParams = new ImageUploadParams()
+                        {
+                            File = new FileDescription(file.FileName, stream),
+                            PublicId = $"Home/Image/BlogImage/{file.FileName}"
+                        };
+                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                        uploadResults.Add(uploadResult.SecureUrl.ToString());
+                    }
+                }
+
+                // Cập nhật các thông tin của blog
+                blog.Title = model.Title;
+                blog.DocId = model.DoctorId;
+                blog.Content = model.Content;
+                blog.Date = DateTime.Now;
+                blog.Thumbnail = uploadResults.FirstOrDefault();
+                blog.AId = model.AuthorId;
+
+                // Xóa các hình ảnh cũ
+                _context.Imgs.RemoveRange(blog.Imgs);
+
+                // Thêm các hình ảnh mới
+                foreach (var url in uploadResults)
+                {
+                    blog.Imgs.Add(new Img { ImgUrl = url });
+                }
+
+                // Cập nhật blog trong DbContext và lưu thay đổi
+                _context.Blogs.Update(blog);
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Blog updated successfully", blog });
             }
-
-            // Cập nhật các thông tin của blog
-            blog.Title = model.Title;
-            blog.DocId = model.DoctorId;
-            blog.Content = model.Content;
-            blog.Date = DateTime.Now;
-            blog.Thumbnail = uploadResults.FirstOrDefault();
-            blog.AId = model.AuthorId;
-
-            // Xóa các hình ảnh cũ và thêm các hình ảnh mới
-            blog.Imgs.Clear();
-            foreach (var url in uploadResults)
+            catch (Exception ex)
             {
-                blog.Imgs.Add(new Img { ImgUrl = url });
+                return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.InnerException?.Message ?? ex.Message}");
             }
-
-            // Cập nhật blog trong DbContext và lưu thay đổi
-            _context.Blogs.Update(blog);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = "Blog updated successfully", blog });
         }
+
 
 
 
