@@ -1,4 +1,5 @@
-﻿using BE.Models;
+﻿using BE.DTOs;
+using BE.Models;
 using BE.Models.DTOs;
 using BE.Service;
 using Microsoft.AspNetCore.Mvc;
@@ -13,44 +14,45 @@ namespace BE.Controllers.Admin
     public class ReceptionistController : ControllerBase
     {
 
-            private readonly Alo2Context _context;
+        private readonly Alo2Context _context;
 
-            public ReceptionistController(Alo2Context context)
+        public ReceptionistController(Alo2Context context)
+        {
+
+            _context = context;
+        }
+        // GET: api/<ReceptionistController>
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<ReceptionistAccount>>> GetReceptionistAccount()
+        {
+            if (_context.Doctors == null || _context.Accounts == null || _context.Departments == null)
             {
-
-                _context = context;
+                return NotFound();
             }
-            // GET: api/<ReceptionistController>
-            [HttpGet]
-            public async Task<ActionResult<IEnumerable<ReceptionistAccount>>> GetReceptionistAccount()
-            {
-                if (_context.Doctors == null || _context.Accounts == null || _context.Departments == null)
-                {
-                    return NotFound();
-                }
-                var accountsWithReeptionistInfo = await _context.Accounts
-                    .Join(
-                        _context.Receptionists,
-                        account => account.Phone,
-                        receptionist => receptionist.Phone,
-                        (account, receptionist) => new ReceptionistAccount
-                        {
-                            Email = account.Email,
-                            Phone = account.Phone,
-                            Password = account.Password,
-                            Name = receptionist.Name,
-                            Gender = receptionist.Gender,
-                            Age = receptionist.Age,
+            var accountsWithReeptionistInfo = await _context.Accounts
+                .Join(
+                    _context.Receptionists,
+                    account => account.AccId,
+                    receptionist => receptionist.RecepId,
+                    (account, receptionist) => new ReceptionistAccount
+                    {
+                        AccId = account.AccId,
+                        Email = account.Email,
+                        Phone = account.Phone,
+                        Password = account.Password,
+                        Name = receptionist.Name,
+                        Gender = receptionist.Gender,
+                        Dob = receptionist.Dob,
 
-                        }
-                        )
-                    .ToListAsync();
+                    }
+                    )
+                .ToListAsync();
 
-                return Ok(accountsWithReeptionistInfo);
-            }
+            return Ok(accountsWithReeptionistInfo);
+        }
 
-            // GET api/<ReceptionistController>/5
-            [HttpGet("{phone}")]
+        // GET api/<ReceptionistController>/5
+        [HttpGet("{phone}")]
         public async Task<ActionResult<IEnumerable<ReceptionistAccount>>> GetReceptionistAccountDetail(string phone)
         {
             if (_context.Doctors == null || _context.Accounts == null || _context.Departments == null)
@@ -60,16 +62,17 @@ namespace BE.Controllers.Admin
             var accountsWithReeptionistInfo = await _context.Accounts
                 .Join(
                     _context.Receptionists,
-                    account => account.Phone,
-                    receptionist => receptionist.Phone,
+                    account => account.AccId,
+                    receptionist => receptionist.RecepId,
                     (account, receptionist) => new ReceptionistAccount
                     {
+                        AccId = account.AccId,
                         Email = account.Email,
                         Phone = account.Phone,
                         Password = account.Password,
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
-                        Age = receptionist.Age,
+                        Dob = receptionist.Dob,
 
                     }
                     )
@@ -79,28 +82,19 @@ namespace BE.Controllers.Admin
             return Ok(accountsWithReeptionistInfo);
         }
 
-        // POST api/<ReceptionistController>
-        [HttpPost]
-            public void Post([FromBody] string value)
-            {
-            }
-
-            // PUT api/<ReceptionistController>/5
-            [HttpPut("{id}")]
-            public void Put(int id, [FromBody] string value)
-            {
-            }
+        
+        
 
         // DELETE api/<ReceptionistController>/5
-        [HttpDelete("{phone}")]
-        public async Task<IActionResult> DeleteMember(string phone)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteMember(int id)
         {
             if (_context.Accounts == null || _context.Receptionists == null)
             {
                 return NotFound();
             }
-            var member = await _context.Accounts.Where(a => a.Phone.Equals(phone)).FirstOrDefaultAsync();
-            var receptionist = await _context.Receptionists.Where(r => r.Phone.Equals(phone)).FirstOrDefaultAsync();
+            var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
+            var receptionist = await _context.Receptionists.Where(r => r.RecepId.Equals(id)).FirstOrDefaultAsync();
             if (member == null)
             {
                 return NotFound();
@@ -125,11 +119,11 @@ namespace BE.Controllers.Admin
             }
 
             // Extract phone numbers from the provided AccountDoctor list
-            var phones = receptionistAccounts.Select(ra => ra.Phone).ToList();
+            var id = receptionistAccounts.Select(ra => ra.AccId).ToList();
 
             // Find accounts and doctors matching the provided phone numbers
-            var members = await _context.Accounts.Where(a => phones.Contains(a.Phone)).ToListAsync();
-            var receptionist = await _context.Receptionists.Where(r => phones.Contains(r.Phone)).ToListAsync();
+            var members = await _context.Accounts.Where(a => id.Contains(a.AccId)).ToListAsync();
+            var receptionist = await _context.Receptionists.Where(r => id.Contains(r.RecepId)).ToListAsync();
 
             if (members.Count == 0 && receptionist.Count == 0)
             {
