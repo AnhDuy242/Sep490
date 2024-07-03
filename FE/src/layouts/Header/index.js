@@ -117,7 +117,7 @@ function Header() {
     <>
       {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
       {role === 'Patient' && <Navigate to="/patient/dashboard/receptionist-account" replace={true} />}
-      {role === 'ArticleManager' && <Navigate to="/article/dashboard/index" replace={true} />}
+      {role === 'ArticleManager' && <Navigate to="/article/dashboard" replace={true} />}
       
       <AppBar position="static" color="default">
         <Toolbar>

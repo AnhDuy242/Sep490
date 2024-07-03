@@ -19,8 +19,8 @@ function App() {
       </Route>
 
 
-      <Route path="/article/dashboard" element={<ProtectedRoute requiredRole="Article"><ArticleDash /></ProtectedRoute>}>
-      {/* <Route path="/article/dashboard/list_blog" element={<ListBlog/>} /> */}
+      <Route path="/article/dashboard" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
+      <Route path="/article/dashboard/list_blog" element={<ListBlog/>} />
         <Route path="list_article" element={<ListArticle/>} />
       </Route>
     </Routes>
