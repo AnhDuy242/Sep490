@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, IconButton, Box, Button } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
-import NotificationSidebar from '../PopupNotification/NotificationSideBar'; // Đảm bảo đường dẫn chính xác
+import NotificationSidebar from '../PopupNotification/NotificationSideBar'; 
+import notificationSound from '../../assets/sound/notification_sound.mp3';
 
 const NotificationButton = () => {
     const [notifications, setNotifications] = useState([]);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [newNotification, setNewNotification] = useState('');
-
+    const wonAudio = new Audio(notificationSound);
     useEffect(() => {
         // Giả lập gọi API để lấy số lượng thông báo ban đầu
         const fetchNotifications = () => {
@@ -32,6 +33,7 @@ const NotificationButton = () => {
         const newMessage = 'New Notification ' + (notifications.length + 1);
         setNotifications([...notifications, newMessage]);
         setNewNotification(newMessage);
+        wonAudio.play();
         setTimeout(() => {
             setNewNotification('');
         }, 3000);
