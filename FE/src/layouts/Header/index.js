@@ -61,6 +61,7 @@ function Header() {
     localStorage.setItem('token', token);
     localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
     setTimeout(handleTokenExpiration, tokenTimeout);
+    console.log(decoded);
   };
 
   const handleCloseLogin = () => setShowLogin(false);
@@ -116,6 +117,7 @@ function Header() {
     <>
       {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
       {role === 'Patient' && <Navigate to="/patient/dashboard/receptionist-account" replace={true} />}
+      {role === 'ArticleManager' && <Navigate to="/article/dashboard/index" replace={true} />}
       
       <AppBar position="static" color="default">
         <Toolbar>
