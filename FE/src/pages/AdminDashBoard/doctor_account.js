@@ -169,6 +169,7 @@ const DoctorTable = () => {
           <TableHead>
             <TableRow>
               <TableCell></TableCell>
+              <TableCell>Account ID</TableCell>
               <TableCell>Doctor Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Phone</TableCell>
@@ -176,6 +177,7 @@ const DoctorTable = () => {
               <TableCell>Gender</TableCell>
               <TableCell>Age</TableCell>
               <TableCell>Department</TableCell>
+              <TableCell>Is active</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -188,6 +190,7 @@ const DoctorTable = () => {
                     onChange={() => handleCheckboxChange(doctor.phone)}
                   />
                 </TableCell>
+                <TableCell>{doctor.accId}</TableCell>
                 <TableCell>{doctor.name}</TableCell>
                 <TableCell>{doctor.email}</TableCell>
                 <TableCell>{doctor.phone}</TableCell>
@@ -195,6 +198,8 @@ const DoctorTable = () => {
                 <TableCell>{doctor.gender}</TableCell>
                 <TableCell>{doctor.age}</TableCell>
                 <TableCell>{doctor.departmentName}</TableCell>
+                <TableCell>{doctor.isActive ? 'Active' : 'Inactive'}</TableCell> {/* Sử dụng điều kiện để hiển thị giá trị */}
+
                 <TableCell>
                   <IconButton
                     title="Xóa"
