@@ -16,7 +16,7 @@ import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
 
 
-const tokenTimeout = 10000; // 1 hour in milliseconds
+const tokenTimeout = 10000000; // 1 hour in milliseconds
 
 function Header() {
   const [showLogin, setShowLogin] = useState(false);
