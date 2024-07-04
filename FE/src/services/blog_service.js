@@ -7,10 +7,10 @@ export const fetchBlogs = async () => {
     return await response.json();
   };
   
-  // Hàm để tải dữ liệu bác sĩ và cập nhật trạng thái
+  // Hàm để tải dữ liệu blog và cập nhật trạng thái
   export const loadBlogs = async (setDoctors, setLoading, setError) => {
     try {
-      const data = await fetchBlogs(); // Gọi hàm fetchDoctors để lấy dữ liệu
+      const data = await fetchBlogs(); // Gọi hàm fetchBlogs để lấy dữ liệu
       setDoctors(data.$values); // Cập nhật dữ liệu vào trạng thái
     } catch (error) {
       setError(error.message); // Cập nhật lỗi vào trạng thái
@@ -19,7 +19,7 @@ export const fetchBlogs = async () => {
     }
   };
   
-  // Hàm để xóa bác sĩ
+  // Hàm để xóa blog
   export const deleteBlog = async (id) => {
     const response = await fetch(`https://localhost:7240/api/Blog/${id}`, {
       method: 'DELETE',
@@ -29,7 +29,7 @@ export const fetchBlogs = async () => {
     }
   };
   
-  // Hàm để thêm bác sĩ mới
+  // Hàm để thêm blog mới
   export const addBlog = async (blog) => {
     const response = await fetch('https://localhost:7240/api/Blog', {
       method: 'POST',
