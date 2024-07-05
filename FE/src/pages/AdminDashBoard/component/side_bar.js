@@ -77,12 +77,12 @@ const Sidebar = () => {
         </ListItem>
         {/* Collapse ẩn hiện danh sách con */}
         <Collapse in={openAccount} timeout="auto" unmountOnExit>
-        {/* Các mục tài khoản trong tab Tài Khoản */}
+          {/* Các mục tài khoản trong tab Tài Khoản */}
           <List component="div" disablePadding>
-            <ListItem button className={classes.nested} component={Link} to="/doctor-account">
+            <ListItem button className={classes.nested} component={Link} to="/admin/dashboard/doctor-account">
               <ListItemText primary="Tài khoản bác sĩ" />
             </ListItem>
-            <ListItem button className={classes.nested}  component={Link} to="/receptionist-account">
+            <ListItem button className={classes.nested} component={Link} to="/admin/dashboard/receptionist-account">
               <ListItemText primary="Tài khoản lễ tân" />
             </ListItem>
           </List>
@@ -99,7 +99,12 @@ const Sidebar = () => {
           </ListItemIcon>
           <ListItemText primary="Employee list" />
         </ListItem>
-      
+        <ListItem button className={classes.listItem} component={Link} to="/view-appoiment-admin">
+          <ListItemIcon>
+            <InboxIcon style={{ color: 'white' }} />
+          </ListItemIcon>
+          {/* <ListItemText primary="View appoiment" > */}
+        </ListItem>
       </List>
     </div>
   );

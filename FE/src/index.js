@@ -1,8 +1,8 @@
-// src/index.js
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-// import App from './App';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Sidebar from './pages/AdminDashBoard/component/side_bar';
 import AdminDash from './pages/AdminDashBoard'

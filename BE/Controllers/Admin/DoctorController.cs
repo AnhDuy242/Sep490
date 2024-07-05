@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BE.DTOs;
 using BE.Models;
 using BE.Models.DTOs;
 using BE.Service;
@@ -15,7 +16,7 @@ namespace BE.Controllers.Admin
     {
         private readonly IMapper _mapper;
         private readonly Alo2Context _context;
-        
+
         public DoctorController(IMapper mapper, Alo2Context context)
         {
             _mapper = mapper;
@@ -33,16 +34,17 @@ namespace BE.Controllers.Admin
             var accountsWithDoctorInfo = await _context.Accounts
                 .Join(
                     _context.Doctors,
-                    account => account.Phone,
-                    doctor => doctor.Phone,
+                    account => account.AccId,
+                    doctor => doctor.DocId,
                     (account, doctor) => new { account, doctor }
                 )
                 .Join(
                     _context.Departments,
-                    accountDoctor => accountDoctor.doctor.DepartmentId,
-                    department => department.Id,
+                    accountDoctor => accountDoctor.doctor.DepId,
+                    department => department.DepId,
                     (accountDoctor, department) => new AccountDoctor
                     {
+                        AccId = accountDoctor.account.AccId,
                         Email = accountDoctor.account.Email,
                         Phone = accountDoctor.account.Phone,
                         Password = accountDoctor.account.Password,
@@ -50,7 +52,8 @@ namespace BE.Controllers.Admin
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
                         // Các thuộc tính khác của Account
-                        DepartmentName = department.Name
+                        DepartmentName = department.Name,
+                        IsActive = accountDoctor.account.IsActive
                     }
                 )
                 .ToListAsync();
@@ -74,16 +77,17 @@ namespace BE.Controllers.Admin
             var accountsWithDoctorInfo = await _context.Accounts
                 .Join(
                     _context.Doctors,
-                    account => account.Phone,
-                    doctor => doctor.Phone,
+                    account => account.AccId,
+                    doctor => doctor.DocId,
                     (account, doctor) => new { account, doctor }
                 )
                 .Join(
                     _context.Departments,
-                    accountDoctor => accountDoctor.doctor.DepartmentId,
-                    department => department.Id,
+                    accountDoctor => accountDoctor.doctor.DepId,
+                    department => department.DepId,
                     (accountDoctor, department) => new AccountDoctor
                     {
+                        AccId = accountDoctor.account.AccId,
                         Email = accountDoctor.account.Email,
                         Phone = accountDoctor.account.Phone,
                         Password = accountDoctor.account.Password,
@@ -91,7 +95,8 @@ namespace BE.Controllers.Admin
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
                         // Các thuộc tính khác của Account
-                        DepartmentName = department.Name
+                        DepartmentName = department.Name,
+                        IsActive = accountDoctor.account.IsActive
                     }
                 )
                 .Where(a => a.Phone.Equals(phone))
@@ -101,72 +106,36 @@ namespace BE.Controllers.Admin
         }
 
         // POST api/<DoctorController>
-        [HttpPost]
-        public void Post([FromBody] string value)
-        {
-
-        }
+        
 
         // PUT api/<DoctorController>/5
-        [HttpPut("{phone}")]
-        public async Task<IActionResult> UpdateDoctor(string phone, AccountDoctor accountDoctor)
-        {
-            
-
-            // Chuyển đổi từ AccountDoctor sang Account bằng AutoMapper
-            var account = _mapper.Map<Account>(accountDoctor);
-            Doctor doctor = _context.Doctors.Where(d => d.Phone.Equals(phone)).FirstOrDefault();
-            if (doctor == null)
-            {
-                return BadRequest("Doctor isn't exist");
-            }
-            doctor.Phone = accountDoctor.Phone;
-            _context.Entry(account).State = EntityState.Modified;
-            _context.Entry(doctor).State = EntityState.Modified;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!DoctorExists(phone))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-        private bool DoctorExists(string id)
-        {
-            return (_context.Doctors?.Any(d => d.Phone.Equals(id))).GetValueOrDefault();
-        }
+        
+        
 
         // DELETE api/<DoctorController>/5
-        [HttpDelete("{phone}")]
-        public async Task<IActionResult> DeleteMember(string phone)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> DeleteMember(int id)
         {
             if (_context.Accounts == null || _context.Doctors == null)
             {
                 return NotFound();
             }
-            var member = await _context.Accounts.Where(a => a.Phone.Equals(phone)).FirstOrDefaultAsync();
-            var doctor = await _context.Doctors.Where(a => a.Phone.Equals(phone)).FirstOrDefaultAsync();
+            var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
+            var doctor = await _context.Doctors.Where(a => a.DocId.Equals(id)).FirstOrDefaultAsync();
             if (member == null)
             {
                 return NotFound();
             }
-            _context.Doctors.Remove(doctor);
-            _context.Accounts.Remove(member);
+
+            member.IsActive = false;
+            doctor.IsActive = false;
+            _context.Doctors.Update(doctor);
+            _context.Accounts.Update(member);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
-        [HttpDelete]
+        [HttpPut]
         public async Task<IActionResult> DeleteMembers([FromBody] List<AccountDoctor> accountDoctors)
         {
             if (_context.Accounts == null || _context.Doctors == null)
@@ -180,11 +149,13 @@ namespace BE.Controllers.Admin
             }
 
             // Extract phone numbers from the provided AccountDoctor list
-            var phones = accountDoctors.Select(ad => ad.Phone).ToList();
+            var id = accountDoctors.Select(ad => ad.AccId).ToList();
 
-            // Find accounts and doctors matching the provided phone numbers
-            var members = await _context.Accounts.Where(a => phones.Contains(a.Phone)).ToListAsync();
-            var doctors = await _context.Doctors.Where(d => phones.Contains(d.Phone)).ToListAsync();
+            // Find accounts and doctors matching the provided id numbers
+            var members = await _context.Accounts.Where(a => id.Contains(a.AccId)).ToListAsync();
+            var doctors = await _context.Doctors.Where(d => id.Contains(d.DocId)).ToListAsync();
+
+
 
             if (members.Count == 0 && doctors.Count == 0)
             {
@@ -193,12 +164,20 @@ namespace BE.Controllers.Admin
 
             if (doctors.Count > 0)
             {
-                _context.Doctors.RemoveRange(doctors);
+                foreach(Doctor d in doctors)
+                {
+                    d.IsActive = false;
+                }
+                _context.Doctors.UpdateRange(doctors);
             }
 
             if (members.Count > 0)
             {
-                _context.Accounts.RemoveRange(members);
+                foreach (Account c in members)
+                {
+                    c.IsActive = false;
+                }
+                _context.Accounts.UpdateRange(members);
             }
 
             await _context.SaveChangesAsync();
@@ -206,5 +185,5 @@ namespace BE.Controllers.Admin
             return NoContent();
         }
 
-    }
+                                                                }
 }

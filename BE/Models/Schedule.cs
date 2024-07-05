@@ -9,13 +9,17 @@ public partial class Schedule
 
     public int DoctorId { get; set; }
 
-    public string Shift { get; set; } = null!;
+    public bool Morning { get; set; }
 
-    public int Weekdays { get; set; }
+    public bool Afternoon { get; set; }
+
+    public string Weekdays { get; set; } = null!;
+
+    public DateTime Date { get; set; }
 
     public int WeekId { get; set; }
 
-    public int Appoinments { get; set; }
+    public int? Appointments { get; set; }
 
     public virtual Doctor Doctor { get; set; } = null!;
 
