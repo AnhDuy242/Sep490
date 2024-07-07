@@ -16,7 +16,7 @@ import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
 
 
-const tokenTimeout = 10000000; // 1 hour in milliseconds
+const tokenTimeout = 100000; // 1 hour in milliseconds
 
 function Header() {
   const [showLogin, setShowLogin] = useState(false);
@@ -116,7 +116,7 @@ function Header() {
   return (
     <>
       {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
-      {role === 'Patient' && <Navigate to="/patient/dashboard/receptionist-account" replace={true} />}
+      {role === 'Patient' && <Navigate to="/" replace={true} />}
       {role === 'ArticleManager' && <Navigate to="/article/dashboard" replace={true} />}
       
       <AppBar position="static" color="default">

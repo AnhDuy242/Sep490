@@ -19,6 +19,7 @@ const BlogTable = () => {
   const [newBlog, setNewBlog] = useState({
     title: '',
     author: '',
+    doctor:'',
     content: '',
     date: '',
   });
@@ -63,6 +64,7 @@ const BlogTable = () => {
     setNewBlog({
       title: '',
       author: '',
+      doctor:'',
       content: '',
       date: '',
     });
@@ -72,7 +74,7 @@ const BlogTable = () => {
 
   // Add a blog
   const handleAddBlog = async () => {
-    if (!newBlog.title || !newBlog.author || !newBlog.content || !newBlog.date) {
+    if (!newBlog.title || !newBlog.author || !newBlog.content || !newBlog.date ) {
       setValidationError('All fields are required.');
       return;
     }
@@ -136,13 +138,13 @@ const BlogTable = () => {
       <Typography fontSize={50}>Quản lý bài viết</Typography>
       <Autocomplete
         freeSolo
-        options={filteredBlogs.map(blog => blog.title + ' by ' + blog.author)}
+        options={filteredBlogs.map(blog => blog.title )}
         inputValue={searchQuery}
         onInputChange={handleSearchChange}
         renderInput={(params) => (
           <TextField
             {...params}
-            label="Search by title or author"
+            label="Search by title "
             variant="outlined"
             fullWidth
             margin="normal"
@@ -185,7 +187,7 @@ const BlogTable = () => {
                 <TableCell>
                   <IconButton
                     title="Delete"
-                    onClick={() => handleOpenDeleteDialog(blog.id)}
+                    onClick={() => handleOpenDeleteDialog(blog.blogId)}
                   >
                     <DeleteIcon />
                   </IconButton>
