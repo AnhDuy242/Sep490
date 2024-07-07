@@ -267,7 +267,7 @@ const ReceptionistAccount = () => {
     });
     return (
         <div className="full-height-container">
-            <Container className="full-height-container" maxWidth={false} style={{ marginLeft: 0 }}>
+            <>
                 <Typography variant="h4" style={{ marginBottom: '1rem' }}>Receptionist Manager</Typography>
                 <Container style={{ display: 'flex', marginBottom: '1rem' }}>
                     <TextField
@@ -521,7 +521,7 @@ const ReceptionistAccount = () => {
                         </Formik>
                     </DialogContent>
                 </Dialog>
-            </Container>
+            </>
         </div>
     );
 }
