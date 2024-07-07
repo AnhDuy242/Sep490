@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import moment from 'moment';
 import { Views } from 'react-big-calendar';
 import { EVENTS } from './component/constants/constants.js';
-import Calendar from './Calendar.js';
+import Calendar from './component/CustomizedCalendar.js';
 
 const NormalCalendar = () => {
   return (

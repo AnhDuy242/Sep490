@@ -12,8 +12,8 @@ root.render(
   <React.StrictMode>
     {/* <App /> */}
     {/* <Sidebar/> */}
-    {/* <View_appointment/> */}
-    <AdminDash/>
+    <View_appointment/>
+    {/* <AdminDash/> */}
   </React.StrictMode>
 );
 
