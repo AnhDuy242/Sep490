@@ -5,13 +5,15 @@ namespace BE.Models;
 
 public partial class Admin
 {
-    public int Id { get; set; }
+    public int AdminId { get; set; }
 
     public string Name { get; set; } = null!;
 
     public string Gender { get; set; } = null!;
 
-    public string Phone { get; set; } = null!;
+    public DateTime Dob { get; set; }
 
-    public int Age { get; set; }
+    public bool? IsActive { get; set; }
+
+    public virtual Account AdminNavigation { get; set; } = null!;
 }

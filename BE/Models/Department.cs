@@ -5,11 +5,13 @@ namespace BE.Models;
 
 public partial class Department
 {
-    public int Id { get; set; }
+    public int DepId { get; set; }
 
-    public string Name { get; set; } = null!;
+    public string? Name { get; set; }
 
-    public virtual ICollection<Doctor> Doctors { get; } = new List<Doctor>();
+    public bool? IsActive { get; set; }
 
-    public virtual ICollection<Service> Services { get; } = new List<Service>();
+    public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
+
+    public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 }

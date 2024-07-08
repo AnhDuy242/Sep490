@@ -9,7 +9,7 @@ public partial class Appointment
 
     public int PatientId { get; set; }
 
-    public int? DoctorId { get; set; }
+    public int DoctorId { get; set; }
 
     public DateTime Date { get; set; }
 
@@ -17,7 +17,9 @@ public partial class Appointment
 
     public string Status { get; set; } = null!;
 
-    public virtual Doctor? Doctor { get; set; }
+    public string? Note { get; set; }
+
+    public virtual Doctor Doctor { get; set; } = null!;
 
     public virtual Patient Patient { get; set; } = null!;
 

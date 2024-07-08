@@ -5,11 +5,11 @@ namespace BE.Models;
 
 public partial class Week
 {
-    public int Id { get; set; }
+    public int WeekId { get; set; }
 
-    public DateTime Start { get; set; }
+    public DateTime StartDate { get; set; }
 
-    public DateTime End { get; set; }
+    public DateTime EndDate { get; set; }
 
-    public virtual ICollection<Schedule> Schedules { get; } = new List<Schedule>();
+    public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 }

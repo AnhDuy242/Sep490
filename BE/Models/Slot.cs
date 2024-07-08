@@ -5,9 +5,9 @@ namespace BE.Models;
 
 public partial class Slot
 {
-    public int Id { get; set; }
+    public int SlotId { get; set; }
 
     public string Time { get; set; } = null!;
 
-    public virtual ICollection<Appointment> Appointments { get; } = new List<Appointment>();
+    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

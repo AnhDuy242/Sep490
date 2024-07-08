@@ -15,6 +15,7 @@ using BE.Models;
 using Microsoft.EntityFrameworkCore;
 using CloudinaryDotNet;
 using BE.Service.IService;
+using BE.DTOs;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +47,9 @@ builder.Services.AddSingleton<ISMSService>(provider =>
         configuration["Twilio:AuthToken"],
         configuration["Twilio:PhoneNumber"]);
 });
+//mail
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
 

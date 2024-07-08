@@ -1,54 +1,42 @@
-﻿using BE.Service.IService;
+﻿using BE.DTOs;
+using BE.Service;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
 
 namespace BE.Controllers.Authentication
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class OtpController : ControllerBase
     {
-        private readonly SendEmail _emailService;
+        private readonly IEmailService _emailService;
 
-        public OtpController(SendEmail emailService)
+        public OtpController(IEmailService emailService)
         {
             _emailService = emailService;
         }
 
-        [HttpPost("send")]
-        public async Task<IActionResult> SendOtp([FromBody] string email)
+        [HttpPost("send-otp")]
+        public async Task SendOtp(string usermail)
         {
-            if (string.IsNullOrEmpty(email))
-            {
-                return BadRequest("Email is required");
-            }
-
-            // Tạo mã OTP
+            // Generate OTP
             var otp = new Random().Next(100000, 999999).ToString();
 
-            // Gửi OTP qua email
-            var subject = "Your OTP Code";
-            var body = $"Your OTP code is: {otp}";
+            // Save OTP to database or cache (not shown here)
 
-            try
-            {
-                await _emailService.SendEmailAsync(email, subject, body);
-                return Ok("OTP sent successfully");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, ex.Message);
-            }
-        }
+            // Send OTP email
 
-        [HttpPost("smtp")]
-        public async Task<IActionResult> Index([FromBody] string email)
-        {
-            var sub = "alo";
-            var message = "hello";
-            await _emailService.SendEmailAsync(email, sub, message);
-            return Ok("succesfull");
+
+            var mailrequest  = new Mailrequest();
+            mailrequest.Email = usermail;
+            mailrequest.Subject = "Thanks for registering";
+            mailrequest.Emailbody = $"Your OTP code is {otp}";
+            await this._emailService.SendEmailAsync(mailrequest);
         }
+    }
+
+    public class OtpRequest
+    {
+        public string Email { get; set; }
     }
 }
