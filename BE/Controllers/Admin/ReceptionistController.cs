@@ -82,8 +82,26 @@ namespace BE.Controllers.Admin
             return Ok(accountsWithReeptionistInfo);
         }
 
-        
-        
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateMembers(int id)
+        {
+            if (_context.Accounts == null || _context.Receptionists == null)
+            {
+                return NotFound();
+            }
+            var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
+            var receptionist = await _context.Receptionists.Where(r => r.RecepId.Equals(id)).FirstOrDefaultAsync();
+            if (member == null)
+            {
+                return NotFound();
+            }
+            _context.Receptionists.Remove(receptionist);
+            _context.Accounts.Remove(member);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+
 
         // DELETE api/<ReceptionistController>/5
         [HttpDelete("{id}")]

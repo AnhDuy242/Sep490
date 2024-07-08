@@ -106,11 +106,31 @@ namespace BE.Controllers.Admin
         }
 
         // POST api/<DoctorController>
-        
+
 
         // PUT api/<DoctorController>/5
-        
-        
+        //[HttpPut("{id}")]
+        //public async Task<IActionResult> UpdateMember(int id, [FromBody] AccountDoctor accountDoctor)
+        //{
+        //    if (_context.Accounts == null || _context.Doctors == null)
+        //    {
+        //        return NotFound();
+        //    }
+        //    var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
+        //    var doctor = await _context.Doctors.Where(a => a.DocId.Equals(id)).FirstOrDefaultAsync();
+        //    if (member == null)
+        //    {
+        //        return NotFound();
+        //    }
+
+            
+        //    _context.Doctors.Update(doctor);
+        //    _context.Accounts.Update(member);
+        //    await _context.SaveChangesAsync();
+
+        //    return NoContent();
+        //}
+
 
         // DELETE api/<DoctorController>/5
         [HttpPut("{id}")]
