@@ -51,6 +51,8 @@ namespace BE.Controllers.Admin
                         Name = accountDoctor.doctor.Name,
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
+                        RoleId = accountDoctor.account.RoleId,
+                        DepId = department.DepId,
                         // Các thuộc tính khác của Account
                         DepartmentName = department.Name,
                         IsActive = accountDoctor.account.IsActive
@@ -94,6 +96,8 @@ namespace BE.Controllers.Admin
                         Name = accountDoctor.doctor.Name,
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
+                        RoleId = accountDoctor.account.RoleId,
+                        DepId = department.DepId,
                         // Các thuộc tính khác của Account
                         DepartmentName = department.Name,
                         IsActive = accountDoctor.account.IsActive
@@ -109,32 +113,8 @@ namespace BE.Controllers.Admin
 
 
         // PUT api/<DoctorController>/5
-        //[HttpPut("{id}")]
-        //public async Task<IActionResult> UpdateMember(int id, [FromBody] AccountDoctor accountDoctor)
-        //{
-        //    if (_context.Accounts == null || _context.Doctors == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
-        //    var doctor = await _context.Doctors.Where(a => a.DocId.Equals(id)).FirstOrDefaultAsync();
-        //    if (member == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-            
-        //    _context.Doctors.Update(doctor);
-        //    _context.Accounts.Update(member);
-        //    await _context.SaveChangesAsync();
-
-        //    return NoContent();
-        //}
-
-
-        // DELETE api/<DoctorController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> DeleteMember(int id)
+        public async Task<IActionResult> UpdateMember(int id, [FromBody] AccountDoctor model)
         {
             if (_context.Accounts == null || _context.Doctors == null)
             {
@@ -147,63 +127,29 @@ namespace BE.Controllers.Admin
                 return NotFound();
             }
 
-            member.IsActive = false;
-            doctor.IsActive = false;
+            //update Account
+            member.Phone = model.Phone;
+            member.Password = model.Password;
+            member.IsActive = model.IsActive;
+            member.Email = model.Email;
+
+            //update Doctor
+            doctor.Name = model.Name;
+            doctor.Gender = model.Gender;
+            doctor.Age = model.Age;
+            doctor.IsActive = model.IsActive;
+            doctor.DepId = model.DepId;
+
             _context.Doctors.Update(doctor);
             _context.Accounts.Update(member);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
-        [HttpPut]
-        public async Task<IActionResult> DeleteMembers([FromBody] List<AccountDoctor> accountDoctors)
-        {
-            if (_context.Accounts == null || _context.Doctors == null)
-            {
-                return NotFound();
-            }
-
-            if (accountDoctors == null || accountDoctors.Count == 0)
-            {
-                return BadRequest("No accounts provided for deletion.");
-            }
-
-            // Extract phone numbers from the provided AccountDoctor list
-            var id = accountDoctors.Select(ad => ad.AccId).ToList();
-
-            // Find accounts and doctors matching the provided id numbers
-            var members = await _context.Accounts.Where(a => id.Contains(a.AccId)).ToListAsync();
-            var doctors = await _context.Doctors.Where(d => id.Contains(d.DocId)).ToListAsync();
 
 
-
-            if (members.Count == 0 && doctors.Count == 0)
-            {
-                return NotFound();
-            }
-
-            if (doctors.Count > 0)
-            {
-                foreach(Doctor d in doctors)
-                {
-                    d.IsActive = false;
-                }
-                _context.Doctors.UpdateRange(doctors);
-            }
-
-            if (members.Count > 0)
-            {
-                foreach (Account c in members)
-                {
-                    c.IsActive = false;
-                }
-                _context.Accounts.UpdateRange(members);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
+        
+        
 
                                                                 }
 }

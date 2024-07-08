@@ -70,6 +70,7 @@ namespace BE.Controllers.Admin
                         Email = account.Email,
                         Phone = account.Phone,
                         Password = account.Password,
+                        RoleId = account.RoleId,
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
@@ -83,7 +84,7 @@ namespace BE.Controllers.Admin
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateMembers(int id)
+        public async Task<IActionResult> UpdateMembers(int id, ReceptionistAccount model)
         {
             if (_context.Accounts == null || _context.Receptionists == null)
             {
@@ -95,72 +96,28 @@ namespace BE.Controllers.Admin
             {
                 return NotFound();
             }
-            _context.Receptionists.Remove(receptionist);
-            _context.Accounts.Remove(member);
+
+            //update account
+            member.Email = model.Email;
+            member.Phone = model.Phone;
+            member.Password = model.Password;
+            member.IsActive = model.IsActive;
+
+            //update receptionist
+            receptionist.Name = model.Name;
+            receptionist.Gender = model.Gender;
+            receptionist.Dob = model.Dob;
+
+
+            _context.Receptionists.Update(receptionist);
+            _context.Accounts.Update(member);
             await _context.SaveChangesAsync();
 
             return NoContent();
         }
 
 
-        // DELETE api/<ReceptionistController>/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMember(int id)
-        {
-            if (_context.Accounts == null || _context.Receptionists == null)
-            {
-                return NotFound();
-            }
-            var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
-            var receptionist = await _context.Receptionists.Where(r => r.RecepId.Equals(id)).FirstOrDefaultAsync();
-            if (member == null)
-            {
-                return NotFound();
-            }
-            _context.Receptionists.Remove(receptionist);
-            _context.Accounts.Remove(member);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-        [HttpDelete]
-        public async Task<IActionResult> DeleteMembers([FromBody] List<ReceptionistAccount> receptionistAccounts)
-        {
-            if (_context.Accounts == null || _context.Receptionists == null)
-            {
-                return NotFound();
-            }
-
-            if (receptionistAccounts == null || receptionistAccounts.Count == 0)
-            {
-                return BadRequest("No accounts provided for deletion.");
-            }
-
-            // Extract phone numbers from the provided AccountDoctor list
-            var id = receptionistAccounts.Select(ra => ra.AccId).ToList();
-
-            // Find accounts and doctors matching the provided phone numbers
-            var members = await _context.Accounts.Where(a => id.Contains(a.AccId)).ToListAsync();
-            var receptionist = await _context.Receptionists.Where(r => id.Contains(r.RecepId)).ToListAsync();
-
-            if (members.Count == 0 && receptionist.Count == 0)
-            {
-                return NotFound();
-            }
-
-            if (receptionist.Count > 0)
-            {
-                _context.Receptionists.RemoveRange(receptionist);
-            }
-
-            if (members.Count > 0)
-            {
-                _context.Accounts.RemoveRange(members);
-            }
-
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
+        
+       
     }
     }

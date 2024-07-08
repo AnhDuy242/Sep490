@@ -9,7 +9,7 @@
 
         public string Password { get; set; } = null!;
         public int? RoleId { get; set; }
-
+        public bool? IsActive { get; set; }
         public string Name { get; set; } = null!;
 
         public string Gender { get; set; } = null!;
