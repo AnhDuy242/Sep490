@@ -10,14 +10,16 @@ namespace BE.Controllers.Authentication
     public class OtpController : ControllerBase
     {
         private readonly IEmailService _emailService;
+        private readonly ISMSService _smsService;
 
-        public OtpController(IEmailService emailService)
+        public OtpController(IEmailService emailService, ISMSService smsService)
         {
             _emailService = emailService;
+            _smsService = smsService;
         }
 
-        [HttpPost("send-otp")]
-        public async Task SendOtp(string usermail)
+        [HttpPost("email")]
+        public async Task SendOtpEmail(string usermail)
         {
             // Generate OTP
             var otp = new Random().Next(100000, 999999).ToString();
@@ -33,10 +35,32 @@ namespace BE.Controllers.Authentication
             mailrequest.Emailbody = $"Your OTP code is {otp}";
             await this._emailService.SendEmailAsync(mailrequest);
         }
+
+        [HttpPost("sms")]
+        public async Task<IActionResult> SendOtpSms(string PhoneNumber)
+        {
+            if (string.IsNullOrEmpty(PhoneNumber))
+            {
+                return BadRequest("Phone number is required.");
+            }
+
+            var otp = new Random().Next(100000, 999999).ToString();
+            var message = $"Your OTP code is {otp}";
+
+            try
+            {
+                await _smsService.SendSmsAsync(PhoneNumber, message);
+                return Ok("OTP sent successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending OTP: {ex.Message}");
+            }
+        }
+
+       
     }
 
-    public class OtpRequest
-    {
-        public string Email { get; set; }
-    }
+   
+    
 }
