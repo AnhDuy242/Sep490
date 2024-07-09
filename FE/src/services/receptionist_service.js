@@ -1,52 +1,91 @@
 // src/services/receptionist_account.js
 
 const BASE_URL = 'https://localhost:7240/api/Receptionist';
+const SECONDARY_URL = 'https://localhost:7240/api/CreateEmployee';
 
-export const addOrUpdateReceptionist = async (receptionist, isEditMode) => {
-  const url = isEditMode ? `${BASE_URL}/${receptionist.phone}` : BASE_URL;
-  const method = isEditMode ? 'PUT' : 'POST';
+
+export const updateReceptionist = async (accId, receptionist) => {
+  const url = `${BASE_URL}/${accId}`;
 
   try {
     const response = await fetch(url, {
-      method: method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(receptionist)
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(receptionist),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to add/update receptionist');
+      throw new Error(`Failed to update receptionist with phone ${accId}. Status code: ${response.status}`);
     }
 
-    return response.json(); // Return the JSON response if needed
+    // Check for 204 No Content
+    if (response.status === 204) {
+      return null; // or return a message or an empty object based on your needs
+    }
+
+    // Parse JSON response if available
+    const data = await response.json();
+    return data;
   } catch (error) {
-    console.error('Error adding/updating receptionist:', error);
+    console.error('Error updating receptionist:', error);
     throw error;
   }
 };
 
-export const loadReceptionists = async (callback, errorCallback) => {
+
+export const updateReceptionistByActive = async (accId, receptionist) => {
+  const url = `${BASE_URL}/${accId}`;
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(receptionist),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to update receptionist with accId ${accId}`);
+    }
+
+    // Check if response body is empty
+    const data = await response.text();
+    if (!data) {
+      return {}; // Return empty object if response body is empty
+    }
+
+    return JSON.parse(data); // Parse JSON data if available
+  } catch (error) {
+    console.error('Error updating receptionist:', error);
+    throw error;
+  }
+};
+
+
+export const loadReceptionists = async (setAccounts, setLoading, setError) => {
   const url = BASE_URL;
 
   try {
+    setLoading(true);
     const response = await fetch(url);
-    console.log(response); // Log response to inspect the fetched data
 
     if (!response.ok) {
       throw new Error('Failed to load receptionists');
     }
 
-    const jsonData = await response.json(); // Parse response as JSON
-
-    // Call the callback function with the received data
-    callback(jsonData);
+    const jsonData = await response.json();
+    setAccounts(Array.isArray(jsonData.$values) ? jsonData.$values : []);
   } catch (error) {
     console.error('Error loading receptionists:', error);
-    if (errorCallback) {
-      errorCallback(error);
-    }
-    throw error;
+    setError(error);
+  } finally {
+    setLoading(false);
   }
 };
+
 
 export const deleteReceptionist = async (phone) => {
   try {
@@ -55,7 +94,7 @@ export const deleteReceptionist = async (phone) => {
     });
     
     if (!response.ok) {
-      throw new Error(`Failed to delete receptionist with phone ${phone}`);
+      throw new Error(`Failed to delete receptionist with phone ${phone} - Status: ${response.status}`);
     }
   } catch (error) {
     console.error('Error deleting receptionist:', error);
@@ -65,24 +104,31 @@ export const deleteReceptionist = async (phone) => {
 
 export const addReceptionist = async (receptionist) => {
   try {
-    const response = await fetch(BASE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(receptionist),
-    });
+      const response = await fetch(SECONDARY_URL, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(receptionist),
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to add new receptionist'+response.status);
-    }
+      if (!response.ok) {
+          let errorMessage = 'Failed to add new receptionist';
+          if (response.status === 400 || response.status === 409) {
+              // Handle specific error messages if necessary
+              const data = await response.json();
+              errorMessage = data.message || errorMessage;
+          }
+          throw new Error(`${errorMessage} - Status: ${response.status}`);
+      }
 
-    return await response.json();
+      return await response.json();
   } catch (error) {
-    console.error('Error adding receptionist:', error);
-    throw error;
+      console.error('Error adding receptionist:', error);
+      throw error;
   }
 };
+
 
 export const deleteMultipleReceptionists = async (phones) => {
   try {

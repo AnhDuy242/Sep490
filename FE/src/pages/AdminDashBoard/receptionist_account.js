@@ -1,32 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import {
+    Snackbar, SnackbarContent,
     Container, TextField, Button, IconButton, Table, TableBody, TableCell,
     TableContainer, TableHead, TableRow, Paper, Checkbox, Dialog, DialogActions,
-    DialogContent, DialogContentText, DialogTitle, Avatar, Typography, TablePagination, FormControl, InputLabel, Select, MenuItem, FormHelperText
+    DialogContent, DialogTitle, ToggleButtonGroup, Avatar, Typography, TablePagination, FormControl, InputLabel, Select, MenuItem, FormHelperText
 } from '@mui/material';
-import { Delete, Edit, Visibility } from '@mui/icons-material';
+import { Edit, Visibility } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
 import {
-    fetchReceptionists,
     loadReceptionists,
-    deleteReceptionist,
     addReceptionist,
-    deleteMultipleReceptionists,
+    updateReceptionist,
+    updateReceptionistByActive
 } from '../../services/receptionist_service'; // Import API functions
 import './component/ReceptionistAccount.css'; // Import CSS
+import ToggleButton from '@mui/material/ToggleButton';
 
 const ReceptionistAccount = () => {
     const [accounts, setAccounts] = useState([]);
-    const [selected, setSelected] = useState([]);
-    const [selected2,setSelected2] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [searchType, setSearchType] = useState('name');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [confirmOpen, setConfirmOpen] = useState(false); // State to manage confirmation dialog
-    const [confirmOpen2, setConfirmOpen2] = useState(false); // State to manage confirmation dialog
+    const [addDialogOpen, setAddDialogOpen] = useState(false);
+    const [viewEditDialogOpen, setViewEditDialogOpen] = useState(false);
+
+    //hiển thị thông báo bằng snackbar
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // or 'error'
+
 
     const [currentAccount, setCurrentAccount] = useState(null);
     const [isEditMode, setIsEditMode] = useState(false);
@@ -34,45 +38,107 @@ const ReceptionistAccount = () => {
     const [error, setError] = useState(null);
 
     // Validation schema using yup
-    const validationSchema = yup.object({
+    const validationSchema = yup.object().shape({
         name: yup.string().required('Name is required'),
-        gender: yup.string().required('Gender is required').notOneOf(['Select gender'], 'Gender is required'),
-        age: yup.number().required('Age is required').min(1, 'Age must be greater than zero'),
+        gender: yup.string().required('Gender is required').oneOf(['Male', 'Female'], 'Gender is required'),
+        // age: yup.number().required('Age is required').positive('Age must be a positive number').integer('Age must be an integer'),
         phone: yup.string().required('Phone is required').matches(/^\d{10,11}$/, 'Invalid phone number'),
+        dob: yup.date().required('Date of Birth is required').nullable(),
         email: yup.string().email('Invalid email format').required('Email is required'),
+        Password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
     });
+    const validationSchemaforEdit = yup.object().shape({
+        name: yup.string().required('Name is required'),
+        gender: yup.string().required('Gender is required').oneOf(['Male', 'Female'], 'Gender is required'),
+        // age: yup.number().required('Age is required').positive('Age must be a positive number').integer('Age must be an integer'),
+        phone: yup.string().required('Phone is required').matches(/^\d{10,11}$/, 'Invalid phone number'),
+        dob: yup.date().required('Date of Birth is required').nullable(),
+        email: yup.string().email('Invalid email format').required('Email is required'),
+        // Password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
+    });
+
 
     // Function to load receptionists from API
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                setLoading(true);
-                await loadReceptionists((data) => {
-                    setAccounts(Array.isArray(data) ? data : []);
-                    setLoading(false);
-                }, setError);
-            } catch (error) {
-                setError(error.message);
-                setLoading(false);
-            }
+          try {
+            setLoading(true);
+            await loadReceptionists((data) => {
+              console.log('Fetched data:', data); // Debugging statement
+              setAccounts(Array.isArray(data) ? data : []);
+            }, setError);
+          } catch (error) {
+            setError(error.message);
+          } finally {
+            setLoading(false);
+          }
         };
-
+      
         fetchData();
-    }, []);
+      }, []);
+      
+    // Handle opening and closing of snackbar
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
+    };
 
+    // Function to handle opening snackbar with message and severity
+    const handleOpenSnackbar = (message, severity) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
+    };
     // Function to handle form submission
-    const handleFormSubmit = async (values, { setSubmitting }) => {
+    const handleEditFormSubmit = async (values, { setSubmitting }) => {
+        try {
+          setSubmitting(true); // Start submitting
+          // Update receptionist if in edit mode
+          const updatedReceptionist = await updateReceptionist(currentAccount.accId, values);
+      
+          if (updatedReceptionist) {
+            // Handle the case where the response includes data
+            console.log('Updated receptionist data:', updatedReceptionist);
+          } else {
+            // Handle the case where no content was returned
+            console.log('Receptionist updated successfully with no content returned');
+          }
+      
+          handleOpenSnackbar(`Account ${currentAccount ? 'updated' : 'added'} successfully!`, 'success');
+          closeDialogs(); // Close dialog after successful submission
+      
+          // Load receptionists and ensure setAccounts is called with an array
+          await loadReceptionists((receptionists) => {
+            console.log('Loaded receptionists:', receptionists); // Debugging statement
+            setAccounts(Array.isArray(receptionists) ? receptionists : []);
+          }, setLoading, setError); // Reload receptionist data
+      
+        } catch (error) {
+          console.error('Error submitting form:', error);
+          // setError(error.message);
+        } finally {
+          setSubmitting(false); // Stop submitting
+        }
+      };
+      
+      
+
+    const handleAddFormSubmit = async (values, { setSubmitting }) => {
         try {
             setSubmitting(true); // Start submitting
-            setDialogOpen(false); // Close dialog after successful submission
-    
-            // Gọi hàm addReceptionist từ service
-            const newReceptionist = await addReceptionist(values);
-    
+
+            // Call API to add receptionist
+            await addReceptionist(values);
+            handleOpenSnackbar('Account added successfully!', 'success');
+
+            closeDialogs(); // Close dialog after successful submission
             await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
         } catch (error) {
             console.error('Error submitting form:', error);
-            setError(error.message);
+            if (error.response && error.response.data && error.response.data.message) {
+                handleOpenSnackbar(error.response.data.message, 'error');
+            } else {
+                handleOpenSnackbar(`Error: ${error.message}`, 'error');
+            }
         } finally {
             setSubmitting(false); // Stop submitting
         }
@@ -83,130 +149,24 @@ const ReceptionistAccount = () => {
         setSearchTerm(event.target.value);
     };
 
-    // Function to handle opening the dialog
-    const handleDialogOpen = (account) => {
+    // Function to handle opening the dialog for add account
+    const handleAddDialogOpen = () => {
+        setAddDialogOpen(true);
+    };
+
+    // Function to handle opening the dialog for view/edit account
+    const handleViewEditDialogOpen = (account, editMode) => {
         setCurrentAccount(account);
-        setDialogOpen(true);
+        setIsEditMode(editMode);
+        setViewEditDialogOpen(true);
     };
 
-    // Function to handle bulk deletion
-    const handleBulkDelete = async () => {
-        try {
-            setConfirmOpen(false); // Close confirmation dialog
-            await deleteMultipleReceptionists(selected);
-            setSelected([]);
-            await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
-        } catch (error) {
-            setError(error.message);
-        }
+    // Function to close both dialogs
+    const closeDialogs = () => {
+        setAddDialogOpen(false);
+        setViewEditDialogOpen(false);
+        setCurrentAccount(null);
     };
-
-    // Function to handle selecting all checkboxes
-    const handleSelectAllClick = (event) => {
-        if (event.target.checked) {
-            const newSelecteds = accounts.map((n) => n.phone);
-            setSelected(newSelecteds);
-            return;
-        }
-        setSelected([]);
-    };
-
-    // Function to handle selecting individual checkboxes
-    const handleSelectClick = (event, phone) => {
-        const selectedIndex = selected.indexOf(phone);
-        let newSelected = [];
-
-        if (selectedIndex === -1) {
-            newSelected = newSelected.concat(selected, phone);
-        } else if (selectedIndex === 0) {
-            newSelected = newSelected.concat(selected.slice(1));
-        } else if (selectedIndex === selected.length - 1) {
-            newSelected = newSelected.concat(selected.slice(0, -1));
-        } else if (selectedIndex > 0) {
-            newSelected = newSelected.concat(
-                selected.slice(0, selectedIndex),
-                selected.slice(selectedIndex + 1),
-            );
-        }
-
-        setSelected(newSelected);
-    };
-
-    const handleDelete2 = async (account) => {
-        try {
-            setSelected2(account); // Store current receptionist in state for confirmation
-            console.log(account);
-            setConfirmOpen2(true); // Open confirmation dialog
-            
-        } catch (error) {
-            setError(error.message);
-        }
-    };
-    const handleConfirmDelete2 = async () => {
-        try {
-            console.log(selected2.phone);
-            await deleteReceptionist(selected2.phone); // Delete receptionist using stored phone number
-            await loadReceptionists((data) => {
-                setAccounts(Array.isArray(data) ? data : []);
-                setLoading(false);
-            }, setError); // Reload receptionist data
-            setConfirmOpen2(false); // Close confirmation dialog
-           setSelected2(null);
-        } catch (error) {
-            setError(error.message);
-        }
-    };
-    // Function to handle closing the dialog
-    const handleDialogClose = () => {
-        setDialogOpen(false);
-    };
-
-    // Function to handle closing the confirmation dialog
-    const handleConfirmClose = () => {
-        setConfirmOpen(false);
-    };
-
-    // Function to handle confirming deletion after dialog
-    const handleConfirmDelete = async () => {
-        try {
-            if (!selected || selected.length === 0) {
-                throw new Error("No receptionists selected for deletion.");
-            }
-            
-            if(selected.length>=2){
-                console.log('Delete more than 1');
-            await deleteMultipleReceptionists(selected); // Assuming deleteMultipleReceptionists handles an array of IDs or objects correctly
-            }else if(selected.length===1){
-                await deleteReceptionist(selected);
-            }
-            setSelected([]);
-            setConfirmOpen(false); // Close confirmation dialog
-            
-            await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
-        } catch (error) {
-            console.error("Error deleting receptionist(s):", error);
-            setError(error.message); // Set error state to display to the user
-        }
-    };
-    
-    const handleConfirmDelete22 = async () => {
-        try {
-            if (!currentAccount || currentAccount.length === 0) {
-                throw new Error("No receptionists selected for deletion.");
-            }
-                await deleteReceptionist(selected);
-            setAccounts([]);
-            setConfirmOpen(false); // Close confirmation dialog
-            
-            await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
-        } catch (error) {
-            console.error("Error deleting receptionist(s):", error);
-            setError(error.message); // Set error state to display to the user
-        }
-    };
-    
-    
-
 
     // Function to handle changing the current page in pagination
     const handlePageChange = (event, newPage) => {
@@ -257,14 +217,46 @@ const ReceptionistAccount = () => {
         };
     }
 
+    // Function to format date to dd/mm/yyyy
+    function formatDate(date) {
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        return new Date(date).toLocaleDateString('en-GB', options);
+    }
+
+    // Function to handle toggle active/inactive
+    const handleToggleChange = (account, newIsActive) => {
+        try {
+            // Update local state first
+            const updatedAccounts = accounts.map((acc) =>
+                acc.accId === account.accId ? { ...acc, isActive: newIsActive } : acc
+            );
+            setAccounts(updatedAccounts);
+
+            // Update on the server
+            updateReceptionistByActive(account.accId, { ...account, isActive: newIsActive });
+            handleOpenSnackbar(`Account status updated successfully!`, 'success');
+
+        } catch (error) {
+            console.error('Error updating active status:', error);
+            setError(error.message);
+        }
+    };
+
+    // Function to handle adding a new account
+    const handleAddAccount = () => {
+        handleAddDialogOpen();
+    };
+
     const filteredAccounts = accounts.filter((account) => {
         if (searchType === 'name') {
-            return account.name.toLowerCase().includes(searchTerm.toLowerCase());
+          return account.name.toLowerCase().includes(searchTerm.toLowerCase());
         } else if (searchType === 'phone') {
-            return account.phone.includes(searchTerm);
+          return account.phone.includes(searchTerm);
         }
         return true;
-    });
+      });
+      
+
     return (
         <div className="full-height-container">
             <>
@@ -294,61 +286,63 @@ const ReceptionistAccount = () => {
                     </Select>
                 </Container>
 
-                <Button variant="contained" color="primary" onClick={() => { setIsEditMode(true); handleDialogOpen({}) }} style={{ marginBottom: '1rem' }}>
+                <Button variant="contained" color="primary" onClick={handleAddAccount} style={{ marginBottom: '1rem' }}>
                     Add Account
-                </Button>
-                <Button variant="contained" color="secondary" onClick={()=> {;setConfirmOpen(true)}} disabled={selected.length === 0} style={{ marginBottom: '1rem', marginLeft: '1rem' }}>
-                    Delete Selected
                 </Button>
 
                 {loading ? (
-                    <Typography variant="h6">Loading...</Typography>
+                    <Typography variant="body1">Loading...</Typography>
                 ) : error ? (
-                    <Typography variant="h6" color="error">{error}</Typography>
+                    <Typography variant="body1" color="error">{`Error: ${error}`}</Typography>
                 ) : (
                     <TableContainer component={Paper}>
-                        <Table>
+                        <Table sx={{ minWidth: 650 }} aria-label="simple table">
                             <TableHead>
                                 <TableRow>
-                                    <TableCell padding="checkbox">
-                                        <Checkbox
-                                            indeterminate={selected.length > 0 && selected.length < accounts
-
-                                                .length}
-                                            checked={accounts.length > 0 && selected.length === accounts.length}
-                                            onChange={handleSelectAllClick}
-                                        />
-                                    </TableCell>
-                                    <TableCell></TableCell>
+                                    <TableCell>ID</TableCell>
+                                    <TableCell>Avatar</TableCell>
                                     <TableCell>Name</TableCell>
                                     <TableCell>Gender</TableCell>
-                                    <TableCell>Age</TableCell>
+                                    <TableCell>DOB</TableCell>
                                     <TableCell>Phone</TableCell>
                                     <TableCell>Email</TableCell>
+                                    <TableCell>Status</TableCell>
                                     <TableCell>Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {filteredAccounts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((account) => (
-                                    <TableRow key={account.phone} selected={selected.indexOf(account.phone) !== -1}>
-                                        <TableCell padding="checkbox">
-                                            <Checkbox
-                                                checked={selected.indexOf(account.phone) !== -1}
-                                                onChange={(event) => handleSelectClick(event, account.phone)}
-                                            />
+                                    <TableRow
+                                        key={account.accId}
+                                        sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                                    >
+                                        <TableCell component="th" scope="row">
+                                            {account.accId}
                                         </TableCell>
                                         <TableCell><Avatar {...stringAvatar(account.name)} /></TableCell>
                                         <TableCell>{account.name}</TableCell>
                                         <TableCell>{account.gender}</TableCell>
-                                        <TableCell>{account.age}</TableCell>
+                                        <TableCell>{formatDate(account.dob)}</TableCell>
+
                                         <TableCell>{account.phone}</TableCell>
                                         <TableCell>{account.email}</TableCell>
                                         <TableCell>
-                                            <IconButton onClick={() => { handleDialogOpen(account); setIsEditMode(false); }}>
+                                            <ToggleButtonGroup
+                                                value={account.isActive}
+                                                exclusive
+                                                onChange={(event, newStatus) => handleToggleChange(account, newStatus)}
+                                            >
+                                                <ToggleButton value={true} disabled={account.isActive}>Active</ToggleButton>
+                                                <ToggleButton value={false} disabled={!account.isActive}>Inactive</ToggleButton>
+                                            </ToggleButtonGroup>
+                                        </TableCell>
+
+                                        <TableCell>
+                                            <IconButton onClick={() => handleViewEditDialogOpen(account, false)}>
                                                 <Visibility />
                                             </IconButton>
-                                            <IconButton onClick={() => handleDelete2(account)}>
-                                                <Delete />
+                                            <IconButton onClick={() => handleViewEditDialogOpen(account, true)}>
+                                                <Edit />
                                             </IconButton>
                                         </TableCell>
                                     </TableRow>
@@ -366,99 +360,73 @@ const ReceptionistAccount = () => {
                         />
                     </TableContainer>
                 )}
-                   {/* Confirmation Dialog for Delete  button*/}
-                   <Dialog
-                    open={confirmOpen}
-                    onClose={handleConfirmClose}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
+                {/*hiển thị thông báo bằng snackbar */}
+                <Snackbar
+                    open={snackbarOpen}
+                    autoHideDuration={2000} // Duration to show the snackbar (in ms)
+                    onClose={handleSnackbarClose}
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
                 >
-                    <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            Are you sure you want to delete this receptionist?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleConfirmClose} color="primary">
-                            Cancel
-                        </Button>
-                        <Button onClick={handleConfirmDelete} color="primary" autoFocus>
-                            Confirm
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-                 {/* Confirmation Dialog for Delete icon */}
-                 <Dialog
-                    open={confirmOpen2}
-                    onClose={handleConfirmClose}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">Confirm Deletion</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText id="alert-dialog-description">
-                            Are you sure you want to delete this receptionist?
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={handleConfirmClose} color="primary">
-                            Cancel
-                        </Button>
-                        <Button onClick={handleConfirmDelete2} color="primary" autoFocus>
-                            Confirm
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-                                {/* Edit/Add Dialog */}
-
-                <Dialog open={dialogOpen} onClose={handleDialogClose}>
-                    <DialogTitle>{!isEditMode ? 'Edit Account' : 'Add Account'}</DialogTitle>
+                    <SnackbarContent
+                        sx={{ backgroundColor: snackbarSeverity === 'error' ? '#d32f2f' : '#43a047' }} // Custom styles based on severity
+                        message={snackbarMessage}
+                    />
+                </Snackbar>
+                {/* Dialog for adding a new account */}
+                <Dialog open={addDialogOpen} onClose={closeDialogs}>
+                    <DialogTitle>Add Account</DialogTitle>
                     <DialogContent>
                         <Formik
                             initialValues={{
-                                name: currentAccount ? currentAccount.name : '',
-                                gender: currentAccount ? currentAccount.gender : 'Select gender',
-                                age: currentAccount ? currentAccount.age : '',
-                                phone: currentAccount ? currentAccount.phone : '',
-                                email: currentAccount ? currentAccount.email : '',
+                                name: '',
+                                gender: '',
+                                age: '',
+                                phone: '',
+                                dob: '',
+                                email: '',
+                                Password: '',
+                                role: 'Receptionist'
                             }}
                             validationSchema={validationSchema}
-                            onSubmit={handleFormSubmit}
+                            onSubmit={handleAddFormSubmit}
                         >
-                            {({ values, errors, touched, handleChange, handleBlur, handleSubmit, isSubmitting }) => (
+                            {({
+                                values,
+                                errors,
+                                touched,
+                                handleChange,
+                                handleBlur,
+                                handleSubmit,
+                                isSubmitting,
+                            }) => (
                                 <Form onSubmit={handleSubmit}>
+
                                     <TextField
-                                        name="name"
                                         label="Name"
-                                        variant="outlined"
-                                        fullWidth
-                                        margin="normal"
+                                        name="name"
                                         value={values.name}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={touched.name && Boolean(errors.name)}
+                                        error={touched.name && !!errors.name}
                                         helperText={touched.name && errors.name}
-                                    />
-                                    <FormControl
-                                        variant="outlined"
                                         fullWidth
                                         margin="normal"
-                                        error={touched.gender && Boolean(errors.gender)}
+                                    />
+                                    <FormControl
+                                        fullWidth
+                                        margin="normal"
+                                        error={touched.gender && !!errors.gender}
                                     >
-                                        <InputLabel htmlFor="gender">Gender</InputLabel>
+                                        <InputLabel>Gender</InputLabel>
                                         <Select
                                             name="gender"
                                             value={values.gender}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
-                                            label="Gender"
-                                            inputProps={{
-                                                name: 'gender',
-                                                id: 'gender',
-                                            }}
                                         >
-                                            
+                                            <MenuItem value="">
+                                                <em>Select gender</em>
+                                            </MenuItem>
                                             <MenuItem value="Male">Male</MenuItem>
                                             <MenuItem value="Female">Female</MenuItem>
                                         </Select>
@@ -466,110 +434,229 @@ const ReceptionistAccount = () => {
                                             <FormHelperText>{errors.gender}</FormHelperText>
                                         )}
                                     </FormControl>
-
-                                    <TextField
-                                        name="age"
+                                    {/* <TextField
                                         label="Age"
-                                        variant="outlined"
+                                        name="age"
                                         type="number"
-                                        fullWidth
-                                        margin="normal"
                                         value={values.age}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={touched.age && Boolean(errors.age)}
+                                        error={touched.age && !!errors.age}
                                         helperText={touched.age && errors.age}
-                                    />
-
-                                    <TextField
-                                        name="phone"
-                                        label="Phone"
-                                        variant="outlined"
                                         fullWidth
                                         margin="normal"
+                                    /> */}
+                                    <TextField
+                                        label="Phone"
+                                        name="phone"
                                         value={values.phone}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={touched.phone && Boolean(errors.phone)}
+                                        error={touched.phone && !!errors.phone}
                                         helperText={touched.phone && errors.phone}
-                                    />
-
-                                    <TextField
-                                        name="email"
-                                        label="Email"
-                                        variant="outlined"
                                         fullWidth
                                         margin="normal"
+                                    />
+                                    <TextField
+                                        label="Date of Birth"
+                                        name="dob"
+                                        type="date"
+                                        value={values.dob}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.dob && !!errors.dob}
+                                        helperText={touched.dob && errors.dob}
+                                        fullWidth
+                                        margin="normal"
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                        InputProps={{
+                                            inputProps: {
+                                                max: formatDate(new Date()), // Helper function to format date
+                                            },
+                                        }}
+                                    />
+                                    <TextField
+                                        label="Email"
+                                        name="email"
                                         value={values.email}
                                         onChange={handleChange}
                                         onBlur={handleBlur}
-                                        error={touched.email && Boolean(errors.email)}
+                                        error={touched.email && !!errors.email}
                                         helperText={touched.email && errors.email}
+                                        fullWidth
+                                        margin="normal"
+                                    />
+                                    <TextField
+                                        label="Password"
+                                        name="Password"
+                                        type="password"
+                                        value={values.Password}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.Password && !!errors.Password}
+                                        helperText={touched.Password && errors.Password}
+                                        fullWidth
+                                        margin="normal"
                                     />
 
-                                    <Button
-                                        type="submit"
-                                        variant="contained"
-                                        color="primary"
-                                        disabled={isSubmitting}
-                                        style={{ marginTop: '1rem' }}
-                                    >
-                                        {!isEditMode ? 'Save Changes' : 'Add Account'}
-                                    </Button>
+                                    <DialogActions>
+                                        <Button onClick={closeDialogs} color="primary">
+                                            Cancel
+                                        </Button>
+                                        <Button type="submit" color="primary" disabled={isSubmitting}>
+                                            Save
+                                        </Button>
+                                    </DialogActions>
                                 </Form>
                             )}
                         </Formik>
                     </DialogContent>
                 </Dialog>
+
+                <Dialog open={viewEditDialogOpen} onClose={closeDialogs}>
+                    <DialogTitle>{isEditMode ? 'Edit Account' : 'View Account'}</DialogTitle>
+                    <DialogContent>
+                        <Formik
+                            initialValues={{
+                                accId:currentAccount?.accId ||'',
+                                name: currentAccount?.name || '',
+                                gender: currentAccount?.gender || '',
+                                phone: currentAccount?.phone || '',
+                                dob: currentAccount?.dob ? new Date(currentAccount.dob).toISOString().split('T')[0] : '',
+                                email: currentAccount?.email || '',
+                                Password: ''
+                            }}
+                            validationSchema={validationSchemaforEdit}
+                            onSubmit={(values, actions) => {
+                                console.log("Edit Formik onSubmit called with values:", values);
+                                handleEditFormSubmit(values, actions);
+                            }}
+                        >
+                            {({
+                                values,
+                                errors,
+                                touched,
+                                handleChange,
+                                handleBlur,
+                                handleSubmit,
+                                isSubmitting,
+                            }) => (
+                                <Form onSubmit={handleSubmit}>
+                                    <TextField
+                                        label="ID"
+                                        name="ID"
+                                        value={values.accId}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.name && !!errors.name}
+                                        helperText={touched.name && errors.name}
+                                        fullWidth
+                                        margin="normal"
+                                    sx={{display:"none"}}
+                                    />
+                                    <TextField
+                                        label="Name"
+                                        name="name"
+                                        disabled={!isEditMode}
+                                        value={values.name}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.name && !!errors.name}
+                                        helperText={touched.name && errors.name}
+                                        fullWidth
+                                        margin="normal"
+                                    />
+                                    <FormControl
+                                        disabled={!isEditMode}
+                                        fullWidth
+                                        margin="normal"
+                                        error={touched.gender && !!errors.gender}
+                                    >
+                                        <InputLabel>Gender</InputLabel>
+                                        <Select
+                                            name="gender"
+                                            value={values.gender}
+                                            onChange={handleChange}
+                                            onBlur={handleBlur}
+                                            disabled={!isEditMode}
+                                        >
+                                            <MenuItem value="">
+                                                <em>Select gender</em>
+                                            </MenuItem>
+                                            <MenuItem value="Male">Male</MenuItem>
+                                            <MenuItem value="Female">Female</MenuItem>
+                                        </Select>
+                                        {touched.gender && errors.gender && (
+                                            <FormHelperText>{errors.gender}</FormHelperText>
+                                        )}
+                                    </FormControl>
+                                    <TextField
+                                        label="Phone"
+                                        name="phone"
+                                        value={values.phone}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.phone && !!errors.phone}
+                                        helperText={touched.phone && errors.phone}
+                                        fullWidth
+                                        margin="normal"
+                                        disabled={!isEditMode}
+                                    />
+                                    <TextField
+                                        label="Date of Birth"
+                                        name="dob"
+                                        type="date"
+                                        value={values.dob}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.dob && !!errors.dob}
+                                        helperText={touched.dob && errors.dob}
+                                        fullWidth
+                                        margin="normal"
+                                        InputLabelProps={{
+                                            shrink: true,
+                                        }}
+                                        InputProps={{
+                                            inputProps: {
+                                                max: new Date().toISOString().split('T')[0], // Max date is today
+                                            },
+                                        }}
+                                        disabled={!isEditMode}
+                                    />
+                                    <TextField
+                                        label="Email"
+                                        name="email"
+                                        value={values.email}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.email && !!errors.email}
+                                        helperText={touched.email && errors.email}
+                                        fullWidth
+                                        margin="normal"
+                                        disabled={!isEditMode}
+                                    />
+                                    <DialogActions>
+                                        <Button onClick={closeDialogs} color="primary">
+                                            Close
+                                        </Button>
+                                        {isEditMode && (
+                                            <Button type="submit" color="primary" disabled={isSubmitting}>
+                                                Save
+                                            </Button>
+                                        )}
+                                    </DialogActions>
+                                </Form>
+                            )}
+                        </Formik>
+                    </DialogContent>
+                </Dialog>
+
+
             </>
         </div>
     );
-}
+};
+
 export default ReceptionistAccount;
-function stringToColor(string) {
-    let hash = 0;
-    let i;
-
-    /* eslint-disable no-bitwise */
-    for (i = 0; i < string.length; i += 1) {
-        hash = string.charCodeAt(i) + ((hash << 5) - hash);
-    }
-
-    let color = '#';
-
-    for (i = 0; i < 3; i += 1) {
-        const value = (hash >> (i * 8)) & 0xff;
-        color += `00${value.toString(16)}`.slice(-2);
-    }
-    /* eslint-enable no-bitwise */
-
-    return color;
-}
-
-function stringAvatar(name) {
-    if (!name || typeof name !== 'string') {
-        return {
-            children: '',
-        };
-    }
-
-    const splitName = name.split(' ');
-
-    if (splitName.length < 2) {
-        return {
-            sx: {
-                bgcolor: stringToColor(name),
-            },
-            children: `${name[0]}${name[1]}`, // Handle cases where splitName does not have enough elements
-        };
-    }
-
-    return {
-        sx: {
-            bgcolor: stringToColor(name),
-        },
-        children: `${splitName[0][0]}${splitName[1][0]}`, // Using splitName to access first characters
-    };
-}
-
-

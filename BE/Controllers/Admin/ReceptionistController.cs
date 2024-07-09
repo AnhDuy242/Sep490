@@ -43,7 +43,7 @@ namespace BE.Controllers.Admin
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
-
+                        IsActive=account.IsActive
                     }
                     )
                 .ToListAsync();
