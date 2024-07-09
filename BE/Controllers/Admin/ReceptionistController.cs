@@ -2,6 +2,7 @@
 using BE.Models;
 using BE.Models.DTOs;
 using BE.Service;
+using CloudinaryDotNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -43,7 +44,7 @@ namespace BE.Controllers.Admin
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
-
+                        IsActive = account.IsActive
                     }
                     )
                 .ToListAsync();
@@ -74,7 +75,7 @@ namespace BE.Controllers.Admin
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
-
+                        IsActive = account.IsActive
                     }
                     )
                 .Where(a => a.Phone.Equals(phone))
@@ -113,11 +114,24 @@ namespace BE.Controllers.Admin
             _context.Accounts.Update(member);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            //return
+            ReceptionistAccount newUpdate = new ReceptionistAccount
+            {
+                AccId = member.AccId,
+                Email = member.Email,
+                Phone = member.Phone,
+                Password = member.Password,
+                RoleId = member.RoleId,
+                Name = receptionist.Name,
+                Gender = receptionist.Gender,
+                Dob = receptionist.Dob,
+                IsActive = member.IsActive
+            };
+            return CreatedAtAction(nameof(GetReceptionistAccountDetail), new { phone = newUpdate.Phone }, newUpdate);
         }
 
 
-        
-       
+
+
     }
-    }
+}
