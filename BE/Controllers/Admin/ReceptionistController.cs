@@ -43,7 +43,7 @@ namespace BE.Controllers.Admin
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
-
+                        IsActive = account.IsActive
                     }
                     )
                 .ToListAsync();
@@ -74,7 +74,7 @@ namespace BE.Controllers.Admin
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
-
+                        IsActive = account.IsActive
                     }
                     )
                 .Where(a => a.Phone.Equals(phone))
