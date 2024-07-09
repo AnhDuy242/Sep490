@@ -144,12 +144,27 @@ namespace BE.Controllers.Admin
             _context.Accounts.Update(member);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            //return
+            AccountDoctor newUpdate = new AccountDoctor
+            {
+                AccId = member.AccId,
+                Email = member.Email,
+                Phone = member.Phone,
+                Password = member.Password,
+                Name = doctor.Name,
+                Gender = doctor.Gender,
+                Age = doctor.Age,
+                RoleId = member.RoleId,
+                DepId = doctor.DepId,
+                // Các thuộc tính khác của Account
+                IsActive = member.IsActive
+            };
+            return CreatedAtAction(nameof(GetDoctorAccountDetail), new { phone = newUpdate.Phone }, newUpdate);
         }
 
 
-        
-        
 
-                                                                }
+
+
+    }
 }

@@ -91,7 +91,7 @@ const Sidebar = () => {
         }}
       >
         <Typography variant="h6" className={classes.title}>
-          <b>Admin screen</b>
+          <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
           <ListItem button onClick={handleAccountClick} className={classes.listItem}>

@@ -1,22 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Typography, TextField, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Checkbox, IconButton, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Typography, TextField,
+  Button, Dialog, DialogActions, DialogContent, DialogTitle, Select, MenuItem, FormControl, InputLabel
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
-import { loadDoctors, deleteDoctor, addDoctor } from '../../services/doctor_service';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { loadDoctors, addDoctor, updateDoctor } from '../../services/doctor_service';
 import InfoIcon from '@mui/icons-material/Info';
+import EditIcon from '@mui/icons-material/Edit';
 import '../../assets/css/doctor_list_table.css';
 
 const DoctorTable = () => {
   const [doctors, setDoctors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
   const [openAddDialog, setOpenAddDialog] = useState(false);
-  const [deletePhone, setDeletePhone] = useState('');
-  const [selectedDoctors, setSelectedDoctors] = useState([]);
-  const [openMultipleDeleteDialog, setOpenMultipleDeleteDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [currentDoctor, setCurrentDoctor] = useState(null);
   const [newDoctor, setNewDoctor] = useState({
     name: '',
     gender: '',
@@ -35,28 +34,6 @@ const DoctorTable = () => {
     loadDoctors(setDoctors, setLoading, setError);
   }, []);
 
-  //xóa bác sĩ
-  const handleDeleteDoctor = async () => {
-    try {
-      await deleteDoctor(deletePhone);
-      const updatedDoctors = doctors.filter((doctor) => doctor.phone !== deletePhone);
-      setDoctors(updatedDoctors);
-      handleCloseDeleteDialog();
-    } catch (error) {
-      console.error('Error deleting doctor:', error);
-    }
-  };
-
-  const handleOpenDeleteDialog = (phone) => {
-    setDeletePhone(phone);
-    setOpenDeleteDialog(true);
-  };
-
-  const handleCloseDeleteDialog = () => {
-    setDeletePhone('');
-    setOpenDeleteDialog(false);
-  };
-
   const handleOpenAddDialog = () => {
     setOpenAddDialog(true);
   };
@@ -71,6 +48,17 @@ const DoctorTable = () => {
     });
     setValidationError('');
     setOpenAddDialog(false);
+  };
+
+  const handleOpenEditDialog = (doctor) => {
+    setCurrentDoctor(doctor);
+    setOpenEditDialog(true);
+  };
+
+  const handleCloseEditDialog = () => {
+    setCurrentDoctor(null);
+    setValidationError('');
+    setOpenEditDialog(false);
   };
 
   //thêm bác sĩ
@@ -89,37 +77,30 @@ const DoctorTable = () => {
     }
   };
 
-  //xử lý check box
-  const handleCheckboxChange = (phone) => {
-    if (selectedDoctors.includes(phone)) {
-      setSelectedDoctors(selectedDoctors.filter((p) => p !== phone));
-    } else {
-      setSelectedDoctors([...selectedDoctors, phone]);
+  // Hàm chỉnh sửa bác sĩ
+  const handleEditDoctor = async () => {
+    if (!currentDoctor.name || !currentDoctor.gender || !currentDoctor.age || !currentDoctor.phone) {
+      setValidationError('Tất cả các trường phải được điền đầy đủ.');
+      return;
     }
-  };
 
-  const handleOpenMultipleDeleteDialog = () => {
-    setOpenMultipleDeleteDialog(true);
-  };
+    // Chuyển đổi isActive thành boolean
+    const updatedDoctorData = {
+      ...currentDoctor,
+      isActive: currentDoctor.isActive === 'true' || currentDoctor.isActive === true // Chuyển đổi string 'true' hoặc boolean true
+    };
 
-  const handleCloseMultipleDeleteDialog = () => {
-    setOpenMultipleDeleteDialog(false);
-  };
+    console.log('Current Doctor Data:', updatedDoctorData);
 
-  const handleDeleteMultipleDoctors = async () => {
     try {
-      await Promise.all(selectedDoctors.map(async (phone) => {
-        await deleteDoctor(phone);
-      }));
-      const updatedDoctors = doctors.filter((doctor) => !selectedDoctors.includes(doctor.phone));
-      setDoctors(updatedDoctors);
-      setSelectedDoctors([]);
-      handleCloseMultipleDeleteDialog();
+      const updatedDoctor = await updateDoctor(currentDoctor.accId, updatedDoctorData);
+      setDoctors(doctors.map(doc => (doc.accId === updatedDoctor.accId ? updatedDoctor : doc)));
+      handleCloseEditDialog();
+      window.location.reload();
     } catch (error) {
-      console.error('Error deleting doctors:', error);
+      // console.error('Error updating doctor:', error);
     }
   };
-
   //xử lý search auto change
   const handleSearchChange = (event, value) => {
     setSearchQuery(value);
@@ -127,7 +108,7 @@ const DoctorTable = () => {
       .filter(doctor =>
         doctor.name.toLowerCase().includes(value.toLowerCase()) ||
         doctor.phone.includes(value)
-      ).slice(0,5); // Giới hạn kết quả hiển thị
+      ).slice(0, 5); // Giới hạn kết quả hiển thị
     setFilteredDoctors(filtered);
   };
 
@@ -155,18 +136,11 @@ const DoctorTable = () => {
       <Button className="btn_add" variant="contained" onClick={handleOpenAddDialog}>
         Thêm tài khoản
       </Button>
-      <Button
-        className="btn_delete"
-        disabled={selectedDoctors.length === 0}
-        onClick={handleOpenMultipleDeleteDialog}
-      >
-        Xóa các lựa chọn
-      </Button>
       <TableContainer component={Paper}>
         <Table className="table_list">
           <TableHead>
             <TableRow>
-              <TableCell></TableCell>
+              <TableCell>Account ID</TableCell>
               <TableCell>Doctor Name</TableCell>
               <TableCell>Email</TableCell>
               <TableCell>Phone</TableCell>
@@ -174,18 +148,14 @@ const DoctorTable = () => {
               <TableCell>Gender</TableCell>
               <TableCell>Age</TableCell>
               <TableCell>Department</TableCell>
+              <TableCell>Is active</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {(searchQuery ? filteredDoctors : doctors).map((doctor) => (
               <TableRow key={doctor.id}>
-                <TableCell>
-                  <Checkbox
-                    checked={selectedDoctors.includes(doctor.phone)}
-                    onChange={() => handleCheckboxChange(doctor.phone)}
-                  />
-                </TableCell>
+                <TableCell>{doctor.accId}</TableCell>
                 <TableCell>{doctor.name}</TableCell>
                 <TableCell>{doctor.email}</TableCell>
                 <TableCell>{doctor.phone}</TableCell>
@@ -193,14 +163,12 @@ const DoctorTable = () => {
                 <TableCell>{doctor.gender}</TableCell>
                 <TableCell>{doctor.age}</TableCell>
                 <TableCell>{doctor.departmentName}</TableCell>
+                <TableCell>{doctor.isActive ? 'Active' : 'Inactive'}</TableCell> {/* Sử dụng điều kiện để hiển thị giá trị */}
                 <TableCell>
-                  <IconButton
-                    title="Xóa"
-                    onClick={() => handleOpenDeleteDialog(doctor.phone)}
-                  >
-                    <DeleteIcon />
+                  <IconButton title="Chỉnh sửa" color="primary" onClick={() => handleOpenEditDialog(doctor)}>
+                    <EditIcon />
                   </IconButton>
-                  <IconButton title="Chi tiết">
+                  <IconButton title="Chi tiết" sx={{ color: '#ff5722' }}>
                     <InfoIcon />
                   </IconButton>
                 </TableCell>
@@ -209,58 +177,6 @@ const DoctorTable = () => {
           </TableBody>
         </Table>
       </TableContainer>
-      {/**Xóa nhiều bác sĩ */}
-      <Dialog
-        open={openMultipleDeleteDialog}
-        onClose={handleCloseMultipleDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Xác nhận xóa nhiều bác sĩ</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Bạn có chắc chắn muốn xóa {selectedDoctors.length} bác sĩ đã chọn?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseMultipleDeleteDialog} color="primary">
-            Hủy
-          </Button>
-          <Button
-            onClick={handleDeleteMultipleDoctors}
-            color="primary"
-            autoFocus
-          >
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/*xóa 1 bác sĩ */}
-      <Dialog
-        open={openDeleteDialog}
-        onClose={handleCloseDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">Xác nhận xóa bác sĩ</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1">
-            Bạn có chắc chắn muốn xóa bác sĩ có số điện thoại: {deletePhone}?
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseDeleteDialog} color="primary">
-            Hủy
-          </Button>
-          <Button
-            onClick={handleDeleteDoctor}
-            color="primary"
-            autoFocus
-          >
-            Xóa
-          </Button>
-        </DialogActions>
-      </Dialog>
       {/**Thêm bác sĩ */}
       <Dialog
         open={openAddDialog}
@@ -285,16 +201,19 @@ const DoctorTable = () => {
             onChange={(e) => setNewDoctor({ ...newDoctor, name: e.target.value })}
             required
           />
-          <TextField
-            margin="dense"
-            id="gender"
-            label="Giới tính"
-            type="text"
-            fullWidth
-            value={newDoctor.gender}
-            onChange={(e) => setNewDoctor({ ...newDoctor, gender: e.target.value })}
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="gender-label">Giới tính</InputLabel>
+            <Select
+              labelId="gender-label"
+              id="gender"
+              value={newDoctor.gender}
+              onChange={(e) => setNewDoctor({ ...newDoctor, gender: e.target.value })}
+              label="Giới tính"
+            >
+              <MenuItem value="Male">Nam</MenuItem>
+              <MenuItem value="Female">Nữ</MenuItem>
+            </Select>
+          </FormControl>
           <TextField
             margin="dense"
             id="age"
@@ -334,11 +253,141 @@ const DoctorTable = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/**Chỉnh sửa bác sĩ */}
+      <Dialog
+        open={openEditDialog}
+        onClose={handleCloseEditDialog}
+        aria-labelledby="form-dialog-title"
+      >
+        <DialogTitle id="form-dialog-title">Chỉnh sửa tài khoản bác sĩ</DialogTitle>
+        <DialogContent>
+          {validationError && (
+            <Typography color="error" variant="body2">
+              {validationError}
+            </Typography>
+          )}
+          <TextField
+            autoFocus
+            margin="dense"
+            id="edit-name"
+            label="Tên"
+            type="text"
+            fullWidth
+            value={currentDoctor?.name || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, name: e.target.value })}
+            required
+          />
+          <TextField
+            autoFocus
+            margin="dense"
+            id="edit-email"
+            label="Email"
+            type="text"
+            fullWidth
+            value={currentDoctor?.email || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, email: e.target.value })}
+            required
+          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="edit-gender-label">Giới tính</InputLabel>
+            <Select
+              labelId="edit-gender-label"
+              id="edit-gender"
+              value={currentDoctor?.gender || ''}
+              onChange={(e) => setCurrentDoctor({ ...currentDoctor, gender: e.target.value })}
+              label="Giới tính"
+            >
+              <MenuItem value="Male">Nam</MenuItem>
+              <MenuItem value="Female">Nữ</MenuItem>
+            </Select>
+          </FormControl>
+          <TextField
+            margin="dense"
+            id="edit-age"
+            label="Tuổi"
+            type="number"
+            fullWidth
+            value={currentDoctor?.age || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, age: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="edit-phone"
+            label="Số điện thoại"
+            type="text"
+            fullWidth
+            value={currentDoctor?.phone || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, phone: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="edit-role"
+            label="Vai trò"
+            type="text"
+            fullWidth
+            value={currentDoctor?.role || 'Doctor'}
+            disabled
+          />
+          <TextField
+            margin="dense"
+            id="edit-depId"
+            label="Chuyên khoa"
+            type="text"
+            fullWidth
+            value={currentDoctor?.depId || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, depId: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="edit-depName"
+            label="Tên chuyên khoa"
+            type="text"
+            fullWidth
+            value={currentDoctor?.departmentName || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, departmentName: e.target.value })}
+            required
+          />
+          {/* <TextField
+            margin="dense"
+            id="edit-isActive"
+            label="Trạng thái hoạt động"
+            type="text"
+            fullWidth
+            value={currentDoctor?.isActive || ''}
+            onChange={(e) => setCurrentDoctor({ ...currentDoctor, isActive: e.target.value })}
+            required
+          /> */}
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="edit-isActive-label">Trạng thái hoạt động</InputLabel>
+            <Select
+              labelId="edit-isActive-label"
+              id="edit-isActive"
+              value={currentDoctor?.isActive ? 'true' : 'false'} // Chuyển đổi giá trị boolean thành chuỗi
+              onChange={(e) => setCurrentDoctor({ ...currentDoctor, isActive: e.target.value === 'true' })}
+              label="Trạng thái hoạt động"
+            >
+              <MenuItem value="true">Active</MenuItem>
+              <MenuItem value="false">Inactive</MenuItem>
+            </Select>
+          </FormControl>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseEditDialog} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleEditDoctor} color="primary">
+            Lưu
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };
 
 export default DoctorTable;
-
 
 
