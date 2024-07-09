@@ -87,24 +87,7 @@ const Sidebar = () => {
             </ListItem>
           </List>
         </Collapse>
-        <ListItem button className={classes.listItem}>
-          <ListItemIcon>
-            <MailIcon style={{ color: 'white' }} />
-          </ListItemIcon>
-          <ListItemText primary="Notification" />
-        </ListItem>
-        <ListItem button className={classes.listItem}>
-          <ListItemIcon>
-            <InboxIcon style={{ color: 'white' }} />
-          </ListItemIcon>
-          <ListItemText primary="Employee list" />
-        </ListItem>
-        <ListItem button className={classes.listItem} component={Link} to="/view-appoiment-admin">
-          <ListItemIcon>
-            <InboxIcon style={{ color: 'white' }} />
-          </ListItemIcon>
-          {/* <ListItemText primary="View appoiment" > */}
-        </ListItem>
+        
       </List>
     </div>
   );
@@ -121,7 +104,7 @@ const Sidebar = () => {
         }}
       >
         <Typography variant="h6" className={classes.title}>
-          <b>Admin screen</b>
+          <b>Quản lý</b>
         </Typography>
         {list}
       </Drawer>
