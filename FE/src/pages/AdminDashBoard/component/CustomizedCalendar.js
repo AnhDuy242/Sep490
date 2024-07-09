@@ -3,10 +3,9 @@ import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop';
-import { Select, MenuItem, FormControl, InputLabel, Box, Button, Popover, Typography, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Autocomplete } from '@mui/material';
+import { Select, MenuItem, FormControl, InputLabel, Box, Button, Popover, Typography, Dialog, DialogTitle, DialogContent, DialogActions, TextField, Autocomplete, IconButton } from '@mui/material';
 import { RESOURCES } from './constants/constants'; // Điều chỉnh đường dẫn import nếu cần thiết
 import 'moment/locale/vi';
-import { IconButton } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import MailIcon from '@mui/icons-material/Mail';
@@ -20,37 +19,31 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [dragging, setDragging] = useState(false);
-  const [openEditModal, setOpenEditModal] = useState(false); // State để điều khiển modal chỉnh sửa
+  const [openEditModal, setOpenEditModal] = useState(false);
 
-  // Hàm xử lý thay đổi bác sĩ được chọn
   const handleDoctorChange = (event) => {
     const value = event.target.value;
     setSelectedDoctor(value ? parseInt(value) : null);
   };
 
-  // Lọc sự kiện dựa trên bác sĩ được chọn
   const filteredEvents = selectedDoctor
     ? events.filter((event) => event.resourceId === selectedDoctor)
     : events;
 
-  // Xử lý khi chọn một sự kiện trên lịch
   const handleSelectEvent = (event, e) => {
     setSelectedEvent(event);
     setAnchorEl(e.currentTarget);
   };
 
-  // Mở modal chỉnh sửa sự kiện
   const handleEdit = () => {
     setOpenEditModal(true);
   };
 
-  // Đóng popover hoặc modal
   const handleClose = () => {
     setAnchorEl(null);
     setSelectedEvent(null);
   };
 
-  // Xử lý thay đổi thông tin của sự kiện
   const handleEventChange = (field, value) => {
     setSelectedEvent({
       ...selectedEvent,
@@ -58,34 +51,27 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
     });
   };
 
-  // Xử lý khi kéo thả sự kiện trên lịch
   const handleEventDrop = ({ event, start, end }) => {
     const updatedEvent = { ...event, start, end };
     console.log('Updated Event:', updatedEvent);
-    // Cập nhật backend hoặc state tùy theo yêu cầu
   };
 
-  // Xử lý khi chọn một khoảng thời gian trên lịch
   const handleSelectSlot = (slotInfo) => {
     console.log('Selected Slot:', slotInfo);
   };
 
-  // Xử lý khi đang chọn một khoảng thời gian trên lịch
   const handleSelecting = (range) => {
     setDragging(true);
   };
 
-  // Kết thúc việc chọn khoảng thời gian trên lịch
   const handleSelectingDone = () => {
     setDragging(false);
   };
 
-  // Đóng modal chỉnh sửa sự kiện
   const handleEditModalClose = () => {
     setOpenEditModal(false);
   };
 
-  // Kiểm tra popover có mở hay không
   const open = Boolean(anchorEl);
   const id = open ? 'simple-popover' : undefined;
 
@@ -131,26 +117,25 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
           }
           return {};
         }}
-        // Định nghĩa các props cho từng sự kiện trên lịch
         components={{
           event: ({ event }) => (
             <div
-              className="rbc-event custom-slot" // Thêm class custom-slot vào đây
+              className="rbc-event custom-slot"
               style={{
-                backgroundColor: event.resourceId === 1 ? '#ffcccb' : '#b3e5fc', // Màu nền khác nhau cho từng bác sĩ
+                backgroundColor: event.resourceId === 1 ? '#blue' : '#b3e5fc',
                 borderRadius: '5px',
                 padding: '2px 5px',
-                cursor: 'pointer', // Con trỏ chuột dạng pointer khi hover
+                cursor: 'pointer',
               }}
               onClick={(e) => handleSelectEvent(event, e)}
             >
-              {event.title}
+              <br />
+              {RESOURCES.find(resource => resource.id === event.resourceId)?.title} - {event.title}
             </div>
           ),
         }}
       />
 
-      {/* Popover hiển thị thông tin chi tiết sự kiện */}
       <Popover
         id={id}
         open={open}
@@ -188,7 +173,6 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
             <Typography variant="body2">
               End: {moment(selectedEvent.end).format('LLL')}
             </Typography>
-            {/* Thêm thông tin chi tiết sự kiện nếu cần */}
             <Button onClick={handleClose} color="primary">
               Close
             </Button>
@@ -196,7 +180,6 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
         )}
       </Popover>
 
-      {/* Modal chỉnh sửa sự kiện */}
       <Dialog open={openEditModal} onClose={handleEditModalClose} fullWidth>
         <Box display="flex" alignItems="center">
           <DialogTitle>Edit Event</DialogTitle>
@@ -209,7 +192,6 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
             </Button>
           </DialogActions>
         </Box>
-
         <DialogContent>
           <Box display="flex" alignItems="center">
             <TextField
@@ -286,7 +268,6 @@ const Calendar = ({ events, defaultDate, defaultView, min, max }) => {
   );
 };
 
-// Hàm sinh các tuỳ chọn thời gian (ví dụ: 10:00 AM, 10:30 AM, ...)
 const generateTimeOptions = () => {
   const times = [];
   const startTime = moment().startOf('day').hours(8);

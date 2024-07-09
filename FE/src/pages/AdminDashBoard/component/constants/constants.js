@@ -8,8 +8,8 @@ export const VIEW_OPTIONS = [
 ];
 
 export const RESOURCES = [
-  { id: 1, title: "Dr Alex" },
-  { id: 2, title: "Dr John" },
+  { id: 1, title: "Dr Alex Cuoc hop voi" },
+  { id: 2, title: "Dr John thuc hanh" },
 ];
 
 export const AppointmentStatusCode = {
@@ -43,7 +43,7 @@ export const EVENTS = [
     data: {
       appointment: {
         id: 2,
-        status: "CI",
+        status: "P",
         location: "Washington",
         resource: "Dr David",
         address: "Block 1\nStreet 32\nLong Island\nNew York",

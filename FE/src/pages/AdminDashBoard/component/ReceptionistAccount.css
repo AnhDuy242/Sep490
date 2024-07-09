@@ -4,5 +4,4 @@
    padding: 1rem; /* Optional padding for inner content */
     box-sizing: border-box; /* Ensure padding doesn't affect overall width/height */
     position: relative;
-    right: 300px;
 }
