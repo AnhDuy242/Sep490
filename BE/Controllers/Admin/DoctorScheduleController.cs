@@ -2,6 +2,8 @@
 using BE.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using NuGet.Protocol;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -20,8 +22,8 @@ namespace BE.Controllers.Admin
         }
 
         // GET: api/<DoctorScheduleController>
-        [HttpGet]
-        public async Task<IActionResult> GetSchedulesByWeekDate([FromQuery] DateTime startDate, [FromQuery] DateTime endDate)
+        [HttpGet("GetSchedulesByWeekDate")]
+        public async Task<IActionResult> GetSchedulesByWeekDate([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] int? doctorId = null)
         {
             try
             {
@@ -40,7 +42,7 @@ namespace BE.Controllers.Admin
                 var schedules = await _context.Schedules
                     .Include(s => s.Doctor)
                     .Include(s => s.Week)
-                    .Where(s => weeks.WeekId == s.WeekId)
+                    .Where(s => weeks.WeekId == s.WeekId && (doctorId.HasValue ? s.DoctorId == doctorId.Value : true))
                     .Select(s => new
                     {
                         Id = s.Id,
@@ -50,10 +52,11 @@ namespace BE.Controllers.Admin
                         Weekdays = s.Weekdays,
                         Date = s.Date,
                         Appointments = s.Appointments
-                    } 
-                    
+                    }
                     )
                     .ToListAsync();
+
+
 
                 return Ok(schedules);
             }
@@ -65,7 +68,7 @@ namespace BE.Controllers.Admin
 
 
         // GET api/<DoctorScheduleController>/5
-        [HttpGet("{id}")]
+        [HttpGet("GetScheduleById/{id}")]
         public async Task<IActionResult> GetScheduleById(int id)
         {
             try
@@ -90,8 +93,8 @@ namespace BE.Controllers.Admin
         }
 
         // POST api/<DoctorScheduleController>
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ScheduleCreationModel model)
+        [HttpPost("CreateSchedule")]
+        public async Task<IActionResult> CreateSchedule([FromBody] ScheduleCreationModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -123,7 +126,7 @@ namespace BE.Controllers.Admin
         }
 
         // PUT api/<DoctorScheduleController>/5
-        [HttpPut("{id}")]
+        [HttpPut("UpdateSchedule/{id}")]
         public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleCreationModel model)
         {
             if (!ModelState.IsValid)
@@ -161,7 +164,7 @@ namespace BE.Controllers.Admin
         }
 
         // DELETE api/<DoctorScheduleController>/5
-        [HttpDelete("{id}")]
+        [HttpDelete("DeleteSchedule/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -171,7 +174,21 @@ namespace BE.Controllers.Admin
                 {
                     return NotFound();
                 }
+                var schedules = getListSchedule(schedule.DoctorId);
+                if (!schedules.Any())
+                {
+                    _context.Schedules.Remove(schedule);
+                    await _context.SaveChangesAsync();
 
+                    return Ok(new { message = "Schedule deleted successfully" });
+                }
+                else
+                {
+                    foreach(var s in schedules)
+                    {
+                       
+                    }
+                }
                 _context.Schedules.Remove(schedule);
                 await _context.SaveChangesAsync();
 
@@ -181,6 +198,21 @@ namespace BE.Controllers.Admin
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, $"Error: {ex.InnerException?.Message ?? ex.Message}");
             }
+        }
+
+        private List<object> getListSchedule(int doctorId)
+        {
+            var schedules = _context.Schedules
+                .Join(
+                _context.Appointments,
+                schedule => schedule.DoctorId,
+                appointment => appointment.DoctorId,
+                (schedule, appointment) => new { schedule, appointment}
+                )
+                .Where(s => s.schedule.DoctorId == doctorId)
+                .ToList<object>();
+
+            return schedules;
         }
 
     }
