@@ -44,7 +44,7 @@ namespace BE.Controllers.Admin
                         Name = receptionist.Name,
                         Gender = receptionist.Gender,
                         Dob = receptionist.Dob,
-                        IsActive=account.IsActive
+                        IsActive = account.IsActive
                     }
                     )
                 .ToListAsync();
@@ -127,7 +127,7 @@ namespace BE.Controllers.Admin
                 Dob = receptionist.Dob,
                 IsActive = member.IsActive
             };
-            return CreatedAtAction(nameof(GetReceptionistAccountDetail), new { phone = newUpdate.Phone }, newUpdate);
+            return CreatedAtAction(nameof(GetReceptionistAccountDetail), new {phone =  newUpdate.Phone}, newUpdate);
         }
 
 
