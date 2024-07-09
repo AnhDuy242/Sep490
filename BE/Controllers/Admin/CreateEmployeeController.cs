@@ -53,7 +53,8 @@ namespace BE.Controllers.Admin
                 {
                     Phone = model.Phone,
                     Password = password,
-                    RoleId = 2
+                    RoleId = 2,
+                    IsActive = true
                 };
                 await _context.Accounts.AddAsync(account);
                 await _context.SaveChangesAsync();
@@ -76,7 +77,8 @@ namespace BE.Controllers.Admin
                 {
                     Phone = model.Phone,
                     Password = password,
-                    RoleId = 4
+                    RoleId = 4,
+                    IsActive = true
                 };
                 await _context.Accounts.AddAsync(account);
                 await _context.SaveChangesAsync();
