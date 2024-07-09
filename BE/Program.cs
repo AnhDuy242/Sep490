@@ -52,6 +52,8 @@ builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("Emai
 builder.Services.AddTransient<IEmailService, EmailService>();
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
+//otp service
+builder.Services.AddSingleton<OtpService>();
 
 builder.Services.AddDbContext<Alo2Context>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
