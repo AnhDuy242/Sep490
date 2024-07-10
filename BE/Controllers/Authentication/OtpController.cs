@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace BE.Controllers.Authentication
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     public class OtpController : ControllerBase
     {
         private readonly IEmailService _emailService;
@@ -40,7 +40,7 @@ namespace BE.Controllers.Authentication
         //}
 
 
-        [HttpPost("send-email")]
+        [HttpPost]
         public async Task<IActionResult> SendOtp(string Email)
         {
             if (string.IsNullOrEmpty(Email))
@@ -58,7 +58,7 @@ namespace BE.Controllers.Authentication
                 return StatusCode(500, $"Error sending OTP: {ex.Message}");
             }
         }
-        [HttpPost("receive-otp-email")]
+        [HttpPost]
         public async Task<IActionResult> ReceiveOtp(string Email)
         {
             if (string.IsNullOrEmpty(Email))
@@ -77,7 +77,7 @@ namespace BE.Controllers.Authentication
             }
         }
 
-        [HttpPost("verify-email-otp")]
+        [HttpPost]
         public IActionResult VerifyOtp([FromBody] OtpRequest request)
         {
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Otp))
@@ -97,7 +97,7 @@ namespace BE.Controllers.Authentication
         }
 
 
-        [HttpPost("sms")]
+        [HttpPost]
         public async Task<IActionResult> SendOtpSms(string PhoneNumber)
         {
             if (string.IsNullOrEmpty(PhoneNumber))
