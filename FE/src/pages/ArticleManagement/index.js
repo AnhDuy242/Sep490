@@ -10,7 +10,7 @@ function ArticleDash() {
             <div style={{ width: '100%', padding: '20px' }}>
                 <Outlet />
             </div>
-            day la man hinh article
+            
         </div>
     );
 }

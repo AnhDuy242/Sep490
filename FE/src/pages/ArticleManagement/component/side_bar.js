@@ -66,7 +66,7 @@ const Sidebar = () => {
           <ListItemIcon>
             <InboxIcon style={{ color: 'white' }} />
           </ListItemIcon>
-          <ListItemText primary="Tài khoản" />
+          <ListItemText primary="Danh sách" />
           {openAccount ? <ExpandLess style={{ color: 'white' }} /> : <ExpandMore style={{ color: 'white' }} />}
         </ListItem>
         <Collapse in={openAccount} timeout="auto" unmountOnExit>
@@ -95,7 +95,7 @@ const Sidebar = () => {
         }}
       >
         <Typography variant="h6" className={classes.title}>
-          <b>Admin screen</b>
+          <b>Article Management</b>
         </Typography>
         {list}
       </Drawer>
