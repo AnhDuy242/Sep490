@@ -58,7 +58,24 @@ namespace BE.Controllers.Authentication
                 return StatusCode(500, $"Error sending OTP: {ex.Message}");
             }
         }
+        [HttpPost("receive-otp-email")]
+        public async Task<IActionResult> ReceiveOtp(string Email)
+        {
+            if (string.IsNullOrEmpty(Email))
+            {
+                return BadRequest(new { message = "Email is required." });
+            }
 
+            try
+            {
+                var otp = await _otpService.GenerateAndSendOtpAsync(Email);
+                return Ok(new { message = "OTP sent successfully.", otp });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = $"Error sending OTP: {ex.Message}" });
+            }
+        }
 
         [HttpPost("verify-email-otp")]
         public IActionResult VerifyOtp([FromBody] OtpRequest request)
