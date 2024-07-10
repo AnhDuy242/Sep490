@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
-import { Drawer, List, ListItem, ListItemText, IconButton, Typography, ListItemIcon, Collapse } from '@mui/material';
+import { Drawer, List, ListItem, ListItemText, IconButton, Typography, ListItemIcon, Collapse,Box,Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import InboxIcon from '@mui/icons-material/Inbox';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../../../assets/images/background-img.jpg'; // Adjust the path accordingly
-
+import { logout } from '../../../services/Authentication';
 const drawerWidth = '300px';
 
 const useStyles = makeStyles({
@@ -54,9 +54,15 @@ const useStyles = makeStyles({
 const Sidebar = () => {
   const classes = useStyles();
   const [openAccount, setOpenAccount] = useState(false);
+  const navigate = useNavigate(); 
 
   const handleAccountClick = () => {
     setOpenAccount(!openAccount);
+  };
+
+  const handleLogoutClick = () => {
+    logout();
+    navigate('/'); // Redirect to home after logout
   };
 
   const list = (
@@ -98,6 +104,11 @@ const Sidebar = () => {
           <b>Article Management</b>
         </Typography>
         {list}
+        <Box width="100%" display="flex" justifyContent="center">
+          <Button variant="contained" className={classes.logoutButton} onClick={handleLogoutClick}>
+            Logout
+          </Button>
+        </Box>
       </Drawer>
     </div>
   );
