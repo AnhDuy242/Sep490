@@ -6,6 +6,7 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { loadBlogs, deleteBlog, addBlog } from '../../services/blog_service';
 import DeleteIcon from '@mui/icons-material/Delete';
 import InfoIcon from '@mui/icons-material/Info';
+import { useNavigate } from 'react-router-dom';
 
 const BlogTable = () => {
   const [blogs, setBlogs] = useState([]);
@@ -19,9 +20,10 @@ const BlogTable = () => {
   const [newBlog, setNewBlog] = useState({
     title: '',
     author: '',
-    doctor:'',
+    doctorid: '',
     content: '',
     date: '',
+    thumbnail: '',
   });
   const [validationError, setValidationError] = useState('');
 
@@ -38,9 +40,10 @@ const BlogTable = () => {
   const handleDeleteBlog = async () => {
     try {
       await deleteBlog(deleteBlogId);
-      const updatedBlogs = blogs.filter((blog) => blog.id !== deleteBlogId);
+      const updatedBlogs = blogs.filter((blog) => blog.blogid !== deleteBlogId);
       setBlogs(updatedBlogs);
       handleCloseDeleteDialog();
+      window.location.reload();
     } catch (error) {
       console.error('Error deleting blog:', error);
     }
@@ -64,29 +67,38 @@ const BlogTable = () => {
     setNewBlog({
       title: '',
       author: '',
-      doctor:'',
+      doctorid: '',
       content: '',
       date: '',
+      thumbnail: '',
     });
     setValidationError('');
     setOpenAddDialog(false);
   };
 
   // Add a blog
+  const navigate = useNavigate()
+  const navigateAdd = () => {
+    navigate('/article/dashboard/add_blog');
+  }
   const handleAddBlog = async () => {
-    if (!newBlog.title || !newBlog.author || !newBlog.content || !newBlog.date ) {
+    if (!newBlog.title || !newBlog.author || !newBlog.content || !newBlog.date || !newBlog.thumbnail || !newBlog.doctorid) {
       setValidationError('All fields are required.');
       return;
     }
-
+  
     try {
       const addedBlog = await addBlog(newBlog);
       setBlogs([...blogs, addedBlog]);
       handleCloseAddDialog();
+  
+      // Chuyển hướng người dùng sang một URL mới sau khi thêm blog thành công
+      window.location.href = '/add_blog'; // Đường dẫn bạn mong muốn
     } catch (error) {
       console.error('Error adding blog:', error);
     }
   };
+  
 
   // Handle checkbox change
   const handleCheckboxChange = (id) => {
@@ -110,7 +122,7 @@ const BlogTable = () => {
       await Promise.all(selectedBlogs.map(async (id) => {
         await deleteBlog(id);
       }));
-      const updatedBlogs = blogs.filter((blog) => !selectedBlogs.includes(blog.id));
+      const updatedBlogs = blogs.filter((blog) => !selectedBlogs.includes(blog.blogid));
       setBlogs(updatedBlogs);
       setSelectedBlogs([]);
       handleCloseMultipleDeleteDialog();
@@ -138,7 +150,7 @@ const BlogTable = () => {
       <Typography fontSize={50}>Quản lý bài viết</Typography>
       <Autocomplete
         freeSolo
-        options={filteredBlogs.map(blog => blog.title )}
+        options={filteredBlogs.map(blog => blog.title)}
         inputValue={searchQuery}
         onInputChange={handleSearchChange}
         renderInput={(params) => (
@@ -151,9 +163,10 @@ const BlogTable = () => {
           />
         )}
       />
-      <Button className="btn_add" variant="contained" onClick={handleOpenAddDialog}>
-        Add Blog
-      </Button>
+     <Button className="btn_add" variant="contained" component="a" onClick={navigateAdd}>
+  Add Blog
+</Button>
+
       <Button
         className="btn_delete"
         disabled={selectedBlogs.length === 0}
@@ -169,21 +182,25 @@ const BlogTable = () => {
               <TableCell>Title</TableCell>
               <TableCell>Blog ID</TableCell>
               <TableCell>Date</TableCell>
+              <TableCell>Img</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {(searchQuery ? filteredBlogs : blogs).map((blog) => (
-              <TableRow key={blog.id}>
+              <TableRow key={blog.blogId}>
                 <TableCell>
                   <Checkbox
-                    checked={selectedBlogs.includes(blog.id)}
-                    onChange={() => handleCheckboxChange(blog.id)}
+                    checked={selectedBlogs.includes(blog.blogId)}
+                    onChange={() => handleCheckboxChange(blog.blogId)}
                   />
                 </TableCell>
                 <TableCell>{blog.title}</TableCell>
                 <TableCell>{blog.blogId}</TableCell>
                 <TableCell>{blog.date}</TableCell>
+                <TableCell>
+                  <img src={blog.thumbnail} alt={blog.title} style={{ width: '100px', height: 'auto' }} />
+                </TableCell>
                 <TableCell>
                   <IconButton
                     title="Delete"
@@ -279,11 +296,21 @@ const BlogTable = () => {
           <TextField
             margin="dense"
             id="author"
-            label="Author"
+            label="AuthorId"
             type="text"
             fullWidth
             value={newBlog.author}
             onChange={(e) => setNewBlog({ ...newBlog, author: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="doctorid"
+            label="DoctorId"
+            type="text"
+            fullWidth
+            value={newBlog.doctorid}
+            onChange={(e) => setNewBlog({ ...newBlog, doctorid: e.target.value })}
             required
           />
           <TextField
@@ -299,11 +326,20 @@ const BlogTable = () => {
           <TextField
             margin="dense"
             id="date"
-            label="Date"
             type="date"
             fullWidth
             value={newBlog.date}
             onChange={(e) => setNewBlog({ ...newBlog, date: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
+            id="thumbnail"
+            label="Thumbnail URL"
+            type="text"
+            fullWidth
+            value={newBlog.thumbnail}
+            onChange={(e) => setNewBlog({ ...newBlog, thumbnail: e.target.value })}
             required
           />
         </DialogContent>
