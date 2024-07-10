@@ -13,13 +13,11 @@ namespace BE.Controllers.Authentication
     public class Authentication : ControllerBase
     {
         private readonly AuthService _authService;
-        private readonly AccountService _accountService;
         private readonly Alo2Context _alo2Context;
 
-        public Authentication(AuthService authService, AccountService accountService, Alo2Context alo2Context)
+        public Authentication(AuthService authService, Alo2Context alo2Context)
         {
             _authService = authService;
-            _accountService = accountService;
             _alo2Context = alo2Context;
         }
 
@@ -40,7 +38,7 @@ namespace BE.Controllers.Authentication
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            if(_accountService.CheckPhoneExist(registerDto.Phone) || _accountService.CheckEmailExist(registerDto.Email))
+            if(CheckPhoneExist(registerDto.Phone) || CheckEmailExist(registerDto.Email))
             {
                 return BadRequest();
             }
@@ -70,6 +68,19 @@ namespace BE.Controllers.Authentication
                 await _alo2Context.SaveChangesAsync();
                 return Ok();
             }
+        }
+
+        private bool CheckEmailExist(string email)
+        {
+            var accounts = _alo2Context.Accounts.ToList();
+            return accounts.Any(account => account.Email?.Equals(email, StringComparison.OrdinalIgnoreCase) == true);
+        }
+
+        private bool CheckPhoneExist(string phone)
+        {
+            var accounts = _alo2Context.Accounts.ToList();
+            return accounts.Any(account => account.Phone.Equals(phone));
+
         }
     }
 }
