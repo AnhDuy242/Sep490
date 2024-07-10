@@ -10,5 +10,6 @@ public class MappingProfile : Profile
         CreateMap<AccountDoctor, Account>().ReverseMap();
         //CreateMap<AnotherSourceClass, AnotherDestinationClass>();
         //// Các ánh xạ khác...
+        CreateMap<Appointment, AppointmentDto>().ReverseMap();
     }
 }
