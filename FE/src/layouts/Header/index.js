@@ -167,8 +167,8 @@ function Header() {
           </Box>
         </Toolbar>
       </AppBar>
-      <LoginForm show={showLogin} handleLogin={handleLogin} updateToken={updateToken} />
-      <RegisterForm show={showRegister} handleRegister={handleRegister} />
+      <LoginForm show={showLogin} handleLogin={handleLogin} updateToken={updateToken} handleClose={handleCloseLogin} />
+      <RegisterForm show={showRegister} handleRegister={handleRegister}  handleClose={ handleCloseRegister}/>
     </>
   );
 }
