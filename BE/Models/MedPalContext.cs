@@ -277,9 +277,7 @@ public partial class MedPalContext : DbContext
         {
             entity.ToTable("Img");
 
-            entity.Property(e => e.ImgId)
-                .ValueGeneratedNever()
-                .HasColumnName("img_id");
+            entity.Property(e => e.ImgId).HasColumnName("img_id");
             entity.Property(e => e.BlogId).HasColumnName("blog_id");
             entity.Property(e => e.ImgUrl)
                 .IsUnicode(false)
