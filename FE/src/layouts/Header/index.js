@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, useNavigate,Navigate } from 'react-router-dom';
+import { NavLink, useNavigate, Navigate } from 'react-router-dom';
 import '../Header/header.css';
 import NavLogo from '../../assets/images/images.png';
-import { login, logout } from '../../services/Authentication';
+import { login, logout, fetchWithAuth } from '../../services/Authentication';
 import LoginForm from '../LoginForm'; // Import LoginForm component
 import RegisterForm from '../RegisterForm';
 import {
@@ -14,9 +14,7 @@ import {
 } from '@mui/material';
 import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
-
-
-const tokenTimeout = 100000000000000000000; // 1 hour in milliseconds
+const tokenTimeout = 3600000; // 1 hour in milliseconds
 
 function Header() {
   const [showLogin, setShowLogin] = useState(false);
@@ -37,10 +35,16 @@ function Header() {
         setIsLoggedIn(true);
         const decoded = jwtDecode(storedToken);
         setRole(decoded.role);
+        setTimeout(handleTokenExpiration, tokenTimeout - tokenAge);
       } else {
         handleTokenExpiration();
       }
     }
+
+    window.addEventListener('beforeunload', handleTokenExpiration);
+    return () => {
+      window.removeEventListener('beforeunload', handleTokenExpiration);
+    };
   }, []);
 
   const handleTokenExpiration = () => {
@@ -61,7 +65,6 @@ function Header() {
     localStorage.setItem('token', token);
     localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
     setTimeout(handleTokenExpiration, tokenTimeout);
-    console.log(decoded);
   };
 
   const handleCloseLogin = () => setShowLogin(false);

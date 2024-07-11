@@ -1,15 +1,23 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter as Router } from 'react-router-dom'; // Sử dụng BrowserRouter
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import Sidebar from './pages/AdminDashBoard/component/side_bar';
+import AdminDash from './pages/AdminDashBoard';
+import View_appointment from './pages/AdminDashBoard/view_appoiment_admin';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>
+  <React.StrictMode>
+    <Router>
+      <App />
+      {/* <Sidebar /> */}
+      {/* <View_appointment /> */}
+      {/* <AdminDash /> */}
+    </Router>
+  </React.StrictMode>
 );
 
 // Nếu bạn muốn bắt đầu đo hiệu suất trong ứng dụng của mình, hãy chuyển một hàm

@@ -55,7 +55,6 @@ public partial class Alo2Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-
         if (!optionsBuilder.IsConfigured)
         {
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
