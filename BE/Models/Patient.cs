@@ -5,21 +5,17 @@ namespace BE.Models;
 
 public partial class Patient
 {
-    public int Id { get; set; }
+    public int PatientId { get; set; }
 
     public string Name { get; set; } = null!;
 
-    public int Age { get; set; }
-
     public string Gender { get; set; } = null!;
 
-    public string Phone { get; set; } = null!;
-
-    public string? Email { get; set; }
-
-    public string? Img { get; set; }
-
     public string? Address { get; set; }
+
+    public DateTime Dob { get; set; }
+
+    public bool? IsActive { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; } = new List<Appointment>();
 
@@ -27,7 +23,7 @@ public partial class Patient
 
     public virtual ICollection<MedicalNotebook> MedicalNotebooks { get; } = new List<MedicalNotebook>();
 
-    public virtual ICollection<Notification> Notifications { get; } = new List<Notification>();
+    public virtual Account PatientNavigation { get; set; } = null!;
 
     public virtual ICollection<Question> Questions { get; } = new List<Question>();
 }

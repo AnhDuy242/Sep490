@@ -4,10 +4,10 @@ import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import google_icon from '../../assets/images/google.png';
-import '../LoginForm/LoginForm.css'
+import '../LoginForm/LoginForm.css';
 
 const validationSchema = yup.object({
-  username: yup
+  identifier: yup
     .string('Nhập số điện thoại hoặc email')
     .test('isValidEmailOrPhone', 'Số điện thoại hoặc email không hợp lệ', value => {
       const phoneRegExp = /^[0-9]{10}$/;
@@ -21,36 +21,21 @@ const validationSchema = yup.object({
     .required('Mật khẩu là bắt buộc')
 });
 
-const LoginForm = ({ show, handleClose }) => {
+const LoginForm = ({ show, handleClose, handleLogin, setToken }) => { // Ensure setToken is received as a prop
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); // Khai báo setShowPassword
-
+  const [showPassword, setShowPassword] = useState(false);
   const formik = useFormik({
     initialValues: {
-      username: '',
+      identifier: '',
       password: '',
     },
     validationSchema: validationSchema,
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        const response = await fetch('http://example.com/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ username: values.username, password: values.password }),
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || 'Something went wrong');
-        }
-
-        console.log('Login successful:', data);
-        // Reset form fields and any error state
+        // Call handleLogin passed from props
+        await handleLogin({ username: values.identifier, password: values.password });
         formik.resetForm();
         setError(null);
       } catch (error) {
@@ -96,11 +81,11 @@ const LoginForm = ({ show, handleClose }) => {
             variant="outlined"
             fullWidth
             margin="normal"
-            name="username"
-            value={formik.values.username}
+            name="identifier"
+            value={formik.values.identifier}
             onChange={formik.handleChange}
-            error={formik.touched.username && Boolean(formik.errors.username)}
-            helperText={formik.touched.username && formik.errors.username}
+            error={formik.touched.identifier && Boolean(formik.errors.identifier)}
+            helperText={formik.touched.identifier && formik.errors.identifier}
           />
           <TextField
             label="Mật khẩu"
