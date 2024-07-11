@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace BE.Controllers.Admin
+namespace BE.Controllers.User_And_Access_Management.Admin
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -72,7 +72,7 @@ namespace BE.Controllers.Admin
             }
             else if (model.Role == "Receptionist")
             {
-                
+
                 Account account = new Account
                 {
                     Phone = model.Phone,
@@ -126,7 +126,7 @@ namespace BE.Controllers.Admin
             }
             return true;
         }
-        
-       
+
+
     }
 }
