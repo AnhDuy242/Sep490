@@ -162,7 +162,7 @@ function Header() {
         </Toolbar>
       </AppBar>
       <LoginForm show={showLogin} handleClose={handleCloseLogin} handleLogin={handleLogin} />
-      <RegisterForm show={showRegister} handleRegister={handleRegister} />
+      <RegisterForm show={showRegister} handleRegister={handleRegister} handleClose={handleCloseRegister}/>
     </>
   );
 }

@@ -23,7 +23,7 @@ export const handleRegisterForEmail = async (email) => {
   try {
     const encodedEmail = encodeURIComponent(email); // Encode the email address
 
-    const response = await fetch(`${SECONDARY_URL}/send-email?Email=${encodedEmail}`, {
+    const response = await fetch(`${SECONDARY_URL}/SendOtp?Email=${encodedEmail}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -54,11 +54,11 @@ export const handleRegisterForEmail = async (email) => {
   }
 };
 
-export const handleReceiveOTPForEmail =  async (email) => {
+export const handleReceiveOTPForEmail = async (email) => {
   try {
     const encodedEmail = encodeURIComponent(email); // Encode the email address
 
-    const response = await fetch(`${SECONDARY_URL}/receive-otp-email?Email=${encodedEmail}`, {
+    const response = await fetch(`${SECONDARY_URL}/ReceiveOtp?Email=${encodedEmail}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -81,29 +81,29 @@ export const handleReceiveOTPForEmail =  async (email) => {
 };
 export const handleSentOTPConfirm = async (email, otp) => {
 
-    const response = await fetch(`${SECONDARY_URL}/verify-email-otp`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+  const response = await fetch(`${SECONDARY_URL}/VerifyOtp`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
 
-      body: JSON.stringify({ otp, email}),
+    body: JSON.stringify({ otp, email }),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(data => {
-        console.log('OTP confirmation response:', data);
-        // Handle successful OTP confirmation
-        // Proceed with registration or next steps
-      })
-      .catch(error => {
-        console.error('Error sending OTP:', error);
-      });
-  }
+    .then(data => {
+      console.log('OTP confirmation response:', data);
+      // Handle successful OTP confirmation
+      // Proceed with registration or next steps
+    })
+    .catch(error => {
+      console.error('Error sending OTP:', error);
+    });
+}
 
 
 
@@ -129,4 +129,44 @@ export const fetchWithAuth = async (url, options = {}) => {
 };
 export const logout = () => {
   localStorage.removeItem('token');
+};
+
+export const RegisterCompleteForm = async (registrationDetails) => {
+  try {
+    const response = await fetch(`${BASE_URL}/Register`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        Name: registrationDetails.Name,
+        Email: registrationDetails.email,
+        Dob: registrationDetails.dob,
+        Gender: registrationDetails.Gender,
+        Address: registrationDetails.address,
+        Phone: '01261322112', // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
+        Password: registrationDetails.password,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Validation error:', errorData);
+      throw new Error(errorData.message || 'Network response was not ok');
+    }
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (jsonError) {
+      console.error('Error parsing JSON:', jsonError);
+      throw new Error('Registration successful but could not parse response');
+    }
+
+    console.log('Registration successful:', data);
+    return data; // Optionally return data to handle further in caller function
+  } catch (error) {
+    console.error('Error during registration:', error);
+    throw error; // Propagate error to handle in caller function or component
+  }
 };

@@ -13,9 +13,16 @@ namespace BE.Controllers.Authentication
     public class Authentication : ControllerBase
     {
         private readonly AuthService _authService;
+<<<<<<< Updated upstream
         private readonly Alo2Context _alo2Context;
 
         public Authentication(AuthService authService, Alo2Context alo2Context)
+=======
+        private readonly IAccountService _accountService;
+        private readonly Alo2Context _alo2Context;
+
+        public Authentication(AuthService authService, IAccountService accountService, Alo2Context alo2Context)
+>>>>>>> Stashed changes
         {
             _authService = authService;
             _alo2Context = alo2Context;
@@ -38,24 +45,37 @@ namespace BE.Controllers.Authentication
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
+<<<<<<< Updated upstream
             if(CheckPhoneExist(registerDto.Phone) || CheckEmailExist(registerDto.Email))
+=======
+            // Check if phone number or email already exists
+            if (_accountService.CheckPhoneExist(registerDto.Phone))
+>>>>>>> Stashed changes
             {
-                return BadRequest();
+                return BadRequest(new { Message = "Số điện thoại đã tồn tại." });
+            }
+
+            else if (_accountService.CheckEmailExist(registerDto.Email))
+            {
+                return BadRequest(new { Message = "Email đã tồn tại." });
             }
             else
             {
-                Account account = new Account()
+                // Create a new Account entity
+
+                var account = new Account
                 {
                     Phone = registerDto.Phone,
                     Email = registerDto.Email,
                     Password = registerDto.Password,
                     RoleId = 3,
                     IsActive = true,
-            };
-               
+                };
+
                 await _alo2Context.Accounts.AddAsync(account);
                 await _alo2Context.SaveChangesAsync();
-                Patient patient = new Patient()
+
+                var patient = new Patient
                 {
                     IsActive = true,
                     Address = registerDto.Address,
@@ -64,10 +84,13 @@ namespace BE.Controllers.Authentication
                     Name = registerDto.Name,
                     PatientId = account.AccId,
                 };
+
                 await _alo2Context.Patients.AddAsync(patient);
                 await _alo2Context.SaveChangesAsync();
-                return Ok();
+
+                return Ok(new { message = "Đăng ký thành công" });
             }
+
         }
 
         private bool CheckEmailExist(string email)
