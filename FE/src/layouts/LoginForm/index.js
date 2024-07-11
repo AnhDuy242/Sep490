@@ -21,10 +21,11 @@ const validationSchema = yup.object({
     .required('Mật khẩu là bắt buộc')
 });
 
-const LoginForm = ({ show, handleClose, handleLogin, setToken }) => { // Ensure setToken is received as a prop
+const LoginForm = ({ show, handleClose, handleLogin }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+
   const formik = useFormik({
     initialValues: {
       identifier: '',
@@ -34,10 +35,10 @@ const LoginForm = ({ show, handleClose, handleLogin, setToken }) => { // Ensure 
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        // Call handleLogin passed from props
         await handleLogin({ username: values.identifier, password: values.password });
         formik.resetForm();
         setError(null);
+        handleClose(); // Close modal after successful login
       } catch (error) {
         setError(error.message || 'Đã xảy ra lỗi khi đăng nhập');
       } finally {

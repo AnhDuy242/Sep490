@@ -11,5 +11,5 @@ public partial class Week
 
     public DateTime EndDate { get; set; }
 
-    public virtual ICollection<Schedule> Schedules { get; } = new List<Schedule>();
+    public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 }
