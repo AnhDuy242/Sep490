@@ -111,23 +111,11 @@ const Sidebar = () => {
               </ListItem>
             </List>
           </Collapse>
-          <ListItem button className={classes.listItem}>
-            <ListItemIcon>
-              <MailIcon style={{ color: 'white' }} />
-            </ListItemIcon>
-            <ListItemText primary="Notification" />
-          </ListItem>
-          <ListItem button className={classes.listItem}>
-            <ListItemIcon>
-              <InboxIcon style={{ color: 'white' }} />
-            </ListItemIcon>
-            <ListItemText primary="Employee list" />
-          </ListItem>
           <ListItem button className={classes.listItem} component={Link} to="/view-appoiment-admin">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="View appointment" />
+            <ListItemText primary="Xem lịch khám" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
