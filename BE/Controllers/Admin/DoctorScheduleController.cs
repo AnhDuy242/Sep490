@@ -23,6 +23,7 @@ namespace BE.Controllers.Admin
 
         // GET: api/<DoctorScheduleController>
         [HttpGet]
+
         public async Task<IActionResult> GetAllSchedulesByDoctorId([FromQuery] int? doctorId = null)
         {
             try
@@ -46,9 +47,6 @@ namespace BE.Controllers.Admin
                     }
                     )
                     .ToListAsync();
-
-
-
                 return Ok(schedules);
             }
             catch (Exception ex)
@@ -191,6 +189,7 @@ namespace BE.Controllers.Admin
             }
         }
 
+
         private List<object> getListSchedule(int doctorId)
         {
             var schedules = _context.Schedules
@@ -205,6 +204,5 @@ namespace BE.Controllers.Admin
 
             return schedules;
         }
-
     }
 }

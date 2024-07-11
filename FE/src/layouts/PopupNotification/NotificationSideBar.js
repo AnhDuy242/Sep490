@@ -1,18 +1,23 @@
 import React from 'react';
-import { Drawer, List, ListItem, ListItemText, Box, Typography } from '@mui/material';
+import { Drawer, List, ListItem, ListItemText, Box, Typography, IconButton } from '@mui/material';
+import { Close } from '@mui/icons-material';
 
 const NotificationSidebar = ({ open, onClose, notifications }) => {
     return (
-        <Drawer anchor="right" open={open} onClose={onClose} transitionDuration={500}>
+        <Drawer anchor="right" open={open} onClose={onClose} transitionDuration={500} >
             <Box
                 sx={{ width: 300, padding: 2 }}
                 role="presentation"
                 onClick={onClose}
                 onKeyDown={onClose}
             >
+                 <IconButton onClick={onClose} variant="h6" >
+                    <Close />
+                </IconButton>
                 <Typography variant="h6" gutterBottom>
                     Notifications
                 </Typography>
+               
                 <List>
                     {notifications.length > 0 ? (
                         notifications.map((notification, index) => (

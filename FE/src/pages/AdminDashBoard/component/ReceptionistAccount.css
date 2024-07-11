@@ -1,0 +1,7 @@
+.full-height-container {
+    height: 100vh; /* Full height of the viewport */
+    width: 100xs;  /* Full width of the viewport */
+   padding: 1rem; /* Optional padding for inner content */
+    box-sizing: border-box; /* Ensure padding doesn't affect overall width/height */
+    position: relative;
+}
