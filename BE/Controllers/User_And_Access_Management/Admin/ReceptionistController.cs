@@ -1,6 +1,6 @@
 ﻿using BE.DTOs;
 using BE.Models;
-using BE.Models.DTOs;
+using BE.DTOs;
 using BE.Service;
 using CloudinaryDotNet;
 using Microsoft.AspNetCore.Mvc;

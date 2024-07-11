@@ -3,11 +3,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-﻿
 
-﻿using CloudinaryDotNet;
-using BE.Service;
-﻿using BE.Service;
+
+using CloudinaryDotNet;
 using Twilio.Clients;
 using Twilio;
 using Microsoft.Extensions.Options;
@@ -16,6 +14,7 @@ using Microsoft.EntityFrameworkCore;
 using CloudinaryDotNet;
 using BE.Service.IService;
 using BE.DTOs;
+using BE.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
