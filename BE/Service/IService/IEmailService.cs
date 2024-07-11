@@ -1,6 +1,6 @@
 ﻿using BE.DTOs;
 
-namespace BE.Service
+namespace BE.Service.IService
 {
     public interface IEmailService
     {

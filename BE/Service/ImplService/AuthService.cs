@@ -9,10 +9,10 @@ using Microsoft.IdentityModel.Tokens;
 
 public class AuthService
 {
-    private readonly Alo2Context _context;
+    private readonly MedPalContext _context;
     private readonly IConfiguration _configuration;
 
-    public AuthService(Alo2Context context, IConfiguration configuration)
+    public AuthService(MedPalContext context, IConfiguration configuration)
     {
         _context = context;
         _configuration = configuration;

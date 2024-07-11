@@ -2,6 +2,7 @@
 {
     public class AccountDoctor
     {
+        public int AccId { get; set; }
         public string? Email { get; set; }
 
         public string Phone { get; set; } = null!;
@@ -15,7 +16,9 @@
 
         public int Age { get; set; }
 
-        public string DepartmentName { get; set; } = null!;
+        public string? DepartmentName { get; set; } = null!;
+        public int DepId { get; set; }
+        public bool? IsActive { get; set; }
 
     }
 }

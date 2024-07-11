@@ -11,6 +11,8 @@
 
         public string Phone { get; set; } = null!;
 
+        public DateTime Dob { get; set; }
+
         public string Role { get; set; }
     }
 }

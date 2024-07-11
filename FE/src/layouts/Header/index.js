@@ -1,8 +1,8 @@
-import React, { useState,useEffect} from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate, Navigate } from 'react-router-dom';
 import '../Header/header.css';
 import NavLogo from '../../assets/images/images.png';
-import { login, logout } from '../../services/Authentication';
+import { login, logout, fetchWithAuth } from '../../services/Authentication';
 import LoginForm from '../LoginForm'; // Import LoginForm component
 import RegisterForm from '../RegisterForm';
 import {
@@ -14,8 +14,7 @@ import {
 } from '@mui/material';
 import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
 import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
-
-const tokenTimeout = 10000; // 1 hour in milliseconds
+const tokenTimeout = 3600000; // 1 hour in milliseconds
 
 function Header() {
   const [showLogin, setShowLogin] = useState(false);
@@ -36,10 +35,16 @@ function Header() {
         setIsLoggedIn(true);
         const decoded = jwtDecode(storedToken);
         setRole(decoded.role);
+        setTimeout(handleTokenExpiration, tokenTimeout - tokenAge);
       } else {
         handleTokenExpiration();
       }
     }
+
+    window.addEventListener('beforeunload', handleTokenExpiration);
+    return () => {
+      window.removeEventListener('beforeunload', handleTokenExpiration);
+    };
   }, []);
 
   const handleTokenExpiration = () => {
@@ -114,14 +119,15 @@ function Header() {
   return (
     <>
       {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
-      {role === 'Patient' && <Navigate to="/patient/dashboard/receptionist-account" replace={true} />}
-
+      {role === 'Patient' && <Navigate to="/" replace={true} />}
+      {role === 'ArticleManager' && <Navigate to="/article/dashboard" replace={true} />}
+      
       <AppBar position="static" color="default">
         <Toolbar>
           <NavLink to="/" className="nav__logo">
             <img src={NavLogo} alt="Logo" className="logo-image" />
           </NavLink>
-
+        
           <Box className="info-class" display="flex">
             <Box className="card-header-self" display="flex" alignItems="center">
               <Phone />
@@ -151,18 +157,18 @@ function Header() {
               {isLoggedIn ? (
                 <Button onClick={handleLogout} variant="contained" className="login-button" color="secondary">Đăng xuất</Button>
               ) : (
-                  <>
-                    <Button onClick={handleShowLogin} variant="contained" className="login-button" color="primary">Đăng nhập</Button>
-                    <div className="card-hehe"></div>
-                    <Button onClick={handleShowRegister} variant="contained" className="login-button" color="secondary">Đăng ký</Button>
-                  </>
-                )}
+                <>
+                  <Button onClick={handleShowLogin} variant="contained" className="login-button" color="primary">Đăng nhập</Button>
+                  <div className="card-hehe"></div>
+                  <Button onClick={handleShowRegister} variant="contained" className="login-button" color="secondary">Đăng ký</Button>
+                </>
+              )}
             </Box>
           </Box>
         </Toolbar>
       </AppBar>
-      <LoginForm show={showLogin} handleClose={handleCloseLogin} handleLogin={handleLogin} />
-      <RegisterForm show={showRegister} handleRegister={handleRegister} />
+      <LoginForm show={showLogin} handleLogin={handleLogin} updateToken={updateToken} handleClose={handleCloseLogin} />
+      <RegisterForm show={showRegister} handleRegister={handleRegister}  handleClose={ handleCloseRegister}/>
     </>
   );
 }

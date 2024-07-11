@@ -8,8 +8,8 @@ namespace BE.Controllers.Appointment
     [ApiController]
     public class AdminAppointment : ControllerBase
     {
-        private readonly Alo2Context _context;
-        public AdminAppointment(Alo2Context context)
+        private readonly MedPalContext _context;
+        public AdminAppointment(MedPalContext context)
         {
             _context = context;
         }
