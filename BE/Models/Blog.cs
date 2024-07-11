@@ -23,5 +23,5 @@ public partial class Blog
 
     public virtual Doctor Doc { get; set; } = null!;
 
-    public virtual ICollection<Img> Imgs { get; } = new List<Img>();
+    public virtual ICollection<Img> Imgs { get; set; } = new List<Img>();
 }

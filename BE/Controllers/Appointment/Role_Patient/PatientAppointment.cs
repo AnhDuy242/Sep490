@@ -8,9 +8,9 @@ namespace BE.Controllers.Appointment
     [ApiController]
     public class PatientAppointment : ControllerBase
     {
-        private readonly Alo2Context _alo2Context;
+        private readonly MedPalContext _alo2Context;
 
-        public PatientAppointment (Alo2Context alo2Context)
+        public PatientAppointment (MedPalContext alo2Context)
         {
             _alo2Context = alo2Context;
         }

@@ -17,8 +17,8 @@ namespace BE.Controllers.Article_Manager
     {
 
         private readonly Cloudinary _cloudinary;
-        private readonly Alo2Context _context;
-        public ArticleBlog(Cloudinary cloudinary, Alo2Context context)
+        private readonly MedPalContext _context;
+        public ArticleBlog(Cloudinary cloudinary, MedPalContext context)
         {
             _cloudinary = cloudinary;
             _context = context;

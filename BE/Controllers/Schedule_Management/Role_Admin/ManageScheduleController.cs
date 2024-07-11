@@ -13,10 +13,10 @@ namespace BE.Controllers.Admin
     [ApiController]
     public class ManageScheduleController : ControllerBase
     {
-        private readonly Alo2Context _context;
+        private readonly MedPalContext _context;
 
         
-        public ManageScheduleController(Alo2Context context)
+        public ManageScheduleController(MedPalContext context)
         {
             _context = context;
         }

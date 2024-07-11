@@ -15,9 +15,9 @@ namespace BE.Controllers.User_And_Access_Management.Admin
     public class DoctorController : ControllerBase
     {
         private readonly IMapper _mapper;
-        private readonly Alo2Context _context;
+        private readonly MedPalContext _context;
 
-        public DoctorController(IMapper mapper, Alo2Context context)
+        public DoctorController(IMapper mapper, MedPalContext context)
         {
             _mapper = mapper;
             _context = context;

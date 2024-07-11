@@ -17,5 +17,5 @@ public partial class ArticleManager
 
     public virtual Account AIdNavigation { get; set; } = null!;
 
-    public virtual ICollection<Blog> Blogs { get; } = new List<Blog>();
+    public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
 }

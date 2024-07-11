@@ -13,7 +13,7 @@ public partial class Receptionist
 
     public DateTime Dob { get; set; }
 
-    public virtual ICollection<FeedbackRe> FeedbackRes { get; } = new List<FeedbackRe>();
+    public virtual ICollection<FeedbackRe> FeedbackRes { get; set; } = new List<FeedbackRe>();
 
     public virtual Account Recep { get; set; } = null!;
 }

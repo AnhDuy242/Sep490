@@ -13,9 +13,9 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
     public class Authentication : ControllerBase
     {
         private readonly AuthService _authService;
-        private readonly Alo2Context _alo2Context;
+        private readonly MedPalContext _alo2Context;
 
-        public Authentication(AuthService authService, Alo2Context alo2Context)
+        public Authentication(AuthService authService, MedPalContext alo2Context)
         {
             _authService = authService;
             _alo2Context = alo2Context;

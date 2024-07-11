@@ -15,9 +15,9 @@ namespace BE.Controllers.User_And_Access_Management.Admin
     public class ReceptionistController : ControllerBase
     {
 
-        private readonly Alo2Context _context;
+        private readonly MedPalContext _context;
 
-        public ReceptionistController(Alo2Context context)
+        public ReceptionistController(MedPalContext context)
         {
 
             _context = context;
