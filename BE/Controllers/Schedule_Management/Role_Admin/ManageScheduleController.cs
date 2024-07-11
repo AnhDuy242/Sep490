@@ -11,12 +11,12 @@ namespace BE.Controllers.Admin
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class DoctorScheduleController : ControllerBase
+    public class ManageScheduleController : ControllerBase
     {
         private readonly Alo2Context _context;
 
         
-        public DoctorScheduleController(Alo2Context context)
+        public ManageScheduleController(Alo2Context context)
         {
             _context = context;
         }

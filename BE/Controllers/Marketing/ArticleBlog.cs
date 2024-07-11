@@ -13,12 +13,12 @@ namespace BE.Controllers.Article_Manager
 
     [Route("api/[controller]")]
     [ApiController]
-    public class BlogController : ControllerBase
+    public class ArticleBlog : ControllerBase
     {
 
         private readonly Cloudinary _cloudinary;
         private readonly Alo2Context _context;
-        public BlogController(Cloudinary cloudinary, Alo2Context context)
+        public ArticleBlog(Cloudinary cloudinary, Alo2Context context)
         {
             _cloudinary = cloudinary;
             _context = context;
