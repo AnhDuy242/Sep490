@@ -4,7 +4,7 @@ using BE.Service.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BE.Controllers.Authentication
+namespace BE.Controllers.User_And_Access_Management.Authentication
 {
     [ApiController]
     [Route("api/[controller]/[action]")]

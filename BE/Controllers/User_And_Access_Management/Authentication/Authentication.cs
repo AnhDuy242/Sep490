@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Numerics;
 
-namespace BE.Controllers.Authentication
+namespace BE.Controllers.User_And_Access_Management.Authentication
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
