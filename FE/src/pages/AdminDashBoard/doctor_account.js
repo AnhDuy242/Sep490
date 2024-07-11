@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Typography, TextField, Button, Dialog, DialogActions, DialogContent,
-  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination
+  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination, useMediaQuery
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { loadDoctors, addDoctor, updateDoctor } from '../../services/doctor_service';
 import InfoIcon from '@mui/icons-material/Info';
 import EditIcon from '@mui/icons-material/Edit';
+import { useTheme } from '@mui/material/styles';
 import '../../assets/css/doctor_list_table.css';
 
 const DoctorTable = () => {
@@ -24,13 +25,15 @@ const DoctorTable = () => {
     role: 'Doctor',
   });
   const [validationError, setValidationError] = useState('');
-
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredDoctors, setFilteredDoctors] = useState([]);
   const [searchType, setSearchType] = useState('name');
   const [searchTerm, setSearchTerm] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
+
+  const theme = useTheme();
+  const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
     loadDoctors(setDoctors, setLoading, setError);
@@ -93,7 +96,7 @@ const DoctorTable = () => {
       const updatedDoctor = await updateDoctor(currentDoctor.accId, updatedDoctorData);
       setDoctors(doctors.map(doc => (doc.accId === updatedDoctor.accId ? updatedDoctor : doc)));
       handleCloseEditDialog();
-      window.location.reload();
+      // window.location.reload();
     } catch (error) {
       console.error('Error updating doctor:', error);
     }
@@ -109,22 +112,14 @@ const DoctorTable = () => {
     setFilteredDoctors(filtered);
   };
 
-
-  
-  // Hàm để xử lý khi không có gợi ý được chọn
   const handleInputChange = (event, value) => {
     setSearchQuery(value);
-  
-    // Filter doctors based on name or phone directly
     const filtered = doctors.filter(doctor =>
       doctor.name.toLowerCase().includes(value.toLowerCase()) ||
       doctor.phone.includes(value)
     );
-  
     setFilteredDoctors(filtered);
   };
-  
-
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
@@ -167,9 +162,6 @@ const DoctorTable = () => {
           />
         )}
       />
-
-
-
       <Button className="btn_add" variant="contained" onClick={handleOpenAddDialog}>
         Thêm tài khoản
       </Button>
@@ -227,6 +219,8 @@ const DoctorTable = () => {
         open={openAddDialog}
         onClose={handleCloseAddDialog}
         aria-labelledby="form-dialog-title"
+        fullWidth
+        maxWidth="sm"
       >
         <DialogTitle id="form-dialog-title">Thêm tài khoản bác sĩ</DialogTitle>
         <DialogContent>
@@ -302,6 +296,8 @@ const DoctorTable = () => {
         open={openEditDialog}
         onClose={handleCloseEditDialog}
         aria-labelledby="form-dialog-title"
+        fullWidth
+        maxWidth="sm"
       >
         <DialogTitle id="form-dialog-title">Chỉnh sửa tài khoản bác sĩ</DialogTitle>
         <DialogContent>
@@ -432,4 +428,3 @@ const DoctorTable = () => {
 };
 
 export default DoctorTable;
-
