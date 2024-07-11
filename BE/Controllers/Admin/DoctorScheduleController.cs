@@ -22,27 +22,18 @@ namespace BE.Controllers.Admin
         }
 
         // GET: api/<DoctorScheduleController>
-        [HttpGet("GetSchedulesByWeekDate")]
-        public async Task<IActionResult> GetSchedulesByWeekDate([FromQuery] DateTime startDate, [FromQuery] DateTime endDate, [FromQuery] int? doctorId = null)
+        [HttpGet("GetAllSchedulesByDoctorId")]
+        public async Task<IActionResult> GetAllSchedulesByDoctorId([FromQuery] int? doctorId = null)
         {
             try
             {
-                // Tìm tuần có StartDate và EndDate nằm trong khoảng ngày được chỉ định
-                var weeks = await _context.Weeks
-                    .Where(w => w.StartDate >= startDate && w.EndDate <= endDate)
-                    .FirstOrDefaultAsync();
-
-                if (weeks == null)
-                {
-                    return NotFound("No weeks found in the specified date range.");
-                }
+                
 
 
                 // Truy vấn để lấy các schedule có WeekId trong các tuần tìm được
                 var schedules = await _context.Schedules
                     .Include(s => s.Doctor)
-                    .Include(s => s.Week)
-                    .Where(s => weeks.WeekId == s.WeekId && (doctorId.HasValue ? s.DoctorId == doctorId.Value : true))
+                    .Where(s => (doctorId.HasValue ? s.DoctorId == doctorId.Value : true))
                     .Select(s => new
                     {
                         Id = s.Id,
