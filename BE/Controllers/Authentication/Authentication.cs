@@ -13,16 +13,10 @@ namespace BE.Controllers.Authentication
     public class Authentication : ControllerBase
     {
         private readonly AuthService _authService;
-<<<<<<< Updated upstream
-        private readonly Alo2Context _alo2Context;
-
-        public Authentication(AuthService authService, Alo2Context alo2Context)
-=======
         private readonly IAccountService _accountService;
         private readonly Alo2Context _alo2Context;
 
         public Authentication(AuthService authService, IAccountService accountService, Alo2Context alo2Context)
->>>>>>> Stashed changes
         {
             _authService = authService;
             _alo2Context = alo2Context;
@@ -45,12 +39,8 @@ namespace BE.Controllers.Authentication
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-<<<<<<< Updated upstream
-            if(CheckPhoneExist(registerDto.Phone) || CheckEmailExist(registerDto.Email))
-=======
             // Check if phone number or email already exists
             if (_accountService.CheckPhoneExist(registerDto.Phone))
->>>>>>> Stashed changes
             {
                 return BadRequest(new { Message = "Số điện thoại đã tồn tại." });
             }
