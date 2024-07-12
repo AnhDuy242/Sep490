@@ -1,6 +1,7 @@
 ﻿using BE.DTOs;
 using BE.Models;
 using BE.Service;
+using BE.Service.ImplService;
 using BE.Service.IService;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,10 +16,12 @@ namespace BE.Controllers.User_And_Access_Management.Admin
     {
         private readonly MedPalContext _context;
         private readonly ISMSService _smsService;
-        public CreateEmployeeController(ISMSService smsService, MedPalContext context)
+        private readonly IValidateService _validateService;
+        public CreateEmployeeController(ISMSService smsService, MedPalContext context, IValidateService validateService)
         {
             _smsService = smsService;
             _context = context;
+            _validateService = validateService;
         }
         // GET: api/<EmployeeController>
 
@@ -37,13 +40,13 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             {
                 return BadRequest(ModelState);
             }
-            if (!CheckPhoneNumberExist(model.Phone))
+            if (!_validateService.CheckPhoneNumberExist(model.Phone))
 
             {
                 return BadRequest(new { message = "Số điện thoại đã tồn tại" });
             }
 
-            string password = GenerateRandomPassword();
+            string password = _validateService.GenerateRandomPassword();
             string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
 
 
