@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import {
-    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent,
-    DialogTitle, TextField, MenuItem, FormControl, InputLabel, Select
-} from '@mui/material';
+import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
+    TextField, MenuItem, FormControl, InputLabel, Select, TablePagination} from '@mui/material';
 import { createPatient, getAllPatients } from './../../services/receptionist_management';
 
 const CreatePatientAccount = () => {
@@ -19,6 +17,10 @@ const CreatePatientAccount = () => {
         activeStatus: true // Mặc định là true
     });
     const [patients, setPatients] = useState([]);
+    const [searchType, setSearchType] = useState('name');
+    const [searchTerm, setSearchTerm] = useState('');
+    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [page, setPage] = useState(0);
 
     useEffect(() => {
         const fetchPatients = async () => {
@@ -50,7 +52,6 @@ const CreatePatientAccount = () => {
             activeStatus: true // Mặc định là true
         });
         setOpen(false);
-
     };
 
     const handleChange = (e) => {
@@ -68,6 +69,24 @@ const CreatePatientAccount = () => {
         } catch (error) {
             console.error('Error creating patient:', error);
         }
+    };
+
+    const filteredAccounts = patients.filter((account) => {
+        if (searchType === 'name') {
+            return account.name.toLowerCase().includes(searchTerm.toLowerCase());
+        } else if (searchType === 'phone') {
+            return account.phone.includes(searchTerm);
+        }
+        return true;
+    });
+
+    const handlePageChange = (event, newPage) => {
+        setPage(newPage);
+    };
+
+    const handleRowsPerPageChange = (event) => {
+        setRowsPerPage(parseInt(event.target.value, 10));
+        setPage(0);
     };
 
     return (
@@ -104,7 +123,7 @@ const CreatePatientAccount = () => {
                         name="password"
                         value={patientData.password}
                         onChange={handleChange}
-                        style={{ display: 'none' }}  
+                        style={{ display: 'none' }}
                     />
                     <TextField
                         margin="dense"
@@ -147,7 +166,6 @@ const CreatePatientAccount = () => {
                             shrink: true,
                         }}
                     />
-                    {/* Không cần trường "Trạng thái hoạt động" vì mặc định là true */}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose}>Hủy</Button>
@@ -170,29 +188,30 @@ const CreatePatientAccount = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {patients && patients.length > 0 ? (
-                            patients.map((patient) => (
-                                <TableRow key={patient.accId}>
-                                    <TableCell>{patient.accId}</TableCell>
-                                    <TableCell>{patient.phone}</TableCell>
-                                    <TableCell>{patient.email}</TableCell>
-                                    <TableCell>{patient.password}</TableCell>
-                                    <TableCell>{patient.name}</TableCell>
-                                    <TableCell>{patient.gender}</TableCell>
-                                    <TableCell>{patient.address}</TableCell>
-                                    <TableCell>{patient.dob}</TableCell>
-                                    <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
-                                </TableRow>
-                            ))
-                        ) : (
-                            <TableRow>
-                                <TableCell colSpan={9} align="center">
-                                    Không có dữ liệu
-                                </TableCell>
+                        {filteredAccounts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((patient) => (
+                            <TableRow key={patient.accId}>
+                                <TableCell>{patient.accId}</TableCell>
+                                <TableCell>{patient.phone}</TableCell>
+                                <TableCell>{patient.email}</TableCell>
+                                <TableCell>{patient.password}</TableCell>
+                                <TableCell>{patient.name}</TableCell>
+                                <TableCell>{patient.gender}</TableCell>
+                                <TableCell>{patient.address}</TableCell>
+                                <TableCell>{patient.dob}</TableCell>
+                                <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
                             </TableRow>
-                        )}
+                        ))}
                     </TableBody>
                 </Table>
+                <TablePagination
+                    rowsPerPageOptions={[5, 10, 25]}
+                    component="div"
+                    count={filteredAccounts.length}
+                    rowsPerPage={rowsPerPage}
+                    page={page}
+                    onPageChange={handlePageChange}
+                    onRowsPerPageChange={handleRowsPerPageChange}
+                />
             </TableContainer>
         </>
     );
