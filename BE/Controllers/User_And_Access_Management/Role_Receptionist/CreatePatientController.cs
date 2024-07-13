@@ -4,6 +4,7 @@ using BE.Service;
 using BE.Service.ImplService;
 using BE.Service.IService;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -24,6 +25,36 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             _validateService = validateService;
         }
 
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AccountDoctor>>> TestGetAllPatient()
+        {
+            if (_context.Patients == null || _context.Accounts == null)
+            {
+                return NotFound();
+            }
+            var accountsWithPatient = await _context.Accounts
+                .Join(
+                    _context.Patients,
+                    account => account.AccId,
+                    patient => patient.PatientId,
+                    (account, patient) => new PatientCreationModel
+                    {
+                        AccId = account.AccId,
+                        Email = account.Email,
+                        Phone = account.Phone,
+                        Password = account.Password,
+                        Address = patient.Address,
+                        Name = patient.Name,
+                        Gender = patient.Gender,
+                        Dob = patient.Dob,
+                        IsActive = account.IsActive,
+                        RoleId = account.RoleId
+                    }
+                    )
+                .ToListAsync();
+
+            return Ok(accountsWithPatient);
+        }
 
         // GET api/<CreatePatientController>/5
         [HttpGet("{id}")]
@@ -45,14 +76,15 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             {
                 return BadRequest(new { message = "Số điện thoại đã tồn tại" });
             }
+            string password = _validateService.GenerateRandomPassword();
 
-         
 
-                Account account = new Account
-                {
+            Account account = new Account
+                { 
                     Phone = model.Phone,
-                    Password = model.Password,
+                    Password = password,
                     RoleId = 3,
+                    Email = model.Email,
                     IsActive = true
                 };
                 await _context.Accounts.AddAsync(account);

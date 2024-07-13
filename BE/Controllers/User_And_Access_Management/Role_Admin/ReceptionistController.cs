@@ -26,7 +26,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ReceptionistAccount>>> GetReceptionistAccount()
         {
-            if (_context.Doctors == null || _context.Accounts == null || _context.Departments == null)
+            if (_context.Receptionists == null || _context.Accounts == null)
             {
                 return NotFound();
             }
