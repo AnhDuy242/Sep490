@@ -14,7 +14,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
     {
         private readonly AuthService _authService;
         private readonly MedPalContext _alo2Context;
-
+        private readonly AccountService _accService;
         public Authentication(AuthService authService, MedPalContext alo2Context)
         {
             _authService = authService;
@@ -39,12 +39,12 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             // Check if phone number or email already exists
-            if (_accountService.CheckPhoneExist(registerDto.Phone))
+            if (_accService.CheckPhoneExist(registerDto.Phone))
             {
                 return BadRequest(new { Message = "Số điện thoại đã tồn tại." });
             }
 
-            else if (_accountService.CheckEmailExist(registerDto.Email))
+            else if (_accService.CheckEmailExist(registerDto.Email))
             {
                 return BadRequest(new { Message = "Email đã tồn tại." });
             }

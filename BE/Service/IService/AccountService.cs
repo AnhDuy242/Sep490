@@ -4,9 +4,9 @@ namespace BE.Service.IService
 {
     public class AccountService : IAccountService
     {
-        private readonly Alo2Context _alo2Context;
+        private readonly MedPalContext _alo2Context;
 
-        public AccountService(Alo2Context alo2Context)
+        public AccountService(MedPalContext alo2Context)
         {
             _alo2Context = alo2Context;
         }

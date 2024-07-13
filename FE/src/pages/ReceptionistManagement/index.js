@@ -3,7 +3,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './component/side_bar'; 
 
-function AdminDash() {
+function ReceptionistMana() {
     return (
         <div style={{ display: 'flex' }}>
             <Sidebar />
@@ -14,4 +14,4 @@ function AdminDash() {
     );
 }
 
-export default AdminDash;
+export default ReceptionistMana;

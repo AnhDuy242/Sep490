@@ -94,11 +94,11 @@ const Sidebar = () => {
           <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
-          <ListItem button className={classes.listItem} component={Link} to="">
+          <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/create_patient_account">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Xem lịch khám" />
+            <ListItemText primary="Tạo tài khoản bệnh nhân" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
