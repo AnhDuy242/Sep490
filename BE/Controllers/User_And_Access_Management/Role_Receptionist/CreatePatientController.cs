@@ -34,7 +34,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
 
         // POST api/<CreatePatientController>
         [HttpPost]
-        public async Task<ActionResult<Employee>> CreateEmployee(PatientCreationModel model)
+        public async Task<ActionResult<Employee>> CreatePatient(PatientCreationModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -73,7 +73,6 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             await _context.SaveChangesAsync();
 
 
-            // Gửi tin nhắn SMS cho nhân viên mới đăng ký
           
             return CreatedAtAction(nameof(TestGet), new { id = model.AccId }, model);
         }
