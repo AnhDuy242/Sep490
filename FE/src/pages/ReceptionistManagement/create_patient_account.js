@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent,
     DialogTitle, TextField, MenuItem, FormControl, InputLabel, Select
 } from '@mui/material';
-import { createPatient } from './../../services/receptionist_management';
+import { createPatient, getAllPatients } from './../../services/receptionist_management';
 
 const CreatePatientAccount = () => {
     const [open, setOpen] = useState(false);
@@ -18,13 +18,39 @@ const CreatePatientAccount = () => {
         birthDate: '',
         activeStatus: true // Mặc định là true
     });
+    const [patients, setPatients] = useState([]);
+
+    useEffect(() => {
+        const fetchPatients = async () => {
+            try {
+                const patientsList = await getAllPatients();
+                setPatients(patientsList);
+            } catch (error) {
+                console.error('Error fetching patients:', error);
+            }
+        };
+
+        fetchPatients();
+    }, []);
 
     const handleClickOpen = () => {
         setOpen(true);
     };
 
     const handleClose = () => {
+        setPatientData({
+            id: '',
+            phone: '',
+            email: '',
+            password: '',
+            name: '',
+            gender: '',
+            address: '',
+            birthDate: '',
+            activeStatus: true // Mặc định là true
+        });
         setOpen(false);
+
     };
 
     const handleChange = (e) => {
@@ -35,7 +61,10 @@ const CreatePatientAccount = () => {
     const handleSubmit = async () => {
         try {
             await createPatient(patientData);
-            handleClose();
+            setOpen(false);
+            // Fetch the updated list of patients after adding a new one
+            const patientsList = await getAllPatients();
+            setPatients(patientsList);
         } catch (error) {
             console.error('Error creating patient:', error);
         }
@@ -75,6 +104,7 @@ const CreatePatientAccount = () => {
                         name="password"
                         value={patientData.password}
                         onChange={handleChange}
+                        style={{ display: 'none' }}  
                     />
                     <TextField
                         margin="dense"
@@ -94,7 +124,6 @@ const CreatePatientAccount = () => {
                         >
                             <MenuItem value="male">Nam</MenuItem>
                             <MenuItem value="female">Nữ</MenuItem>
-                            <MenuItem value="other">Khác</MenuItem>
                         </Select>
                     </FormControl>
                     <TextField
@@ -141,9 +170,27 @@ const CreatePatientAccount = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        <TableRow>
-                            {/* Render thông tin tài khoản bệnh nhân ở đây */}
-                        </TableRow>
+                        {patients && patients.length > 0 ? (
+                            patients.map((patient) => (
+                                <TableRow key={patient.accId}>
+                                    <TableCell>{patient.accId}</TableCell>
+                                    <TableCell>{patient.phone}</TableCell>
+                                    <TableCell>{patient.email}</TableCell>
+                                    <TableCell>{patient.password}</TableCell>
+                                    <TableCell>{patient.name}</TableCell>
+                                    <TableCell>{patient.gender}</TableCell>
+                                    <TableCell>{patient.address}</TableCell>
+                                    <TableCell>{patient.dob}</TableCell>
+                                    <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                </TableRow>
+                            ))
+                        ) : (
+                            <TableRow>
+                                <TableCell colSpan={9} align="center">
+                                    Không có dữ liệu
+                                </TableCell>
+                            </TableRow>
+                        )}
                     </TableBody>
                 </Table>
             </TableContainer>
