@@ -14,11 +14,13 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
     {
         private readonly AuthService _authService;
         private readonly MedPalContext _alo2Context;
+        private readonly AccountService _accountService;
 
-        public Authentication(AuthService authService, MedPalContext alo2Context)
+        public Authentication(AuthService authService, MedPalContext alo2Context, AccountService accountService)
         {
             _authService = authService;
             _alo2Context = alo2Context;
+            _accountService = accountService;
         }
 
         [HttpPost]
