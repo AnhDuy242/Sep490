@@ -2,6 +2,8 @@
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 
 namespace BE.Controllers.Appointment_Management
 {
@@ -45,12 +47,80 @@ namespace BE.Controllers.Appointment_Management
 
 
         [HttpPost]
-        public async Task<IActionResult> UpdateAppointment([FromBody] AppointmentDto appointmentDto)
+        public async Task<IActionResult> UpdateAppointment(int appId, [FromBody] AppointmentDto appointmentDto)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            var appointment = await _alo2Context.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Patient)
+                .Include(a => a.Slot)
+                .FirstOrDefaultAsync(a => a.Id == appId);
+
+            if (appointment == null)
+            {
+                return NotFound("Appointment not found.");
+            }
+
+            // Update appointment properties
+            appointment.PatientId = appointmentDto.PatientId;
+            appointment.DoctorId = appointmentDto.DoctorId;
+            appointment.Date = appointmentDto.Date;
+            appointment.SlotId = appointmentDto.SlotId;
+            appointment.Note = appointmentDto.Note;
+
+            try
+            {
+                await _alo2Context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AppointmentExists(appId))
+                {
+                    return NotFound("Appointment not found.");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(appointment);
         }
+        private bool AppointmentExists(int id)
+        {
+            return _alo2Context.Appointments.Any(e => e.Id == id);
+        }
+
+        [HttpDelete]
+        public async Task<IActionResult> DeleteAppointment(int appId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            var appointment = await _alo2Context.Appointments.FindAsync(appId);
+
+            if (appointment == null)
+            {
+                return NotFound("Appointment not found.");
+            }
+
+            _alo2Context.Appointments.Remove(appointment);
+
+            try
+            {
+                await _alo2Context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+
+            return Ok("Appointment deleted successfully.");
+        }
+
     }
 }
