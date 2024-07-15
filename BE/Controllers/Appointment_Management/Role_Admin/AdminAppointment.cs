@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BE.Controllers.Appointment
+namespace BE.Controllers.Appointment_Management
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
@@ -13,5 +13,7 @@ namespace BE.Controllers.Appointment
         {
             _context = context;
         }
+
+
     }
 }
