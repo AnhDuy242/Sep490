@@ -18,7 +18,7 @@ function Carousel2() {
             <img src={img2} alt="My Image" style={{ width: '100%', height: '100%' }} />
             <Box sx={{ position: 'absolute', top: '35%', left: '60%', transform: 'translate(-50%, -50%)', display: 'grid', width: '200px' }}>
                 {isLoggedIn && (
-                    <Link to="/link1" className="button-link" style={{ textDecoration: 'none', margin: '10px 10px' }}>
+                    <Link component={Link} to="/CreateAppointment" className="button-link" style={{ textDecoration: 'none', margin: '10px 10px' }}>
                         <Button variant="contained" color="primary">
                             Đặt lịch khám
                         </Button>

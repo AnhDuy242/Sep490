@@ -31,6 +31,13 @@ function App() {
       <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment/></ProtectedRoute>}>
         
       </Route>
+
+
+      <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment/></ProtectedRoute>}>
+        
+      </Route>
+
+
     </Routes>
   );
 }
