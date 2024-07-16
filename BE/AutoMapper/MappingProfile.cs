@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using BE.DTOs;
+using BE.DTOs.DepartmentDto;
+using BE.DTOs.DoctorDto;
 using BE.Models;
 
 public class MappingProfile : Profile
@@ -11,5 +13,7 @@ public class MappingProfile : Profile
         //CreateMap<AnotherSourceClass, AnotherDestinationClass>();
         //// Các ánh xạ khác...
         CreateMap<Appointment, AppointmentDto>().ReverseMap();
+        CreateMap<Doctor, DoctorAppointment>().ReverseMap();
+        CreateMap<Department, DepartmentAppointment>().ReverseMap();
     }
 }
