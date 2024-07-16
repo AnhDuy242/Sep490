@@ -17,3 +17,28 @@ export const fetchAppointments = async (patientId) => {
     throw error;
   }
 };
+
+//Hàm update appointment
+export const updateAppointment = async (appointmentId, updatedAppointment) => {
+  const apiUrl = `https://localhost:7240/api/PatientAppointment/UpdateAppointment?appId=${appointmentId}`;
+  
+  try {
+      const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updatedAppointment)
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to update appointment');
+      }
+
+      const data = await response.json();
+      return data; // Return updated appointment data if needed
+  } catch (error) {
+      console.error('Error updating appointment:', error);
+      throw error;
+  }
+};
