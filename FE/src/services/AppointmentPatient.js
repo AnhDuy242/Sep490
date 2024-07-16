@@ -11,7 +11,7 @@ export const fetchAppointments = async (patientId) => {
       throw new Error('Network response was not ok');
     }
     const data = await response.json();
-    return data.$value;
+    return data;
   } catch (error) {
     console.error('Error fetching appointments:', error);
     throw error;
