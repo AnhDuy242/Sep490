@@ -7,6 +7,7 @@ import LoginForm from '../LoginForm'; // Import LoginForm component
 import RegisterForm from '../RegisterForm';
 import { AppBar, Toolbar, Button, Box } from '@mui/material';
 import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
+import { jwtDecode } from 'jwt-decode';
 
 const Header = () => {
   const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
@@ -36,6 +37,13 @@ const Header = () => {
     try {
       const { token } = await login(username, password);
       updateToken(token);
+
+      const decodedToken = jwtDecode(token);
+      const accountId = decodedToken.AccId;
+
+      // Lưu trạng thái đăng nhập và account id vào localStorage
+      localStorage.setItem('accountId', accountId);
+
       handleCloseLogin();
       navigate('/');
     } catch (error) {

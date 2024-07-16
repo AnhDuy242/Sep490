@@ -37,6 +37,7 @@ const AuthProvider = ({ children }) => {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('tokenTimestamp');
+    localStorage.removeItem('accountId');
     setToken(null);
     setIsLoggedIn(false);
     setRole(null);

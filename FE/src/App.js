@@ -9,6 +9,8 @@ import ListArticle from './pages/ArticleManagement/list_article';
 import ListBlog from './pages/ArticleManagement/list_blog';
 import ArticleDash from './pages/ArticleManagement';
 import Add_blog from'./pages/ArticleManagement/add_blog';
+import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
+
 function App() {
   return (
     <Routes>
@@ -23,6 +25,10 @@ function App() {
         <Route path="/article/dashboard/list_blog" element={<ListBlog/>} />
         <Route path="list_article" element={<ListArticle/>} />
         <Route path="/article/dashboard/add_blog" element={<Add_blog/>} />
+        
+      </Route>
+
+      <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment/></ProtectedRoute>}>
         
       </Route>
     </Routes>
