@@ -1,8 +1,8 @@
-﻿namespace BE.DTOs
+﻿namespace BE.DTOs.AppointmentDto
 {
     public class AppointmentDto
     {
-      //  public int Id { get; set; }
+        //  public int Id { get; set; }
 
         public int PatientId { get; set; }
 

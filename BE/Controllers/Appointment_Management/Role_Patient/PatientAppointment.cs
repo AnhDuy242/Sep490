@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using BE.DTOs;
+using BE.DTOs.AppointmentDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
 using BE.Models;
@@ -26,8 +26,9 @@ namespace BE.Controllers.Appointment_Management
         [HttpGet]
         public async Task<IActionResult> GetAppointment(int pid)
         {
-            var appointments = _alo2Context.Appointments.Where(x => x.PatientId == pid).ToList();
-            return Ok(appointments);
+            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Where(x => x.PatientId == pid).ToList();
+            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            return Ok(list);
         }
 
         [HttpPost]
