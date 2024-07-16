@@ -1,53 +1,9 @@
-// // appointment.js
-
-// import React, { useEffect, useState } from 'react';
-// import { fetchAppointments } from '../../services/AppointmentPatient'; // Đảm bảo đường dẫn và tên hàm fetchAppointments đúng
-
-// const GetAppointment = () => {
-//     const [appointments, setAppointments] = useState([]);
-    
-//     useEffect(() => {
-//       // Lấy accountId từ localStorage
-//       const accountId = localStorage.getItem('accountId');
-  
-//       // Kiểm tra nếu accountId tồn tại, gọi fetchAppointments với accountId
-//       if (accountId) {
-//         fetchAppointments(accountId)
-//           .then(data => {
-//             // Kiểm tra data.$value có tồn tại không
-//             if (data && data.$value) {
-//               setAppointments(data.$value); // Cập nhật state với dữ liệu lịch hẹn nhận được từ API
-//             } else {
-//               setAppointments([]); // Nếu không có dữ liệu, gán một mảng rỗng
-//             }
-//           })
-//           .catch(error => {
-//             console.error('Failed to fetch appointments:', error);
-//           });
-//       }
-//     }, []); // Chỉ gọi useEffect khi component được mount (tránh gọi lại khi state hay props thay đổi)
-  
-//     return (
-//       <div>
-//         <h2>Danh sách cuộc hẹn</h2>
-//         <ul>
-//           {appointments.map(appointment => (
-//             <li key={appointment.id}>
-//               <div>Tên bệnh nhân: {appointment.patientName}</div>
-//             </li>
-//           ))}
-//         </ul>
-//       </div>
-//     );
-//   };
-  
-//   export default GetAppointment;
-
-
-
 import React, { useEffect, useState } from 'react';
 import { fetchAppointments } from '../../services/AppointmentPatient';
-
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton } from '@mui/material';
+import './../../assets/css/GetAppointment.css'; // Import file CSS để tạo kiểu bảng
+import InfoIcon from '@mui/icons-material/Info';
+import EditIcon from '@mui/icons-material/Edit';
 const GetAppointment = () => {
   const [appointments, setAppointments] = useState([]);
   
@@ -70,35 +26,47 @@ const GetAppointment = () => {
   }, []);
 
   return (
-    <div>
+    <div className="appointment-list-container">
       <h2>Danh sách cuộc hẹn</h2>
-      <ul>
-        {appointments.length > 0 ? (
-          appointments.map(appointment => (
-            <li key={appointment.id}>
-              <div>
-                <strong>Tên bệnh nhân:</strong> {appointment.patientName}
-              </div>
-              <div>
-                <strong>Thời gian:</strong> {appointment.time}
-              </div>
-              <div>
-                <strong>Bác sĩ:</strong> {appointment.doctorName}
-              </div>
-              <div>
-                <strong>Trạng thái:</strong> {appointment.status}
-              </div>
-              {appointment.note && (
-                <div>
-                  <strong>Ghi chú:</strong> {appointment.note}
-                </div>
-              )}
-            </li>
-          ))
-        ) : (
-          <li>Không có cuộc hẹn nào.</li>
-        )}
-      </ul>
+      <TableContainer component={Paper}>
+        <Table className="appointment-table" aria-label="Danh sách cuộc hẹn">
+          <TableHead>
+            <TableRow>
+              <TableCell><strong>Tên bệnh nhân</strong></TableCell>
+              <TableCell><strong>Thời gian</strong></TableCell>
+              <TableCell><strong>Bác sĩ</strong></TableCell>
+              <TableCell><strong>Trạng thái</strong></TableCell>
+              <TableCell><strong>Ghi chú</strong></TableCell>
+              <TableCell><strong>Hành động</strong></TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {appointments.length > 0 ? (
+              appointments.map(appointment => (
+                <TableRow key={appointment.id}>
+                  <TableCell>{appointment.patientName}</TableCell>
+                  <TableCell>{appointment.time}</TableCell>
+                  <TableCell>{appointment.doctorName}</TableCell>
+                  <TableCell>{appointment.status}</TableCell>
+                  <TableCell>{appointment.note}</TableCell>
+                  <TableCell>
+                  <IconButton title="Chỉnh sửa" color="primary" >
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton title="Chi tiết" sx={{ color: '#ff5722' }}>
+                    <InfoIcon />
+                  </IconButton>
+                </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={5}>Không có cuộc hẹn nào.</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
     </div>
   );
 };

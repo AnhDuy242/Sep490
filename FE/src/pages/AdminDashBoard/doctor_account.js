@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Typography, TextField, Button, Dialog, DialogActions, DialogContent,
-  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination
+  Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Typography, TextField, Button, 
+  Dialog, DialogActions, DialogContent, DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { loadDoctors, addDoctor, updateDoctor } from '../../services/doctor_service';
