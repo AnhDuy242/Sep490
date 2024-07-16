@@ -42,3 +42,18 @@ export const updateAppointment = async (appointmentId, updatedAppointment) => {
       throw error;
   }
 };
+
+//lấy danh sách bác sĩ để đổ vào combobox
+export const fetchDoctors = async () => {
+  try {
+      const response = await fetch('https://localhost:7240/api/Doctor');
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error('Failed to fetch doctors:', error);
+      throw error;
+  }
+};

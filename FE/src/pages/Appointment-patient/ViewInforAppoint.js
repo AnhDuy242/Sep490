@@ -80,21 +80,22 @@
 
 
 import React, { useEffect, useState } from 'react';
-import { fetchAppointments } from '../../services/AppointmentPatient';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
+import { fetchAppointments, updateAppointment,fetchDoctors } from '../../services/AppointmentPatient';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem, Select, InputLabel, FormControl } from '@mui/material';
 import './../../assets/css/GetAppointment.css'; // Import file CSS để tạo kiểu bảng
-import InfoIcon from '@mui/icons-material/Info';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import Footer from '../../layouts/Footer'
-import Header from '../../layouts/Header'
-import NavBar from '../../layouts/Navbar'
-import { updateAppointment } from '../../services/AppointmentPatient';
 
 const GetAppointment = () => {
     const [appointments, setAppointments] = useState([]);
-    const [editAppointment, setEditAppointment] = useState(null);
+    const [editAppointment, setEditAppointment] = useState({
+        id: '',
+        date: '',
+        doctorId: '',
+        // Add other fields with default values
+    });
     const [openEditDialog, setOpenEditDialog] = useState(false);
+    const [doctors, setDoctors] = useState([]);
 
     useEffect(() => {
         const accountId = localStorage.getItem('accountId');
@@ -112,10 +113,20 @@ const GetAppointment = () => {
                     console.error('Failed to fetch appointments:', error);
                 });
         }
+
+        // Fetch doctors list
+        fetchDoctors()
+            .then(data => setDoctors(data.$values))
+            .catch(error => console.error('Failed to fetch doctors:', error));
     }, []);
 
     const handleEditClick = (appointment) => {
-        setEditAppointment(appointment);
+        setEditAppointment({
+            id: appointment.id || '',
+            date: appointment.date || '',
+            doctorId: appointment.doctorId || '',
+            // Add other fields with default values
+        });
         setOpenEditDialog(true);
     };
 
@@ -125,19 +136,20 @@ const GetAppointment = () => {
 
     const handleSaveEdit = async () => {
         try {
-            const updatedData = await updateAppointment(editAppointment.id, {
-                date: editAppointment.date // Chỉ cập nhật trường date
-            });
+            const updatedData = await updateAppointment(editAppointment.id, editAppointment);
             console.log('Updated appointment:', updatedData);
-            // Cập nhật lại danh sách cuộc hẹn nếu cần
-            const updatedAppointments = appointments.map(appointment =>
-                appointment.id === updatedData.id ? updatedData : appointment
+            
+            // Update the appointments list in the state
+            setAppointments(prevAppointments =>
+                prevAppointments.map(appointment =>
+                    appointment.id === updatedData.id ? updatedData : appointment
+                )
             );
-            setAppointments(updatedAppointments);
-            setOpenEditDialog(false); // Đóng dialog sau khi lưu
+
+            setOpenEditDialog(false); // Close the dialog after saving
         } catch (error) {
             console.error('Error updating appointment:', error);
-            // Xử lý trạng thái lỗi hoặc hiển thị thông báo lỗi
+            // Handle error state or show error message
         }
     };
 
@@ -180,14 +192,14 @@ const GetAppointment = () => {
                                             <EditIcon />
                                         </IconButton>
                                         <IconButton title="Xóa lịch hẹn" sx={{ color: '#ff0000' }}>
-                                            <DeleteIcon  />
+                                            <DeleteIcon />
                                         </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))
                         ) : (
                             <TableRow>
-                                <TableCell colSpan={6}>Không có cuộc hẹn nào.</TableCell>
+                                <TableCell colSpan={7}>Không có cuộc hẹn nào.</TableCell>
                             </TableRow>
                         )}
                     </TableBody>
@@ -199,31 +211,32 @@ const GetAppointment = () => {
                 <DialogTitle>Chỉnh sửa lịch hẹn</DialogTitle>
                 <DialogContent>
                     <TextField
-                        autoFocus
                         margin="dense"
                         id="date"
                         name="date"
                         label="Ngày"
                         type="date"
                         fullWidth
-                        value={editAppointment ? editAppointment.date : ''}
+                        value={editAppointment.date}
                         onChange={handleInputChange}
                     />
-                    <TextField
-                        margin="dense"
-                        id="doctorId"
-                        name="doctorId"
-                        select
-                        label="Bác sĩ"
-                        fullWidth
-                        value={editAppointment ? editAppointment.doctorId : ''}
-                        onChange={handleInputChange}
-                    >
-                        {/* Replace with actual list of doctors */}
-                        <MenuItem value={1}>Doctor 1</MenuItem>
-                        <MenuItem value={2}>Doctor 2</MenuItem>
-                        <MenuItem value={3}>Doctor 3</MenuItem>
-                    </TextField>
+                    <FormControl fullWidth margin="dense">
+                        <InputLabel id="doctorId-label">Bác sĩ</InputLabel>
+                        <Select
+                            labelId="doctorId-label"
+                            id="doctorId"
+                            name="doctorId"
+                            value={editAppointment.doctorId}
+                            onChange={handleInputChange}
+                            label="Bác sĩ"
+                        >
+                            {doctors.map((doctor) => (
+                                <MenuItem key={doctor.id} value={doctor.id}>
+                                    {doctor.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
                     {/* Add other fields for editing */}
                 </DialogContent>
                 <DialogActions>
