@@ -4,6 +4,7 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import './../../assets/css/GetAppointment.css'; // Import file CSS để tạo kiểu bảng
 import InfoIcon from '@mui/icons-material/Info';
 import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 const GetAppointment = () => {
     const [appointments, setAppointments] = useState([]);
 
@@ -53,8 +54,8 @@ const GetAppointment = () => {
                                         <IconButton title="Chỉnh sửa" color="primary" >
                                             <EditIcon />
                                         </IconButton>
-                                        <IconButton title="Chi tiết" sx={{ color: '#ff5722' }}>
-                                            <InfoIcon />
+                                        <IconButton title="Xóa lịch hẹn" sx={{ color: '#ff0000' }}>
+                                            <DeleteIcon  />
                                         </IconButton>
                                     </TableCell>
                                 </TableRow>
