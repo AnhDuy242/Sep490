@@ -10,6 +10,7 @@ class AppointmentScreen extends Component {
       doctor: '',
       date: '',
       time: '',
+      note: '',
     };
   }
 
@@ -27,6 +28,10 @@ class AppointmentScreen extends Component {
 
   handleTimeChange = (event) => {
     this.setState({ time: event.target.value });
+  };
+
+  handleNoteChange = (event) => {
+    this.setState({ note: event.target.value });
   };
 
   handleSubmit = (event) => {
@@ -69,28 +74,7 @@ class AppointmentScreen extends Component {
           <Grid item xs={12} md={6}>
             <form onSubmit={this.handleSubmit}>
               <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <TextField
-                    required
-                    id="fullName"
-                    name="fullName"
-                    label="Họ và tên"
-                    fullWidth
-                    autoComplete="name"
-                    variant="outlined"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    required
-                    id="phone"
-                    name="phone"
-                    label="Số điện thoại"
-                    fullWidth
-                    autoComplete="tel"
-                    variant="outlined"
-                  />
-                </Grid>
+
                 <Grid item xs={12}>
                   <FormControl fullWidth variant="outlined" required sx={{ marginTop: 2 }}>
                     <InputLabel id="department-label">Chuyên khoa</InputLabel>
@@ -106,7 +90,7 @@ class AppointmentScreen extends Component {
                       </MenuItem>
                       <MenuItem value={10}>Khoa nội</MenuItem>
                       <MenuItem value={20}>Khoa ngoại</MenuItem>
-                      <MenuItem value={30}>Khoa sản</MenuItem>
+                   
                     </Select>
                   </FormControl>
                 </Grid>
@@ -161,6 +145,19 @@ class AppointmentScreen extends Component {
                       ))}
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <TextField
+                    id="note"
+                    name="note"
+                    label="Ghi chú"
+                    fullWidth
+                    variant="outlined"
+                    multiline
+                    rows={4}
+                    value={this.state.note}
+                    onChange={this.handleNoteChange}
+                  />
                 </Grid>
                 <Grid item xs={12}>
                   <Button type="submit" variant="contained" color="primary" fullWidth>

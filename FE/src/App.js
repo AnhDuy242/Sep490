@@ -9,23 +9,30 @@ import ListArticle from './pages/ArticleManagement/list_article';
 import ListBlog from './pages/ArticleManagement/list_blog';
 import ArticleDash from './pages/ArticleManagement';
 import Add_blog from'./pages/ArticleManagement/add_blog';
+import CreateAppointment from './pages/Appointment-patient/CreateAppointment';
+
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Home />} />
-      <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
-        <Route path="doctor-account" element={<DoctorAccount />} />
-        <Route path="receptionist-account" element={<ReceptionistAccount />} />
-      </Route>
+    // <Routes>
+    //   <Route path="/" element={<Home />} />
+    //   <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
+    //     <Route path="doctor-account" element={<DoctorAccount />} />
+    //     <Route path="receptionist-account" element={<ReceptionistAccount />} />
+    //   </Route>
 
 
-      <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
-        <Route path="/article/dashboard/list_blog" element={<ListBlog/>} />
-        <Route path="list_article" element={<ListArticle/>} />
-        <Route path="/article/dashboard/add_blog" element={<Add_blog/>} />
+    //   <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
+    //     <Route path="/article/dashboard/list_blog" element={<ListBlog/>} />
+    //     <Route path="list_article" element={<ListArticle/>} />
+    //     <Route path="/article/dashboard/add_blog" element={<Add_blog/>} />
         
-      </Route>
-    </Routes>
+    //   </Route>
+
+     
+    // </Routes>
+    <CreateAppointment/>
+    
+    
   );
 }
 
