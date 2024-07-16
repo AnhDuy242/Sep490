@@ -36,7 +36,8 @@ public class AuthService
             Subject = new ClaimsIdentity(new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Phone),
-                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User")
+                new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User"),
+                 new Claim("AccId", user.AccId.ToString()),
             }),
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
