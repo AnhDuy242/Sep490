@@ -32,7 +32,7 @@ namespace BE.Controllers.Appointment_Management
         }
 
         [HttpPost]
-        public async Task<IActionResult> BookAppointment([FromBody] AppointmentDto appointmentDto)
+        public async Task<IActionResult> BookAppointment([FromBody] AppointmentCreate appointmentDto)
         {
             if (!ModelState.IsValid)
             {
