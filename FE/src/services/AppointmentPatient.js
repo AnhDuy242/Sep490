@@ -57,3 +57,17 @@ export const fetchDoctors = async () => {
       throw error;
   }
 };
+//lấy slot list
+export const fetchSlots = async () => {
+  try {
+      const response = await fetch('https://localhost:7240/api/PatientAppointment/GetListSlot');
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error('Failed to fetch doctors:', error);
+      throw error;
+  }
+};
