@@ -3,6 +3,9 @@ import { Container, Typography, Grid, TextField, Button, FormControl, InputLabel
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { format } from 'date-fns';
 import { bookAppointment, getListDepartment, fetchDoctors, fetchSlots } from '../../services/AppointmentPatient'; // Import service functions
+import Header from '../../layouts/Header';
+import Navbar from '../../layouts/Navbar';
+import Footer from '../../layouts/Footer';
 
 const AppointmentScreen = () => {
   const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -75,10 +78,10 @@ const AppointmentScreen = () => {
     event.preventDefault();
     const formattedDate = date ? format(new Date(date), 'dd-MM-yyyy') : '';
     const appointmentDto = {
-      patientId: patientId,
-      doctorId: 2,
+      patientId: accountId,
+      doctorId: doctorId,
       date: formattedDate,
-      time: time,
+      slotId: time,
       note: note
     };
     
@@ -88,7 +91,7 @@ const AppointmentScreen = () => {
     console.log('Submitting appointment data:', appointmentData);
 
     // Call the service function to book appointment
-    bookAppointment(appointmentData)
+    bookAppointment(appointmentDto)
       .then(responseData => {
         console.log('Appointment booked successfully:', responseData);
         // Optionally, handle success (e.g., display a success message, clear the form, etc.)
@@ -107,6 +110,9 @@ const AppointmentScreen = () => {
   };
 
   return (
+    <>
+            <Header />
+            <Navbar />
     <Container sx={{ marginTop: 20 }}>
       <Typography
         variant="h4"
@@ -227,6 +233,8 @@ const AppointmentScreen = () => {
         </Grid>
       </Grid>
     </Container>
+    <Footer />
+    </>
   );
 };
 
