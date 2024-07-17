@@ -1,4 +1,8 @@
-﻿using BE.DTOs;
+﻿using AutoMapper;
+using BE.DTOs.AppointmentDto;
+using BE.DTOs.DepartmentDto;
+using BE.DTOs.DoctorDto;
+using BE.DTOs.SlotDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,21 +16,24 @@ namespace BE.Controllers.Appointment_Management
     public class PatientAppointment : ControllerBase
     {
         private readonly MedPalContext _alo2Context;
+        private readonly IMapper _mapper;
 
-        public PatientAppointment(MedPalContext alo2Context)
+        public PatientAppointment(MedPalContext alo2Context, IMapper mapper)
         {
             _alo2Context = alo2Context;
+            _mapper = mapper;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAppointment(int pid)
         {
-            var appointments = _alo2Context.Appointments.Where(x => x.PatientId == pid).ToList();
-            return Ok(appointments);
+            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Where(x => x.PatientId == pid).ToList();
+            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            return Ok(list);
         }
 
         [HttpPost]
-        public async Task<IActionResult> BookAppointment([FromBody] AppointmentDto appointmentDto)
+        public async Task<IActionResult> BookAppointment([FromBody] AppointmentCreate appointmentDto)
         {
             if (!ModelState.IsValid)
             {
@@ -34,7 +41,7 @@ namespace BE.Controllers.Appointment_Management
             }
             Models.Appointment appointment = new Models.Appointment()
             {
-                Date = appointmentDto.Date,
+                Date = appointmentDto.Date.Date,
                 PatientId = appointmentDto.PatientId,
                 DoctorId = appointmentDto.DoctorId,
                 SlotId = appointmentDto.SlotId,
@@ -122,5 +129,29 @@ namespace BE.Controllers.Appointment_Management
             return Ok("Appointment deleted successfully.");
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetListDoctor()
+        {
+            var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).ToList();
+            var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
+            return Ok(list);
+        }
+
+
+        [HttpGet]
+        public async Task<IActionResult> GetListDepartment()
+        {
+            var listDe = _alo2Context.Departments.Where(x => x.IsActive == true).ToList();
+            var list = _mapper.Map<List<DepartmentAppointment>>(listDe);
+            return Ok(list);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetListSlot()
+        {
+            var listDe = _alo2Context.Slots.ToList();
+            var list = _mapper.Map<List<SlotAppointment>>(listDe);
+            return Ok(list);
+        }
     }
 }

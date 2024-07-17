@@ -8,14 +8,17 @@ import ProtectedRoute from './pages/AdminDashBoard/component/protected_route';
 import ListArticle from './pages/ArticleManagement/list_article';
 import ListBlog from './pages/ArticleManagement/list_blog';
 import ArticleDash from './pages/ArticleManagement';
-import Add_blog from './pages/ArticleManagement/add_blog';
-import ReceptionistDash from './pages/ReceptionistManagement';
-import CreatePatientAccount from './pages/ReceptionistManagement/create_patient_account';
+import Add_blog from'./pages/ArticleManagement/add_blog';
+import CreateAppointment from './pages/Appointment-patient/CreateAppointment';
+import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
+
 function App() {
   return (
     <Routes>
-      {/*Admin*/}
+      {/**Route hướng home */}
       <Route path="/" element={<Home />} />
+
+      {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
         <Route path="receptionist-account" element={<ReceptionistAccount />} />
@@ -29,7 +32,25 @@ function App() {
       {/*Receptionist*/}
       <Route path="/receptionist/dashboard/" element={<ProtectedRoute requiredRole="Receptionist"><ReceptionistDash /></ProtectedRoute>}>
         <Route path="create_patient_account" element={<CreatePatientAccount />} />
+        </Route>
+      {/**Route article */}
+      <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
+        <Route path="/article/dashboard/list_blog" element={<ListBlog/>} />
+        <Route path="list_article" element={<ListArticle/>} />
+        <Route path="/article/dashboard/add_blog" element={<Add_blog/>} />
       </Route>
+
+      {/**Route patient view update delete appointment*/}
+      <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment/></ProtectedRoute>}>
+        
+      </Route>
+
+      {/**Rout patient create appointment */}
+      <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment/></ProtectedRoute>}>
+        
+      </Route>
+
+
     </Routes>
   );
 }

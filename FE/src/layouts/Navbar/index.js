@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, InputBase, Button, Menu, MenuItem, Box } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import '../Navbar/navbar.css';
+import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
+import getAppointment from './../../pages/Appointment-patient/ViewInforAppoint';
+import { Link, useNavigate } from 'react-router-dom';
+
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
@@ -44,6 +48,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const Navbar = () => {
+  const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchValue, setSearchValue] = useState('');
 
@@ -93,6 +98,9 @@ const Navbar = () => {
           <Button color="inherit" component={NavLink} to="/doctor">Đội ngũ bác sĩ</Button>
           <Button color="inherit" component={NavLink} to="/contact">Liên hệ</Button>
           <Button color="inherit" component={NavLink} to="/get-started" >Bạn có biết?</Button>
+          {isLoggedIn&& (
+            <Button color="inherit" component={Link} to="/getAppointment">Xem lịch khám</Button>
+          )}
         </Box>
         <Search>
           <SearchIconWrapper>

@@ -20,3 +20,26 @@
     width: 200px;
     height: 100px;
 }
+.buttonCreate{
+    visibility: visible;
+    animation-duration: 1s;
+    animation-delay: 0s;
+    animation-name: fadeInLeft;
+    background: rgb(0, 119, 255);
+    border: 2px solid #fff;
+    box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
+    font-display: swap;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 18px;
+    line-height: 17px;  
+    display: flex;
+    align-items: center;
+    text-align: center;
+    text-transform: uppercase;
+    border-radius: 20px;
+    border-color: #fff;
+    width: 200px;
+    height: 100px;
+}

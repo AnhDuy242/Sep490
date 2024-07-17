@@ -1,71 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { NavLink, useNavigate, Navigate } from 'react-router-dom';
 import '../Header/header.css';
 import NavLogo from '../../assets/images/images.png';
-import { login, logout, fetchWithAuth } from '../../services/Authentication';
+import { login } from '../../services/Authentication';
 import LoginForm from '../LoginForm'; // Import LoginForm component
 import RegisterForm from '../RegisterForm';
-import {
-  AppBar,
-  Toolbar,
-  Typography,
-  Button,
-  Box,
-} from '@mui/material';
-import { Phone, AccessTime, LocationOn, Language } from '@mui/icons-material';
-import { jwtDecode } from 'jwt-decode'; // Import jwtDecode instead of jwt-decode
-const tokenTimeout = 3600000; // 1 hour in milliseconds
+import { AppBar, Toolbar, Button, Box } from '@mui/material';
+import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
+import { jwtDecode } from 'jwt-decode';
 
-function Header() {
+const Header = () => {
+  const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [token, setToken] = useState(null);
-  const [role, setRole] = useState(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
-    const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
-    if (storedToken && storedTokenTimestamp) {
+    // Check token validity on component mount
+    if (token) {
       const currentTime = new Date().getTime();
+      const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
       const tokenAge = currentTime - parseInt(storedTokenTimestamp);
-      if (tokenAge < tokenTimeout) {
-        setToken(storedToken);
-        setIsLoggedIn(true);
-        const decoded = jwtDecode(storedToken);
-        setRole(decoded.role);
-        setTimeout(handleTokenExpiration, tokenTimeout - tokenAge);
-      } else {
-        handleTokenExpiration();
+      if (tokenAge >= 3600000) { // Token expiration time (1 hour in milliseconds)
+        logout();
       }
     }
-
-    window.addEventListener('beforeunload', handleTokenExpiration);
-    return () => {
-      window.removeEventListener('beforeunload', handleTokenExpiration);
-    };
-  }, []);
-
-  const handleTokenExpiration = () => {
-    logout();
-    localStorage.removeItem('token');
-    localStorage.removeItem('tokenTimestamp');
-    setToken(null);
-    setIsLoggedIn(false);
-    setRole(null);
-    navigate('/');
-  };
-
-  const updateToken = (token) => {
-    setToken(token);
-    setIsLoggedIn(true);
-    const decoded = jwtDecode(token);
-    setRole(decoded.role);
-    localStorage.setItem('token', token);
-    localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
-    setTimeout(handleTokenExpiration, tokenTimeout);
-  };
+  }, [token, logout]);
 
   const handleCloseLogin = () => setShowLogin(false);
   const handleShowLogin = () => setShowLogin(true);
@@ -77,7 +37,16 @@ function Header() {
     try {
       const { token } = await login(username, password);
       updateToken(token);
-      handleCloseLogin();
+      
+      const decodedToken = jwtDecode(token);
+      const accountId = decodedToken.AccId;
+      const role = decodedToken.role; // Adjust this according to your token structure
+  
+      // Lưu trạng thái đăng nhập, token, vai trò và account id vào localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('accountId', accountId);
+  
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -85,11 +54,6 @@ function Header() {
 
   const handleLogout = () => {
     logout();
-    localStorage.removeItem('token');
-    localStorage.removeItem('tokenTimestamp');
-    setToken(null);
-    setIsLoggedIn(false);
-    setRole(null);
     navigate('/');
   };
 
@@ -128,50 +92,33 @@ function Header() {
           <NavLink to="/" className="nav__logo">
             <img src={NavLogo} alt="Logo" className="logo-image" />
           </NavLink>
-        
+
           <Box className="info-class" display="flex">
-            <Box className="card-header-self" display="flex" alignItems="center">
-              <Phone />
-              <Typography variant="body2" className="info-text">
-                <b>Số điện thoại<br /> xxxxxxxxx </b>
-              </Typography>
-            </Box>
-            <Box className="card-header-self" display="flex" alignItems="center">
-              <AccessTime />
-              <Typography variant="body2" className="info-text">
-                <b>Giờ làm việc <br /> xxx -xxxxx </b>
-              </Typography>
-            </Box>
-            <Box className="card-header-self" display="flex" alignItems="center">
-              <LocationOn />
-              <Typography variant="body2" className="info-text">
-                <b>Địa chỉ <br />68A Hà Đông</b>
-              </Typography>
-            </Box>
-            <Box className="card-header-self" display="flex" alignItems="center">
-              <Language />
-              <Typography variant="body2" className="info-text">
-                <b>Ngôn ngữ <br /> Tiếng việt</b>
-              </Typography>
-            </Box>
-            <Box className="card-header-self card-hehe">
-              {isLoggedIn ? (
-                <Button onClick={handleLogout} variant="contained" className="login-button" color="secondary">Đăng xuất</Button>
-              ) : (
-                <>
-                  <Button onClick={handleShowLogin} variant="contained" className="login-button" color="primary">Đăng nhập</Button>
-                  <div className="card-hehe"></div>
-                  <Button onClick={handleShowRegister} variant="contained" className="login-button" color="secondary">Đăng ký</Button>
-                </>
-              )}
-            </Box>
+            {/* Your info boxes */}
+          </Box>
+
+          <Box className="card-header-self card-hehe">
+            {isLoggedIn ? (
+              <Button onClick={handleLogout} variant="contained" className="login-button" color="secondary">Đăng xuất</Button>
+            ) : (
+              <>
+                <Button onClick={handleShowLogin} variant="contained" className="login-button" color="primary">Đăng nhập</Button>
+                <Button onClick={handleShowRegister} variant="contained" className="login-button" color="secondary">Đăng ký</Button>
+              </>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
-      <LoginForm show={showLogin} handleLogin={handleLogin} updateToken={updateToken} handleClose={handleCloseLogin} />
-      <RegisterForm show={showRegister} handleRegister={handleRegister}  handleClose={ handleCloseRegister}/>
+
+      <LoginForm
+        show={showLogin}
+        handleLogin={handleLogin}
+        handleClose={handleCloseLogin}
+        handleRegister={handleRegister}
+      />
+      <RegisterForm show={showRegister} handleRegister={handleRegister} handleClose={handleCloseRegister} />
     </>
   );
-}
+};
 
 export default Header;
