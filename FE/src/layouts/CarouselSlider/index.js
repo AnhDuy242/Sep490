@@ -84,7 +84,7 @@ function Carousel2() {
                     </Link>
                 ) : (
                     <>
-                        <Button variant="contained" color="primary" onClick={handleShowLogin} className="button-link" style={{ textDecoration: 'none', margin: '10px 10px' }}>
+                        <Button variant="contained" color="primary" onClick={handleShowLogin} className="buttonCreate" style={{ textDecoration: 'none', margin: '10px 10px' }}>
                             Đặt lịch khám
                         </Button>
                         <LoginForm
