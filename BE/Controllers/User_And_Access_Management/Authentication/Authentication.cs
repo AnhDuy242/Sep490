@@ -39,20 +39,16 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             // Check if phone number or email already exists
-<<<<<<< Updated upstream
-            if (_accService.CheckPhoneExist(registerDto.Phone))
-=======
+          
             if (CheckPhoneExist(registerDto.Phone))
->>>>>>> Stashed changes
             {
                 return BadRequest(new { Message = "Số điện thoại đã tồn tại." });
             }
 
-<<<<<<< Updated upstream
-            else if (_accService.CheckEmailExist(registerDto.Email))
-=======
+
+
+
             else if (CheckEmailExist(registerDto.Email))
->>>>>>> Stashed changes
             {
                 return BadRequest(new { Message = "Email đã tồn tại." });
             }
