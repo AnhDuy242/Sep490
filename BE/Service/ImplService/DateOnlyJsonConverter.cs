@@ -5,7 +5,7 @@ namespace BE.Service.ImplService
 {
     public class DateOnlyJsonConverter : JsonConverter<DateTime>
     {
-        private const string Format = "yyyy-MM-dd";
+        private const string Format = "dd-MM-yyyy";
 
         public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
