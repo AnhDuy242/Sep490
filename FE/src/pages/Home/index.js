@@ -9,6 +9,8 @@ import Blog from '../Home/component/Blog'
 import Article from '../Home/component/Article'
 import Service from '../Home/component/PolyServ'
 import FeedBack from '../Home/component/Feedback'
+import ChatPopup from '../../layouts/ChatNotification';
+
 function Home() {
   return (
     <div>
@@ -20,7 +22,9 @@ function Home() {
       <Article/>
       <Service/>
       <FeedBack/>
+      {/* <ChatPopup/> */}
       <Footer></Footer>
+
     </div>
   );
 }

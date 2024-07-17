@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { Modal, Box, Button, TextField, Typography, Alert, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import google_icon from '../../assets/images/google.png';
 import '../LoginForm/LoginForm.css';
+import { AuthContext } from '../../pages/Home/AuthContext';
 
 const validationSchema = yup.object({
   identifier: yup
@@ -23,6 +24,7 @@ const validationSchema = yup.object({
 
 const LoginForm = ({ show, handleClose, handleLogin, setToken }) => { // Ensure setToken is received as a prop
   const [error, setError] = useState(null);
+  const { updateToken } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const formik = useFormik({

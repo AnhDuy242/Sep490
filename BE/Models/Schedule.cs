@@ -13,7 +13,7 @@ public partial class Schedule
 
     public bool Afternoon { get; set; }
 
-    public string Weekdays { get; set; } = null!;
+    public string? Weekdays { get; set; } = null!;
 
     public DateTime Date { get; set; }
 

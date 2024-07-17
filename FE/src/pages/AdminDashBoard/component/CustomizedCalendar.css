@@ -1,0 +1,5 @@
+.custom-timeslot {
+  background-color: lightgray; /* Màu nền cho time slot trống */
+  border: 1px solid gray; /* Đường viền xung quanh */
+  opacity: 0.5; /* Độ mờ của slot */
+}

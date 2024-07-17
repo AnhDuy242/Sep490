@@ -7,15 +7,23 @@ import reportWebVitals from './reportWebVitals';
 import Sidebar from './pages/AdminDashBoard/component/side_bar';
 import AdminDash from './pages/AdminDashBoard';
 import View_appointment from './pages/AdminDashBoard/view_appoiment_admin';
-
+import ChatPopup from './layouts/ChatNotification';
+import ConsultantChat from './layouts/ChatNotification/ConsultantChat';
+import { AuthProvider } from '../src/pages/Home/AuthContext'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Router>
-      <App />
+      <AuthProvider>
+
+      {/* <App /> */}
+      {/* <ChatPopup />
+      <ConsultantChat /> */}
       {/* <Sidebar /> */}
-      {/* <View_appointment /> */}
+      <View_appointment />
       {/* <AdminDash /> */}
+      </AuthProvider>
+
     </Router>
   </React.StrictMode>
 );

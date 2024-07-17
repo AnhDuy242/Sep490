@@ -1,4 +1,5 @@
 // Hàm để gọi API lấy danh sách bác sĩ
+// src/services/doctor_service.js
 export const fetchDoctors = async () => {
   const response = await fetch('https://localhost:7240/api/Doctor');
   if (!response.ok) {
@@ -7,17 +8,21 @@ export const fetchDoctors = async () => {
   return await response.json();
 };
 
-// Hàm để tải dữ liệu bác sĩ và cập nhật trạng thái
 export const loadDoctors = async (setDoctors, setLoading, setError) => {
   try {
+    setLoading(true);
     const data = await fetchDoctors(); // Gọi hàm fetchDoctors để lấy dữ liệu
+    console.log('Data received:', data); // Log dữ liệu nhận được
     setDoctors(data.$values); // Cập nhật dữ liệu vào trạng thái
+    return data;
   } catch (error) {
+    console.error('Error loading doctors:', error); // Log lỗi
     setError(error.message); // Cập nhật lỗi vào trạng thái
   } finally {
     setLoading(false); // Kết thúc trạng thái loading
   }
 };
+
 
 // Hàm để thêm bác sĩ mới
 export const addDoctor = async (doctor) => {

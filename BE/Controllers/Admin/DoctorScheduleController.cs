@@ -91,7 +91,14 @@ namespace BE.Controllers.Admin
             {
                 return BadRequest(ModelState);
             }
-
+            var schedules = _context.Schedules.ToList();
+            foreach(var s in schedules)
+            {
+                if(model.Date == s.Date)
+                {
+                    return BadRequest(new {message = "Schedule da ton tai" });
+                }
+            }
             try
             {
                 var schedule = new Schedule
@@ -124,7 +131,7 @@ namespace BE.Controllers.Admin
             {
                 return BadRequest(ModelState);
             }
-
+            var schedules = _context.Schedules.ToList();
             try
             {
                 var existingSchedule = await _context.Schedules.FindAsync(id);
@@ -132,6 +139,14 @@ namespace BE.Controllers.Admin
                 if (existingSchedule == null)
                 {
                     return NotFound();
+                }
+                TimeSpan date = existingSchedule.Date - DateTime.Now;
+                foreach (var s in schedules)
+                {
+                    if (date.TotalDays > 30)
+                    {
+                        return BadRequest(new { message = "Schedule date da qua han update, vui long thu lai" });
+                    }
                 }
 
                 // Cập nhật các thuộc tính của existingSchedule từ model
