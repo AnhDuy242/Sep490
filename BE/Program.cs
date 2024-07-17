@@ -54,6 +54,7 @@ builder.Services.AddTransient<IValidateService, ValidateService>();
 //mail
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
+//builder.Services.AddTransient<IAccountService, AccountService>();
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
 //otp service

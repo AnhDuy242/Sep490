@@ -14,13 +14,11 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
     {
         private readonly AuthService _authService;
         private readonly MedPalContext _alo2Context;
-        private readonly AccountService _accountService;
 
-        public Authentication(AuthService authService, MedPalContext alo2Context, AccountService accountService)
+        public Authentication(AuthService authService, MedPalContext alo2Context)
         {
             _authService = authService;
             _alo2Context = alo2Context;
-            _accountService = accountService;
         }
 
         [HttpPost]
@@ -41,12 +39,20 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             // Check if phone number or email already exists
+<<<<<<< Updated upstream
             if (_accService.CheckPhoneExist(registerDto.Phone))
+=======
+            if (CheckPhoneExist(registerDto.Phone))
+>>>>>>> Stashed changes
             {
                 return BadRequest(new { Message = "Số điện thoại đã tồn tại." });
             }
 
+<<<<<<< Updated upstream
             else if (_accService.CheckEmailExist(registerDto.Email))
+=======
+            else if (CheckEmailExist(registerDto.Email))
+>>>>>>> Stashed changes
             {
                 return BadRequest(new { Message = "Email đã tồn tại." });
             }
