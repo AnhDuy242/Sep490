@@ -24,11 +24,12 @@ import {
   IconButton,
   Dialog,DialogActions,DialogContentText,DialogTitle,DialogContent
 } from '@mui/material';
-import { format, startOfWeek, addDays, subWeeks, addWeeks,isSameWeek,isBefore } from 'date-fns';
+import { format, startOfWeek, addDays, subWeeks, addWeeks,isSameWeek,isBefore ,isWithinInterval} from 'date-fns';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { loadDoctors } from '../../services/doctor_service';
 import DeleteIcon from '@material-ui/icons/Delete'; // Import DeleteIcon từ @material-ui/icons
 
+import { parseISO } from 'date-fns';
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -49,7 +50,6 @@ const TabPanel = (props) => {
     </div>
   );
 };
-
 
 const AddSchedule = ({ doctors, setSnackbar }) => {
   const [selectedDoctor, setSelectedDoctor] = useState('');
@@ -146,6 +146,9 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
       return;
     }
 
+    const addedDays = [];
+    const failedDays = [];
+
     try {
       const schedules = daysInRange
         .filter(day => !disabledDays.includes(day))
@@ -168,22 +171,33 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(schedule)
-        }).then(res => res.json())
+        }).then(res => res.json().then(data => ({ status: res.status, data })))
       ));
 
-      const success = response.every(res => !res.message);
-      if (success) {
-        setSnackbar({ open: true, message: 'Lịch làm việc đã được thêm mới thành công!', severity: 'success' });
+      response.forEach((res, index) => {
+        const day = schedules[index].date.split('T')[0];
+        if (res.status === 201) {
+          addedDays.push(day);
+        } else {
+          failedDays.push(day);
+        }
+      });
 
-        setSelectedDoctor('');
-        setStartDate('');
-        setEndDate('');
-        setMorningSchedule([]);
-        setAfternoonSchedule([]);
+      if (failedDays.length === 0) {
+        setSnackbar({ open: true, message: `Lịch làm việc đã được thêm mới thành công: ${addedDays.join(', ')}`, severity: 'success' });
       } else {
-        const errorMessage = response.find(res => res.message)?.message || 'Đã có lỗi xảy ra khi thêm lịch làm việc';
-        setSnackbar({ open: true, message: errorMessage, severity: 'error' });
+        setSnackbar({
+          open: true,
+          message: `Thành công: ${addedDays.length > 0 ? addedDays.join(', ') : 'Không có'}. Lỗi: ${failedDays.join(', ')}.`,
+          severity: 'warning',
+        });
       }
+
+      setSelectedDoctor('');
+      setStartDate('');
+      setEndDate('');
+      setMorningSchedule([]);
+      setAfternoonSchedule([]);
     } catch (error) {
       setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
@@ -282,6 +296,7 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
     </>
   );
 };
+
 
 const EditSchedule = ({ doctors, setSnackbar }) => {
   const [selectedDoctor, setSelectedDoctor] = useState('');
@@ -438,7 +453,7 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
                           selected={schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.morning}
                           onChange={() => handleToggleMorning(schedules.findIndex(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day))}
                         >
-                          {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.morning ? 'Yes' : 'No'}
+                          {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.morning ? 'Có lịch' : 'Nghỉ'}
                         </ToggleButton>
                       ) : (
                         '-'
@@ -455,7 +470,7 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
                           selected={schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.afternoon}
                           onChange={() => handleToggleAfternoon(schedules.findIndex(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day))}
                         >
-                          {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.afternoon ? 'Yes' : 'No'}
+                          {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.afternoon ? 'Có lịch' : 'Nghỉ'}
                         </ToggleButton>
                       ) : (
                         '-'
@@ -669,6 +684,144 @@ const DeleteSchedule = ({ doctors, setSnackbar }) => {
 };
 
 
+
+const ViewSchedule = ({ doctors, setSnackbar }) => {
+  const [selectedDoctor, setSelectedDoctor] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [schedules, setSchedules] = useState([]);
+  const [error, setError] = useState('');
+
+  const handleDoctorChange = (event) => {
+    setSelectedDoctor(event.target.value);
+  };
+
+  const handleStartDateChange = (event) => {
+    setStartDate(event.target.value);
+  };
+
+  const handleEndDateChange = (event) => {
+    setEndDate(event.target.value);
+  };
+
+  const handleSubmit = async () => {
+    if (!Boolean(selectedDoctor) || !startDate || !endDate) {
+      setError('Vui lòng chọn bác sĩ và nhập đầy đủ ngày bắt đầu và ngày kết thúc.');
+      return;
+    }
+  
+    try {
+      const response = await fetch(`https://localhost:7240/api/DoctorSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`);
+      if (!response.ok) {
+        throw new Error(`Không thể lấy dữ liệu lịch trình (${response.status})`);
+      }
+      const data = await response.json();
+      if (data.$values.length === 0) {
+        throw new Error('Không có kết quả nào được tìm thấy.');
+      }
+  
+      setSchedules(data.$values);
+      setError('');
+    } catch (error) {
+      setSnackbar({ open: true, message: error.message, severity: 'error' });
+      setSchedules([]);
+    }
+  };
+
+  useEffect(() => {
+    if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+      setError('Ngày bắt đầu không thể sau ngày kết thúc');
+    } else {
+      setError('');
+    }
+  }, [startDate, endDate]);
+
+  return (
+    <>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="doctor-label">Chọn bác sĩ</InputLabel>
+        <Select
+          labelId="doctor-label"
+          value={selectedDoctor}
+          onChange={handleDoctorChange}
+        >
+          {doctors.map((doctor) => (
+            <MenuItem key={doctor.accId} value={doctor.accId}>
+              {doctor.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <TextField
+        label="Ngày bắt đầu"
+        type="date"
+        value={startDate}
+        onChange={handleStartDateChange}
+        fullWidth
+        margin="normal"
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+      <TextField
+        label="Ngày kết thúc"
+        type="date"
+        value={endDate}
+        onChange={handleEndDateChange}
+        fullWidth
+        margin="normal"
+        InputLabelProps={{
+          shrink: true,
+        }}
+      />
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleSubmit}
+        style={{ marginTop: '1rem' }}
+      >
+        Gửi
+      </Button>
+      {error && (
+        <Snackbar open={Boolean(error)} autoHideDuration={6000}>
+          <Alert severity="error">{error}</Alert>
+        </Snackbar>
+      )}
+      {schedules.length > 0 && (
+        <Box mt={4}>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align="center">Ngày</TableCell>
+                  <TableCell align="center">Buổi Sáng</TableCell>
+                  <TableCell align="center">Buổi Chiều</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {schedules.map((schedule) => {
+                  const scheduleDate = parseISO(schedule.date);
+                  if (isWithinInterval(scheduleDate, { start: parseISO(startDate), end: parseISO(endDate) })) {
+                    return (
+                      <TableRow key={schedule.id}>
+                        <TableCell align="center">{format(scheduleDate, 'dd/MM/yyyy')}</TableCell>
+                        <TableCell align="center">{schedule.morning ? 'Sáng' : '-'}</TableCell>
+                        <TableCell align="center">{schedule.morning ? '-' : 'Chiều'}</TableCell>
+                      </TableRow>
+                    );
+                  }
+                  return null;
+                })}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Box>
+      )}
+    </>
+  );
+};
+
+
 const DoctorScheduleForm = () => {
   const [doctors, setDoctors] = useState([]);
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
@@ -717,6 +870,7 @@ const DoctorScheduleForm = () => {
         <Tab label="Thêm mới lịch làm việc" />
         <Tab label="Chỉnh sửa lịch làm việc" />
         <Tab label="Xóa lịch làm việc" />
+        <Tab label="Xem lịch làm việc" />
 
       </Tabs>
       <TabPanel value={tabValue} index={0}>
@@ -727,6 +881,9 @@ const DoctorScheduleForm = () => {
       </TabPanel>
       <TabPanel value={tabValue} index={2}>
         <DeleteSchedule doctors={doctors} setSnackbar={setSnackbar} />
+      </TabPanel>
+      <TabPanel value={tabValue} index={3}>
+        <ViewSchedule doctors={doctors} setSnackbar={setSnackbar} />
       </TabPanel>
       <Snackbar
         open={snackbar.open}

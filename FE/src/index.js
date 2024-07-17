@@ -9,18 +9,18 @@ import AdminDash from './pages/AdminDashBoard';
 import View_appointment from './pages/AdminDashBoard/view_appoiment_admin';
 import ChatPopup from './layouts/ChatNotification';
 import ConsultantChat from './layouts/ChatNotification/ConsultantChat';
-import { AuthProvider } from '../src/pages/Home/AuthContext'
+import { AuthProvider } from './utils/AuthContext'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Router>
       <AuthProvider>
 
-      {/* <App /> */}
+      <App />
       {/* <ChatPopup />
       <ConsultantChat /> */}
       {/* <Sidebar /> */}
-      <View_appointment />
+      {/* <View_appointment /> */}
       {/* <AdminDash /> */}
       </AuthProvider>
 

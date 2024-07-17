@@ -6,7 +6,7 @@ import { login } from '../../services/Authentication';
 import LoginForm from '../LoginForm';
 import RegisterForm from '../RegisterForm';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
-import { AuthContext } from '../../../src/pages/Home/AuthContext'; // Import AuthContext
+import { AuthContext } from '../../utils/AuthContext'; // Import AuthContext
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 

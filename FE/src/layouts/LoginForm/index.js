@@ -5,7 +5,7 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import google_icon from '../../assets/images/google.png';
 import '../LoginForm/LoginForm.css';
-import { AuthContext } from '../../pages/Home/AuthContext';
+import { AuthContext } from '../../utils/AuthContext';
 
 const validationSchema = yup.object({
   identifier: yup

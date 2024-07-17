@@ -123,7 +123,7 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Employee list" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/view-appoiment-admin">
+          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/view-appointment-admin">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
