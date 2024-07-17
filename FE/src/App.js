@@ -11,6 +11,8 @@ import ArticleDash from './pages/ArticleManagement';
 import Add_blog from'./pages/ArticleManagement/add_blog';
 import CreateAppointment from './pages/Appointment-patient/CreateAppointment';
 import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
+import ReceptionistDash from '../src/pages/ReceptionistManagement';
+import CreatePatientAccount from'../src/pages/ReceptionistManagement/create_patient_account';
 
 function App() {
   return (
