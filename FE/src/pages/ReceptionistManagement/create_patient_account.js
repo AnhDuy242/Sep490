@@ -36,6 +36,17 @@ const CreatePatientAccount = () => {
     }, []);
 
     const handleClickOpen = () => {
+        setPatientData({
+            id: '',
+            phone: '',
+            email: '',
+            password: '',
+            name: '',
+            gender: '',
+            address: '',
+            birthDate: '',
+            activeStatus: true // Mặc định là true
+        });
         setOpen(true);
     };
 
