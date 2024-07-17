@@ -2,6 +2,7 @@
 using BE.DTOs.AppointmentDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
+using BE.DTOs.SlotDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +33,7 @@ namespace BE.Controllers.Appointment_Management
         }
 
         [HttpPost]
-        public async Task<IActionResult> BookAppointment([FromBody] AppointmentDto appointmentDto)
+        public async Task<IActionResult> BookAppointment([FromBody] AppointmentCreate appointmentDto)
         {
             if (!ModelState.IsValid)
             {
@@ -40,7 +41,7 @@ namespace BE.Controllers.Appointment_Management
             }
             Models.Appointment appointment = new Models.Appointment()
             {
-                Date = appointmentDto.Date,
+                Date = appointmentDto.Date.Date,
                 PatientId = appointmentDto.PatientId,
                 DoctorId = appointmentDto.DoctorId,
                 SlotId = appointmentDto.SlotId,
@@ -142,6 +143,14 @@ namespace BE.Controllers.Appointment_Management
         {
             var listDe = _alo2Context.Departments.Where(x => x.IsActive == true).ToList();
             var list = _mapper.Map<List<DepartmentAppointment>>(listDe);
+            return Ok(list);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetListSlot()
+        {
+            var listDe = _alo2Context.Slots.ToList();
+            var list = _mapper.Map<List<SlotAppointment>>(listDe);
             return Ok(list);
         }
     }

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace BE.DTOs.AppointmentDto
 {
-    public class AppointmentDto
+    public class AppointmentCreate
     {
         //  public int Id { get; set; }
 
@@ -16,6 +16,6 @@ namespace BE.DTOs.AppointmentDto
         public int SlotId { get; set; }
 
 
-        public string? Note { get; set; }
+       
     }
 }

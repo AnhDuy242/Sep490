@@ -15,24 +15,28 @@ import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
 function App() {
   return (
     <Routes>
+      {/**Route hướng home */}
       <Route path="/" element={<Home />} />
+
+      {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
         <Route path="receptionist-account" element={<ReceptionistAccount />} />
       </Route>
 
-
+      {/**Route article */}
       <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
         <Route path="/article/dashboard/list_blog" element={<ListBlog/>} />
         <Route path="list_article" element={<ListArticle/>} />
         <Route path="/article/dashboard/add_blog" element={<Add_blog/>} />
       </Route>
 
+      {/**Route patient view update delete appointment*/}
       <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment/></ProtectedRoute>}>
         
       </Route>
 
-
+      {/**Rout patient create appointment */}
       <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment/></ProtectedRoute>}>
         
       </Route>

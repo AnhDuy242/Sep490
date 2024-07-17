@@ -5,7 +5,8 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import google_icon from '../../assets/images/google.png';
 import '../LoginForm/LoginForm.css';
-
+import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 const validationSchema = yup.object({
   identifier: yup
     .string('Nhập số điện thoại hoặc email')
@@ -21,10 +22,11 @@ const validationSchema = yup.object({
     .required('Mật khẩu là bắt buộc')
 });
 
-const LoginForm = ({ show, handleClose, handleLogin }) => {
+const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -39,6 +41,16 @@ const LoginForm = ({ show, handleClose, handleLogin }) => {
         formik.resetForm();
         setError(null);
         handleClose(); // Close modal after successful login
+
+        // Perform role-based navigation
+        const role = localStorage.getItem('role');
+        if (role === 'Admin') {
+          navigate('/admin/dashboard/doctor-account', { replace: true });
+        } else if (role === 'ArticleManager') {
+          navigate('/article/dashboard', { replace: true });
+        } else {
+          navigate('/', { replace: true });
+        }
       } catch (error) {
         setError(error.message || 'Đã xảy ra lỗi khi đăng nhập');
       } finally {
@@ -46,7 +58,6 @@ const LoginForm = ({ show, handleClose, handleLogin }) => {
       }
     }
   });
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };

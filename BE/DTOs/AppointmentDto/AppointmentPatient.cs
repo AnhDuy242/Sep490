@@ -1,4 +1,7 @@
-﻿namespace BE.DTOs.AppointmentDto
+﻿using BE.Service.ImplService;
+using System.Text.Json.Serialization;
+
+namespace BE.DTOs.AppointmentDto
 {
     public class AppointmentPatient
     {
@@ -9,7 +12,7 @@
 
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }
-
+        [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateTime Date { get; set; }
 
         public int SlotId { get; set; }

@@ -37,15 +37,16 @@ const Header = () => {
     try {
       const { token } = await login(username, password);
       updateToken(token);
-
+      
       const decodedToken = jwtDecode(token);
       const accountId = decodedToken.AccId;
-
-      // Lưu trạng thái đăng nhập và account id vào localStorage
+      const role = decodedToken.role; // Adjust this according to your token structure
+  
+      // Lưu trạng thái đăng nhập, token, vai trò và account id vào localStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
       localStorage.setItem('accountId', accountId);
-
-      handleCloseLogin();
-      navigate('/');
+  
     } catch (error) {
       console.error('Login failed:', error);
     }
@@ -81,10 +82,6 @@ const Header = () => {
 
   return (
     <>
-      {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
-      {role === 'Patient' && <Navigate to="/" replace={true} />}
-      {role === 'ArticleManager' && <Navigate to="/article/dashboard" replace={true} />}
-
       <AppBar position="static" color="default">
         <Toolbar>
           <NavLink to="/" className="nav__logo">
@@ -108,7 +105,12 @@ const Header = () => {
         </Toolbar>
       </AppBar>
 
-      <LoginForm show={showLogin} handleLogin={handleLogin} handleClose={handleCloseLogin} />
+      <LoginForm
+        show={showLogin}
+        handleLogin={handleLogin}
+        handleClose={handleCloseLogin}
+        handleRegister={handleRegister}
+      />
       <RegisterForm show={showRegister} handleRegister={handleRegister} handleClose={handleCloseRegister} />
     </>
   );
