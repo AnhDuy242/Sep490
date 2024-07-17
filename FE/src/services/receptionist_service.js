@@ -154,4 +154,3 @@ export const deleteMultipleReceptionists = async (phones) => {
   }
 };
 
-

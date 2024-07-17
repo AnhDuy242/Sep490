@@ -15,6 +15,7 @@ using CloudinaryDotNet;
 using BE.Service.IService;
 using BE.DTOs;
 using BE.Service;
+using BE.Service.ImplService;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +49,8 @@ builder.Services.AddSingleton<ISMSService>(provider =>
         configuration["Twilio:AuthToken"],
         configuration["Twilio:PhoneNumber"]);
 });
+//Validate Service Configure
+builder.Services.AddTransient<IValidateService, ValidateService>();
 //mail
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
