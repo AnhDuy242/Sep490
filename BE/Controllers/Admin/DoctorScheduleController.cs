@@ -136,7 +136,7 @@ namespace BE.Controllers.Admin
 
                 if (listDateDuplicate.Any())
                 {
-                    return StatusCode(StatusCodes.Status201Created, $"Nhung ngay duoi day khong duoc add do da ton tai: {listDateDuplicate}");
+                    return StatusCode(StatusCodes.Status201Created, $"Nhung ngay duoi day khong duoc them vao do da ton tai: {listDateDuplicate}");
                 }
 
                 
