@@ -24,12 +24,12 @@ import {
   IconButton,
   Dialog,DialogActions,DialogContentText,DialogTitle,DialogContent
 } from '@mui/material';
-import { format, startOfWeek, addDays, subWeeks, addWeeks,isSameWeek,isBefore ,isWithinInterval,getYear, eachWeekOfInterval, endOfYear} from 'date-fns';
-import { ArrowBack, ArrowForward } from '@mui/icons-material';
+import { format,endOfWeek, startOfWeek, addDays, subWeeks, addWeeks,isSameWeek,isBefore ,isWithinInterval,getYear, eachWeekOfInterval, endOfYear} from 'date-fns';
 import { loadDoctors } from '../../services/doctor_service';
 import DeleteIcon from '@material-ui/icons/Delete'; // Import DeleteIcon từ @material-ui/icons
-
-import { parseISO } from 'date-fns';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import {  subDays,parseISO } from 'date-fns';
 
 const TabPanel = (props) => {
   const { children, value, index, ...other } = props;
@@ -50,167 +50,96 @@ const TabPanel = (props) => {
     </div>
   );
 };
-const AddSchedule = ({ doctors, setSnackbar }) => {
+function AddSchedule({ doctors, setSnackbar }) {
   const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
-  const [selectedWeek, setSelectedWeek] = useState('');
-  const [currentWeek, setCurrentWeek] = useState(new Date());
-  const [existingSchedules, setExistingSchedules] = useState([]);
-  const [morningSchedule, setMorningSchedule] = useState([]);
-  const [afternoonSchedule, setAfternoonSchedule] = useState([]);
-  const [disabledDays, setDisabledDays] = useState([]);
-  const [weekOptions, setWeekOptions] = useState([]);
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [morningValues, setMorningValues] = useState(Array(7).fill(false));
+  const [afternoonValues, setAfternoonValues] = useState(Array(7).fill(false));
 
-  // Define state for managing tabs
-  const [value, setValue] = useState(0); // Initial tab index
-
-  useEffect(() => {
-    setExistingSchedules([]);
-    setMorningSchedule([]);
-    setAfternoonSchedule([]);
-    setSelectedWeek('');
-    setDisabledDays([]);
-    generateWeekOptions(selectedYear);
-  }, [selectedDoctor, selectedYear]);
-
-  const generateWeekOptions = (year) => {
-    const start = new Date(year, 0, 1);
-    const end = endOfYear(start);
-    const weeks = eachWeekOfInterval({ start, end }, { weekStartsOn: 1 });
-    const formattedWeeks = weeks.map(startOfWeekDate => ({
-      label: `${format(startOfWeekDate, 'dd/MM')} - ${format(addDays(startOfWeekDate, 6), 'dd/MM')}`,
-      value: startOfWeekDate
-    }));
-    setWeekOptions(formattedWeeks);
+  const handleDoctorChange = event => {
+    setSelectedDoctor(event.target.value);
   };
 
-  const handleDoctorChange = async (event) => {
-    const doctorId = event.target.value;
-    setSelectedDoctor(doctorId);
+  const handleStartDateChange = event => {
+    const date = new Date(event.target.value);
+    setStartDate(date);
   };
 
-  const handleYearChange = async (event) => {
-    const year = event.target.value;
-    setSelectedYear(year);
-    setSelectedWeek('');
-    generateWeekOptions(year);
-  };
-
-  const handleWeekChange = async (event) => {
-    const week = event.target.value;
-    setSelectedWeek(week);
-    setCurrentWeek(week);
-
-    if (selectedDoctor) {
-      try {
-        const response = await fetch(`https://localhost:7240/api/DoctorSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error.status: ${response.status}`);
-        }
-        const data = await response.json();
-        const existingSchedulesInWeek = data.$values.filter(schedule =>
-          new Date(schedule.date) >= week &&
-          new Date(schedule.date) < addWeeks(week, 1)
-        );
-        setExistingSchedules(existingSchedulesInWeek);
-
-        const disabledDaysArray = existingSchedulesInWeek.map(schedule => format(new Date(schedule.date), 'EEE dd/MM'));
-        setDisabledDays(disabledDaysArray);
-      } catch (error) {
-        setSnackbar({ open: true, message: error.message, severity: 'error' });
-      }
-    }
-  };
-
-  const handleToggleMorning = (day) => {
-    if (disabledDays.includes(day)) {
-      setSnackbar({ open: true, message: 'Ngày này đã có lịch làm việc!', severity: 'warning' });
-      return;
-    }
-
-    setMorningSchedule((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
-
-  const handleToggleAfternoon = (day) => {
-    if (disabledDays.includes(day)) {
-      setSnackbar({ open: true, message: 'Ngày này đã có lịch làm việc!', severity: 'warning' });
-      return;
-    }
-
-    setAfternoonSchedule((prev) =>
-      prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-    );
-  };
-
-  const getDaysOfWeek = (date) => {
-    const start = startOfWeek(date, { weekStartsOn: 1 });
-    return Array.from({ length: 7 }, (_, i) => format(addDays(start, i), 'EEE dd/MM'));
-  };
-
-  const daysOfWeek = getDaysOfWeek(currentWeek);
-
-  const handleBackWeek = () => {
-    const newCurrentWeek = subWeeks(currentWeek, 1);
-    setCurrentWeek(newCurrentWeek);
-    setSelectedWeek(newCurrentWeek);
-  };
-
-  const handleNextWeek = () => {
-    const newCurrentWeek = addWeeks(currentWeek, 1);
-    setCurrentWeek(newCurrentWeek);
-    setSelectedWeek(newCurrentWeek);
+  const handleEndDateChange = event => {
+    const date = new Date(event.target.value);
+    setEndDate(date);
   };
 
   const handleSubmit = async () => {
-    if (!selectedDoctor || !selectedWeek) {
-      setSnackbar({ open: true, message: 'Vui lòng chọn bác sĩ và tuần trước khi lưu lịch làm việc!', severity: 'error' });
+    if (!selectedDoctor || !startDate || !endDate) {
+      setSnackbar({
+        open: true,
+        message: 'Vui lòng chọn bác sĩ và ngày bắt đầu và kết thúc trước khi lưu lịch làm việc!',
+        severity: 'error',
+      });
       return;
     }
-
+  
     try {
-      const startOfWeekDate = startOfWeek(new Date(selectedWeek), { weekStartsOn: 1 });
-
-      const schedules = daysOfWeek.map((day, index) => {
-        const [weekdays, date] = day.split(' ');
-        const adjustedDate = format(addDays(startOfWeekDate, index), 'yyyy-MM-dd');
-        const formattedDateTime = `${adjustedDate}T00:00:00Z`;
-
-        return {
-          doctorId: selectedDoctor,
-          morning: morningSchedule.includes(day),
-          afternoon: afternoonSchedule.includes(day),
-          weekdays,
-          date: formattedDateTime,
-          weekId: 0,
-          appointments: 0
-        };
+      const requestBody = {
+        doctorId: selectedDoctor,
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
+        appointments: 0,
+        morning: morningValues,
+        afternoon: afternoonValues,
+      };
+  
+      const response = await fetch('https://localhost:7240/api/ManageSchedule/CreateSchedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
       });
-
-      const response = await Promise.all(schedules.map(schedule =>
-        fetch('https://localhost:7240/api/DoctorSchedule/CreateSchedule', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(schedule)
-        })
-      ));
-
-      const success = response.every(res => res.ok);
-      if (success) {
-        setSnackbar({ open: true, message: 'Lịch làm việc đã được thêm mới thành công!', severity: 'success' });
-
-        // Update tab value to switch to Edit Schedule tab
-        setValue(1);
+  
+      const responseText = await response.text();
+  
+      if (response.status === 201) {
+        let message;
+        try {
+          const data = JSON.parse(responseText);
+          message = data.message;
+          // Remove the time part from the dates
+          message = message.replace(/(\d+\/\d+\/\d+)\s\d+:\d+:\d+\s[APM]{2}/g, '$1');
+        } catch {
+          message = responseText;
+        }
+        setSnackbar({
+          open: true,
+          message: message,
+          severity: 'warning',
+        });
+      } else if (response.ok) {
+        setSnackbar({
+          open: true,
+          message: 'Lịch làm việc đã được thêm mới thành công!',
+          severity: 'success',
+        });
       } else {
-        throw new Error('Đã có lỗi xảy ra khi thêm lịch làm việc');
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.message || 'Đã có lỗi xảy ra khi thêm lịch làm việc';
+        } catch {
+          errorMessage = 'Đã có lỗi xảy ra khi thêm lịch làm việc';
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
       setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
   };
+  
+  
+
+  const daysOfWeek = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
 
   return (
     <>
@@ -221,117 +150,101 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
           value={selectedDoctor}
           onChange={handleDoctorChange}
         >
-          {doctors.map((doctor) => (
+          {doctors.map(doctor => (
             <MenuItem key={doctor.accId} value={doctor.accId}>
               {doctor.name}
             </MenuItem>
           ))}
         </Select>
       </FormControl>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="year-label">Chọn năm</InputLabel>
-        <Select
-          labelId="year-label"
-          value={selectedYear}
-          onChange={handleYearChange}
-        >
-          {Array.from({ length: 5 }, (_, i) => getYear(new Date()) - 2 + i).map((year) => (
-            <MenuItem key={year} value={year}>
-              {year}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      <FormControl fullWidth margin="normal">
-        <InputLabel id="week-label">Chọn tuần</InputLabel>
-        <Select
-          labelId="week-label"
-          value={selectedWeek}
-          onChange={handleWeekChange}
-        >
-          {weekOptions.map((week, index) => (
-            <MenuItem key={index} value={week.value}>
-              {week.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
       <Box display="flex" justifyContent="space-between" mt={2}>
-        <IconButton onClick={handleBackWeek}>
-          <ArrowBack />
-        </IconButton>
-        <Typography variant="h6">
-          Tuần bắt đầu từ {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'dd/MM/yyyy')}
-        </Typography>
-        <IconButton onClick={handleNextWeek}>
-          <ArrowForward />
-        </IconButton>
+        <TextField
+          type="date"
+          value={startDate ? format(startDate, 'yyyy-MM-dd') : ''}
+          onChange={handleStartDateChange}
+          variant="outlined"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          InputProps={{
+            inputProps: {
+              min: format(new Date(), 'yyyy-MM-dd'),
+            },
+          }}
+          placeholder="Chọn ngày bắt đầu"
+        />
+        <TextField
+          type="date"
+          value={endDate ? format(endDate, 'yyyy-MM-dd') : ''}
+          onChange={handleEndDateChange}
+          variant="outlined"
+          InputLabelProps={{
+            shrink: true,
+          }}
+          InputProps={{
+            inputProps: {
+              min: startDate ? format(startDate, 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd'),
+            },
+          }}
+          placeholder="Chọn ngày kết thúc"
+        />
       </Box>
-      {selectedWeek && (
-        <Box mt={4}>
-          <TableContainer component={Paper}>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell></TableCell>
-                  {daysOfWeek.map((day, index) => (
-                    !existingSchedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) && (
-                      <TableCell key={index} align="center">
-                        {day}
-                      </TableCell>
-                    )
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                <TableRow>
-                  <TableCell>Morning</TableCell>
-                  {daysOfWeek.map((day, index) => (
-                    !existingSchedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) && (
-                      <TableCell key={index} align="center">
-                        <ToggleButton
-                          selected={morningSchedule.includes(day)}
-                          onChange={() => handleToggleMorning(day)}
-                          value={day}
-                          disabled={disabledDays.includes(day)}
-                        >
-                          {morningSchedule.includes(day) ? 'Yes' : 'No'}
-                        </ToggleButton>
-                      </TableCell>
-                    )
-                  ))}
-                </TableRow>
-                <TableRow>
-                  <TableCell>Afternoon</TableCell>
-                  {daysOfWeek.map((day, index) => (
-                    !existingSchedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) && (
-                      <TableCell key={index} align="center">
-                        <ToggleButton
-                          selected={afternoonSchedule.includes(day)}
-                          onChange={() => handleToggleAfternoon(day)}
-                          value={day}
-                          disabled={disabledDays.includes(day)}
-                        >
-                          {afternoonSchedule.includes(day) ? 'Yes' : 'No'}
-                        </ToggleButton>
-                      </TableCell>
-                    )
-                  ))}
-                </TableRow>
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </Box>
-      )}
-      <Box mt={4}>
+      <Box mt={2}>
+        <Typography variant="h6">Lịch làm việc trong tuần</Typography>
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                {daysOfWeek.map((day, index) => (
+                  <TableCell key={index}>{day}</TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              <TableRow>
+                {morningValues.map((value, index) => (
+                  <TableCell key={index}>
+                    <ToggleButton
+                      value="check"
+                      selected={value}
+                      onChange={() =>
+                        setMorningValues(prev => prev.map((m, i) => (i === index ? !m : m)))
+                      }
+                      disabled={!startDate || !endDate}
+                    >
+                      {value ? 'Có' : 'Không'}
+                    </ToggleButton>
+                  </TableCell>
+                ))}
+              </TableRow>
+              <TableRow>
+                {afternoonValues.map((value, index) => (
+                  <TableCell key={index}>
+                    <ToggleButton
+                      value="check"
+                      selected={value}
+                      onChange={() =>
+                        setAfternoonValues(prev => prev.map((a, i) => (i === index ? !a : a)))
+                      }
+                      disabled={!startDate || !endDate}
+                    >
+                      {value ? 'Có' : 'Không'}
+                    </ToggleButton>
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      <Box mt={2}>
         <Button variant="contained" color="primary" onClick={handleSubmit}>
           Lưu lịch làm việc
         </Button>
       </Box>
     </>
   );
-};
-
+}
 const EditSchedule = ({ doctors, setSnackbar }) => {
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [schedules, setSchedules] = useState([]);
@@ -345,13 +258,12 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
         const startOfWeekDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
 
         const response = await fetch(
-          `https://localhost:7240/api/DoctorSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`
+          `https://localhost:7240/api/ManageSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
-
         // Filter schedules to only include current week
         const filteredSchedules = data.$values.filter((schedule) =>
           isSameWeek(new Date(schedule.date), currentWeek, { weekStartsOn: 1 })
@@ -396,12 +308,17 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
       setSnackbar({ open: true, message: 'Vui lòng chọn bác sĩ trước khi lưu lịch làm việc!', severity: 'error' });
       return;
     }
-
+  
     try {
-      const selectedSchedules = schedules.filter(schedule => schedule.morning || schedule.afternoon);
-
+      const selectedSchedules = schedules
+        .filter(schedule => schedule.morning || schedule.afternoon)
+        .map(schedule => ({
+          ...schedule,
+          doctorId: selectedDoctor, // Ensure doctorId is correctly set
+        }));
+  
       const response = await Promise.all(selectedSchedules.map(schedule =>
-        fetch(`https://localhost:7240/api/DoctorSchedule/UpdateSchedule/${schedule.id}`, {
+        fetch(`https://localhost:7240/api/ManageSchedule/UpdateSchedule/${schedule.id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
@@ -409,12 +326,17 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
           body: JSON.stringify(schedule)
         })
       ));
-
+  
       const success = response.every(res => res.ok);
+  
       if (success) {
         setSnackbar({ open: true, message: 'Lịch làm việc đã được cập nhật thành công!', severity: 'success' });
       } else {
-        throw new Error('Đã có lỗi xảy ra khi cập nhật lịch làm việc');
+        // If any of the responses is not ok, handle the error accordingly
+        const errorMessages = await Promise.all(response.map(res => res.text()));
+        const detailedMessage = errorMessages.filter(msg => msg).join(', ');
+  
+        throw new Error(`Đã có lỗi xảy ra khi cập nhật lịch làm việc: ${detailedMessage}`);
       }
     } catch (error) {
       setSnackbar({ open: true, message: error.message, severity: 'error' });
@@ -542,7 +464,7 @@ const DeleteSchedule = ({ doctors, setSnackbar }) => {
         const startOfWeekDate = startOfWeek(currentWeek, { weekStartsOn: 1 });
 
         const response = await fetch(
-          `https://localhost:7240/api/DoctorSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`
+          `https://localhost:7240/api/ManageSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`
         );
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -580,7 +502,7 @@ const DeleteSchedule = ({ doctors, setSnackbar }) => {
       }
 
       const response = await fetch(
-        `https://localhost:7240/api/DoctorSchedule/DeleteSchedule/${selectedSchedule.id}`,
+        `https://localhost:7240/api/ManageSchedule/Deletev/${selectedSchedule.id}`,
         {
           method: 'DELETE',
         }
@@ -745,7 +667,7 @@ const ViewSchedule = ({ doctors, setSnackbar }) => {
     }
   
     try {
-      const response = await fetch(`https://localhost:7240/api/DoctorSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`);
+      const response = await fetch(`https://localhost:7240/api/ManageSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`);
       if (!response.ok) {
         throw new Error(`Không thể lấy dữ liệu lịch trình (${response.status})`);
       }

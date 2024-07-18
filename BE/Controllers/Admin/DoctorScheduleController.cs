@@ -134,7 +134,7 @@ namespace BE.Controllers.Admin
                 await _context.SaveChangesAsync();
 
 
-                if (string.IsNullOrWhiteSpace(listDateDuplicate))
+                if (!string.IsNullOrWhiteSpace(listDateDuplicate))
                 {
                     return StatusCode(StatusCodes.Status201Created, $"Những ngày dưới đây không được thêm vào do đã tồn tại: {listDateDuplicate}");
                 }
