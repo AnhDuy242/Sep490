@@ -24,7 +24,7 @@ import {
   IconButton,
   Dialog,DialogActions,DialogContentText,DialogTitle,DialogContent
 } from '@mui/material';
-import { format, startOfWeek, addDays, subWeeks, addWeeks,isSameWeek,isBefore ,isWithinInterval} from 'date-fns';
+import { format, startOfWeek, addDays, subWeeks, addWeeks,isSameWeek,isBefore ,isWithinInterval,getYear, eachWeekOfInterval, endOfYear} from 'date-fns';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { loadDoctors } from '../../services/doctor_service';
 import DeleteIcon from '@material-ui/icons/Delete'; // Import DeleteIcon từ @material-ui/icons
@@ -50,55 +50,76 @@ const TabPanel = (props) => {
     </div>
   );
 };
-
 const AddSchedule = ({ doctors, setSnackbar }) => {
   const [selectedDoctor, setSelectedDoctor] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [selectedYear, setSelectedYear] = useState(getYear(new Date()));
+  const [selectedWeek, setSelectedWeek] = useState('');
+  const [currentWeek, setCurrentWeek] = useState(new Date());
   const [existingSchedules, setExistingSchedules] = useState([]);
   const [morningSchedule, setMorningSchedule] = useState([]);
   const [afternoonSchedule, setAfternoonSchedule] = useState([]);
   const [disabledDays, setDisabledDays] = useState([]);
+  const [weekOptions, setWeekOptions] = useState([]);
+
+  // Define state for managing tabs
+  const [value, setValue] = useState(0); // Initial tab index
 
   useEffect(() => {
     setExistingSchedules([]);
     setMorningSchedule([]);
     setAfternoonSchedule([]);
-    setStartDate('');
-    setEndDate('');
+    setSelectedWeek('');
     setDisabledDays([]);
-  }, [selectedDoctor]);
+    generateWeekOptions(selectedYear);
+  }, [selectedDoctor, selectedYear]);
+
+  const generateWeekOptions = (year) => {
+    const start = new Date(year, 0, 1);
+    const end = endOfYear(start);
+    const weeks = eachWeekOfInterval({ start, end }, { weekStartsOn: 1 });
+    const formattedWeeks = weeks.map(startOfWeekDate => ({
+      label: `${format(startOfWeekDate, 'dd/MM')} - ${format(addDays(startOfWeekDate, 6), 'dd/MM')}`,
+      value: startOfWeekDate
+    }));
+    setWeekOptions(formattedWeeks);
+  };
 
   const handleDoctorChange = async (event) => {
     const doctorId = event.target.value;
     setSelectedDoctor(doctorId);
   };
 
-  const handleStartDateChange = async (event) => {
-    const date = event.target.value;
-    setStartDate(date);
+  const handleYearChange = async (event) => {
+    const year = event.target.value;
+    setSelectedYear(year);
+    setSelectedWeek('');
+    generateWeekOptions(year);
+  };
+
+  const handleWeekChange = async (event) => {
+    const week = event.target.value;
+    setSelectedWeek(week);
+    setCurrentWeek(week);
 
     if (selectedDoctor) {
       try {
         const response = await fetch(`https://localhost:7240/api/DoctorSchedule/GetAllSchedulesByDoctorId?doctorId=${selectedDoctor}`);
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error.status: ${response.status}`);
         }
         const data = await response.json();
-        const existingSchedulesOnDate = data.$values.filter(schedule => schedule.date.startsWith(date));
-        setExistingSchedules(existingSchedulesOnDate);
+        const existingSchedulesInWeek = data.$values.filter(schedule =>
+          new Date(schedule.date) >= week &&
+          new Date(schedule.date) < addWeeks(week, 1)
+        );
+        setExistingSchedules(existingSchedulesInWeek);
 
-        const disabledDaysArray = existingSchedulesOnDate.map(schedule => format(new Date(schedule.date), 'yyyy-MM-dd'));
+        const disabledDaysArray = existingSchedulesInWeek.map(schedule => format(new Date(schedule.date), 'EEE dd/MM'));
         setDisabledDays(disabledDaysArray);
       } catch (error) {
         setSnackbar({ open: true, message: error.message, severity: 'error' });
       }
     }
-  };
-
-  const handleEndDateChange = (event) => {
-    const date = event.target.value;
-    setEndDate(date);
   };
 
   const handleToggleMorning = (day) => {
@@ -123,46 +144,49 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
     );
   };
 
-  const getDaysInRange = (start, end) => {
-    const dateArray = [];
-    let currentDate = new Date(start);
-    while (currentDate <= new Date(end)) {
-      dateArray.push(format(currentDate, 'yyyy-MM-dd'));
-      currentDate = addDays(currentDate, 1);
-    }
-    return dateArray;
+  const getDaysOfWeek = (date) => {
+    const start = startOfWeek(date, { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => format(addDays(start, i), 'EEE dd/MM'));
   };
 
-  const daysInRange = startDate && endDate ? getDaysInRange(startDate, endDate) : [];
+  const daysOfWeek = getDaysOfWeek(currentWeek);
+
+  const handleBackWeek = () => {
+    const newCurrentWeek = subWeeks(currentWeek, 1);
+    setCurrentWeek(newCurrentWeek);
+    setSelectedWeek(newCurrentWeek);
+  };
+
+  const handleNextWeek = () => {
+    const newCurrentWeek = addWeeks(currentWeek, 1);
+    setCurrentWeek(newCurrentWeek);
+    setSelectedWeek(newCurrentWeek);
+  };
 
   const handleSubmit = async () => {
-    if (!selectedDoctor || !startDate || !endDate) {
-      setSnackbar({ open: true, message: 'Vui lòng chọn bác sĩ và ngày tháng trước khi lưu lịch làm việc!', severity: 'error' });
+    if (!selectedDoctor || !selectedWeek) {
+      setSnackbar({ open: true, message: 'Vui lòng chọn bác sĩ và tuần trước khi lưu lịch làm việc!', severity: 'error' });
       return;
     }
-
-    if (isBefore(new Date(endDate), new Date(startDate))) {
-      setSnackbar({ open: true, message: 'Ngày kết thúc phải sau ngày bắt đầu!', severity: 'error' });
-      return;
-    }
-
-    const addedDays = [];
-    const failedDays = [];
 
     try {
-      const schedules = daysInRange
-        .filter(day => !disabledDays.includes(day))
-        .map((day) => {
-          return {
-            doctorId: selectedDoctor,
-            morning: morningSchedule.includes(day),
-            afternoon: afternoonSchedule.includes(day),
-            date: `${day}T00:00:00Z`,
-            weekId: 0,
-            appointments: 0,
-            weekdays: "1", // Giá trị mặc định cho trường Weekdays
-          };
-        });
+      const startOfWeekDate = startOfWeek(new Date(selectedWeek), { weekStartsOn: 1 });
+
+      const schedules = daysOfWeek.map((day, index) => {
+        const [weekdays, date] = day.split(' ');
+        const adjustedDate = format(addDays(startOfWeekDate, index), 'yyyy-MM-dd');
+        const formattedDateTime = `${adjustedDate}T00:00:00Z`;
+
+        return {
+          doctorId: selectedDoctor,
+          morning: morningSchedule.includes(day),
+          afternoon: afternoonSchedule.includes(day),
+          weekdays,
+          date: formattedDateTime,
+          weekId: 0,
+          appointments: 0
+        };
+      });
 
       const response = await Promise.all(schedules.map(schedule =>
         fetch('https://localhost:7240/api/DoctorSchedule/CreateSchedule', {
@@ -171,33 +195,18 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
             'Content-Type': 'application/json'
           },
           body: JSON.stringify(schedule)
-        }).then(res => res.json().then(data => ({ status: res.status, data })))
+        })
       ));
 
-      response.forEach((res, index) => {
-        const day = schedules[index].date.split('T')[0];
-        if (res.status === 201) {
-          addedDays.push(day);
-        } else {
-          failedDays.push(day);
-        }
-      });
+      const success = response.every(res => res.ok);
+      if (success) {
+        setSnackbar({ open: true, message: 'Lịch làm việc đã được thêm mới thành công!', severity: 'success' });
 
-      if (failedDays.length === 0) {
-        setSnackbar({ open: true, message: `Lịch làm việc đã được thêm mới thành công: ${addedDays.join(', ')}`, severity: 'success' });
+        // Update tab value to switch to Edit Schedule tab
+        setValue(1);
       } else {
-        setSnackbar({
-          open: true,
-          message: `Thành công: ${addedDays.length > 0 ? addedDays.join(', ') : 'Không có'}. Lỗi: ${failedDays.join(', ')}.`,
-          severity: 'warning',
-        });
+        throw new Error('Đã có lỗi xảy ra khi thêm lịch làm việc');
       }
-
-      setSelectedDoctor('');
-      setStartDate('');
-      setEndDate('');
-      setMorningSchedule([]);
-      setAfternoonSchedule([]);
     } catch (error) {
       setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
@@ -219,68 +228,94 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
           ))}
         </Select>
       </FormControl>
-      <TextField
-        label="Chọn ngày bắt đầu (yyyy-MM-dd)"
-        type="date"
-        value={startDate}
-        onChange={handleStartDateChange}
-        fullWidth
-        margin="normal"
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-      <TextField
-        label="Chọn ngày kết thúc (yyyy-MM-dd)"
-        type="date"
-        value={endDate}
-        onChange={handleEndDateChange}
-        fullWidth
-        margin="normal"
-        InputLabelProps={{
-          shrink: true,
-        }}
-      />
-      {startDate && endDate && (
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="year-label">Chọn năm</InputLabel>
+        <Select
+          labelId="year-label"
+          value={selectedYear}
+          onChange={handleYearChange}
+        >
+          {Array.from({ length: 5 }, (_, i) => getYear(new Date()) - 2 + i).map((year) => (
+            <MenuItem key={year} value={year}>
+              {year}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth margin="normal">
+        <InputLabel id="week-label">Chọn tuần</InputLabel>
+        <Select
+          labelId="week-label"
+          value={selectedWeek}
+          onChange={handleWeekChange}
+        >
+          {weekOptions.map((week, index) => (
+            <MenuItem key={index} value={week.value}>
+              {week.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Box display="flex" justifyContent="space-between" mt={2}>
+        <IconButton onClick={handleBackWeek}>
+          <ArrowBack />
+        </IconButton>
+        <Typography variant="h6">
+          Tuần bắt đầu từ {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'dd/MM/yyyy')}
+        </Typography>
+        <IconButton onClick={handleNextWeek}>
+          <ArrowForward />
+        </IconButton>
+      </Box>
+      {selectedWeek && (
         <Box mt={4}>
           <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
-                  {daysInRange.map((day, index) => (
-                    <TableCell key={index} align="center">
-                      {format(new Date(day), 'dd/MM')}
-                    </TableCell>
+                  <TableCell></TableCell>
+                  {daysOfWeek.map((day, index) => (
+                    !existingSchedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) && (
+                      <TableCell key={index} align="center">
+                        {day}
+                      </TableCell>
+                    )
                   ))}
                 </TableRow>
               </TableHead>
               <TableBody>
                 <TableRow>
-                  {daysInRange.map((day, index) => (
-                    <TableCell key={index} align="center">
-                      <ToggleButton
-                        selected={morningSchedule.includes(day)}
-                        onChange={() => handleToggleMorning(day)}
-                        value={day}
-                        disabled={disabledDays.includes(day)}
-                      >
-                        {morningSchedule.includes(day) ? 'Sáng' : 'Sáng'}
-                      </ToggleButton>
-                    </TableCell>
+                  <TableCell>Morning</TableCell>
+                  {daysOfWeek.map((day, index) => (
+                    !existingSchedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) && (
+                      <TableCell key={index} align="center">
+                        <ToggleButton
+                          selected={morningSchedule.includes(day)}
+                          onChange={() => handleToggleMorning(day)}
+                          value={day}
+                          disabled={disabledDays.includes(day)}
+                        >
+                          {morningSchedule.includes(day) ? 'Yes' : 'No'}
+                        </ToggleButton>
+                      </TableCell>
+                    )
                   ))}
                 </TableRow>
                 <TableRow>
-                  {daysInRange.map((day, index) => (
-                    <TableCell key={index} align="center">
-                      <ToggleButton
-                        selected={afternoonSchedule.includes(day)}
-                        onChange={() => handleToggleAfternoon(day)}
-                        value={day}
-                        disabled={disabledDays.includes(day)}
-                      >
-                        {afternoonSchedule.includes(day) ? 'Chiều' : 'Chiều'}
-                      </ToggleButton>
-                    </TableCell>
+                  <TableCell>Afternoon</TableCell>
+                  {daysOfWeek.map((day, index) => (
+                    !existingSchedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) && (
+                      <TableCell key={index} align="center">
+                        <ToggleButton
+                          selected={afternoonSchedule.includes(day)}
+                          onChange={() => handleToggleAfternoon(day)}
+                          value={day}
+                          disabled={disabledDays.includes(day)}
+                        >
+                          {afternoonSchedule.includes(day) ? 'Yes' : 'No'}
+                        </ToggleButton>
+                      </TableCell>
+                    )
                   ))}
                 </TableRow>
               </TableBody>
@@ -296,7 +331,6 @@ const AddSchedule = ({ doctors, setSnackbar }) => {
     </>
   );
 };
-
 
 const EditSchedule = ({ doctors, setSnackbar }) => {
   const [selectedDoctor, setSelectedDoctor] = useState('');
@@ -805,8 +839,8 @@ const ViewSchedule = ({ doctors, setSnackbar }) => {
                     return (
                       <TableRow key={schedule.id}>
                         <TableCell align="center">{format(scheduleDate, 'dd/MM/yyyy')}</TableCell>
-                        <TableCell align="center">{schedule.morning ? 'Sáng' : '-'}</TableCell>
-                        <TableCell align="center">{schedule.morning ? '-' : 'Chiều'}</TableCell>
+                        <TableCell align="center">{schedule.morning ? 'Có lịch' : 'Nghỉ'}</TableCell>
+                        <TableCell align="center">{schedule.afternoon? 'Có lịch' : 'Nghỉ'}</TableCell>
                       </TableRow>
                     );
                   }
