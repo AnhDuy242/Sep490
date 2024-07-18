@@ -143,3 +143,25 @@ export const fetchSlots = async () => {
       throw error;
   }
 };
+
+
+export const deleteAppointment = async (appointmentId) => {
+  try {
+      const response = await fetch(`https://localhost:7240/api/PatientAppointment/DeleteAppointment?appId=${appointmentId}`, {
+          method: 'DELETE',
+       
+      });
+     
+      if (!response.ok) {
+          throw new Error('Network response was not ok');
+      }
+      if(response.ok){
+        console.log('Da xoa thanh cong');
+      }
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error('Failed to delete appointment:', error);
+  }
+};
+
