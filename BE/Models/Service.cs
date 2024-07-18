@@ -15,5 +15,9 @@ public partial class Service
 
     public bool? IsActive { get; set; }
 
+    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+
     public virtual Department Dep { get; set; } = null!;
+
+    public virtual ICollection<Doctor> Doctors { get; set; } = new List<Doctor>();
 }

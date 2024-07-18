@@ -15,7 +15,7 @@ public partial class Feedback
 
     public int? Star { get; set; }
 
-    public virtual ICollection<FeedbackRe> FeedbackRes { get; } = new List<FeedbackRe>();
+    public virtual ICollection<FeedbackRe> FeedbackRes { get; set; } = new List<FeedbackRe>();
 
     public virtual Patient Patient { get; set; } = null!;
 }
