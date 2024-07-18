@@ -27,9 +27,7 @@ namespace BE.Controllers.Appointment
             {
                 return NotFound("Appointment not found.");
             }
-
             appointment.Status = status;
-
             try
             {
                 await _context.SaveChangesAsync();

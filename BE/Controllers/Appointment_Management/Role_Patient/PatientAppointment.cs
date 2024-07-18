@@ -130,13 +130,39 @@ namespace BE.Controllers.Appointment_Management
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListDoctor()
+        public async Task<IActionResult> GetListDoctor(int deId)
         {
-            var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).ToList();
-            var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
-            return Ok(list);
+            if (deId == null)
+            {
+                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).ToList();
+                var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
+                return Ok(list);
+            }
+            else
+            {
+                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).Where(x => x.DepId == deId).ToList();
+                var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
+
+                return Ok(list);
+            }
         }
 
+        [HttpPut]
+        public async Task<IActionResult> CancelAppointment(int aid)
+        {
+            Models.Appointment app = _alo2Context.Appointments.FirstOrDefault(x => x.Id == aid);   
+            if(app.Status == "Đang chờ phê duyệt")
+            {
+                _alo2Context.Appointments.Remove(app);
+                await _alo2Context.SaveChangesAsync();
+            }
+            else if(app.Status == "Đã phê duyệt")
+            {
+                app.Status = "Đã hủy";
+                await _alo2Context.SaveChangesAsync();
+            }
+            return Ok(app);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetListDepartment()
