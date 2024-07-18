@@ -14,6 +14,8 @@ namespace BE.DTOs.AppointmentDto
         public DateTime Date { get; set; }
 
         public int SlotId { get; set; }
+        public int DepartmentId { get; set; }
+        public int ServiceId { get; set; }
 
 
        
