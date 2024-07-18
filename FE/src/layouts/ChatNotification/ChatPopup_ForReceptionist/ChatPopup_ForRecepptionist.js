@@ -1,13 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Dialog, Box, Typography, TextField, Button, Fab, Badge, List, ListItem, ListItemText, IconButton } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import io from 'socket.io-client';
 import LoginForm from '../../LoginForm';
 import { login } from '../../../services/Authentication';
-import { useNavigate } from 'react-router-dom';
-
-const socket = io('http://localhost:3001');
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
@@ -19,7 +16,7 @@ const ChatPopup_ForReceptionist = () => {
     const [inputMessage, setInputMessage] = useState('');
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-    const navigate = useNavigate();
+    const socketRef = useRef(null); // Ref to store the socket instance
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -29,29 +26,43 @@ const ChatPopup_ForReceptionist = () => {
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
             if (tokenAge < tokenTimeout) {
                 setIsLoggedIn(true);
+                connectSocket(storedToken); // Connect socket after successful login
             } else {
                 localStorage.removeItem('token');
                 localStorage.removeItem('tokenTimestamp');
             }
         }
 
-        socket.on('message', (message) => {
+        return () => {
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
+        };
+    }, []);
+
+    const connectSocket = (token) => {
+        socketRef.current = io('http://localhost:3001');
+        
+        // Send token to server for login and authentication
+        socketRef.current.emit('loginReceptionist', { token });
+
+        socketRef.current.on('message', (message) => {
             setConversations((prevConversations) => {
-                const conversationIndex = prevConversations.findIndex(c => c.id === message.conversationId);
+                const updatedConversations = [...prevConversations];
+                const conversationIndex = updatedConversations.findIndex(c => c.id === message.roomId);
                 if (conversationIndex >= 0) {
-                    const updatedConversations = [...prevConversations];
                     updatedConversations[conversationIndex].messages.push(message);
-                    return updatedConversations;
                 } else {
-                    return [...prevConversations, { id: message.conversationId, messages: [message] }];
+                    updatedConversations.push({ id: message.roomId, messages: [message] });
                 }
+                return updatedConversations;
             });
         });
 
-        return () => {
-            socket.off('message');
-        };
-    }, [dialogOpen]);
+        socketRef.current.on('disconnect', () => {
+            console.log('Socket disconnected');
+        });
+    };
 
     const handleToggleDialog = () => {
         setDialogOpen(!dialogOpen);
@@ -60,8 +71,8 @@ const ChatPopup_ForReceptionist = () => {
     const handleSendMessage = () => {
         const message = inputMessage.trim();
         if (message && currentConversation) {
-            const newMessage = { to: 'consultant', message, conversationId: currentConversation.id };
-            socket.emit('message', newMessage);
+            const newMessage = { from: 'receptionist', roomId: currentConversation.id, message }; // Send message to specific room
+            socketRef.current.emit('message', newMessage);
             setConversations((prevConversations) => {
                 const updatedConversations = [...prevConversations];
                 const conversationIndex = updatedConversations.findIndex(c => c.id === currentConversation.id);
@@ -79,6 +90,7 @@ const ChatPopup_ForReceptionist = () => {
         setIsLoggedIn(true);
         localStorage.setItem('token', token);
         localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
+        connectSocket(token); // Connect socket after successful login
         window.location.href = '/';
     };
 
@@ -106,7 +118,7 @@ const ChatPopup_ForReceptionist = () => {
         display: 'flex',
         flexDirection: 'row',
         height: '80vh',
-        width: '80vw',
+        width: '97vw',
     };
 
     const sidebarStyle = {

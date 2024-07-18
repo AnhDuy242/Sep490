@@ -7,6 +7,7 @@ import LoginForm from '../LoginForm';
 import RegisterForm from '../RegisterForm';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { AuthContext } from '../../utils/AuthContext'; // Import AuthContext
+import { jwtDecode } from "jwt-decode";
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
@@ -45,7 +46,10 @@ function Header() {
         try {
             const { token } = await login(username, password);
             updateToken(token); // Call the updateToken function from context
+            const decoded = jwtDecode(token);
+            console.log(decoded);
             localStorage.setItem('token', token);
+            localStorage.setItem('nameId',decoded.nameid);
             localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
             handleCloseLogin();
             navigate('/'); // Use navigate from react-router-dom to redirect
@@ -88,7 +92,7 @@ function Header() {
         <>
             {role === 'Admin' && <Navigate to="/admin/dashboard/doctor-account" replace={true} />}
             {role === 'ArticleManager' && <Navigate to="/article/dashboard" replace={true} />}
-            {role === 'Receptionist' && <Navigate to="/receptionist-account" replace={true} />}
+            {/* {role === 'Receptionist' && <Navigate to="/receptionist-account" replace={true} />} */}
 
             <AppBar position="static" color="default">
                 <Toolbar>

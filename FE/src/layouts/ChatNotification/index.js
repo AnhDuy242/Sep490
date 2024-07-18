@@ -1,13 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Fab, Badge, Popover, Box, Typography, TextField, Button } from '@mui/material';
+// ChatPopup.jsx
+import React, { useState, useEffect, useRef } from 'react';
+import { Fab, Badge, Popover, Box, Typography, TextField, Button, IconButton } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
+import ImageIcon from '@mui/icons-material/Image';
 import io from 'socket.io-client';
-import LoginForm from '../LoginForm'; // Import LoginForm
 import { login } from '../../services/Authentication';
-import { useNavigate } from 'react-router-dom';
-
-const socket = io('http://localhost:3001'); // Connect to Socket.io server
+import LoginForm from '../LoginForm';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
@@ -16,9 +15,13 @@ const ChatPopup = () => {
     const [anchorEl, setAnchorEl] = useState(null);
     const [messages, setMessages] = useState([]);
     const [inputMessage, setInputMessage] = useState('');
+    const [selectedImage, setSelectedImage] = useState(null); // State for selected image
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [isConnected, setIsConnected] = useState(false); // State to manage socket connection
+    const [currentRoomId, setCurrentRoomId] = useState(null); // State to track current room ID
+    const [token, setToken] = useState('');
 
-    const navigate = useNavigate(); // Use useNavigate hook
+    const socketRef = useRef(null); // Ref to store the socket instance
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -28,22 +31,34 @@ const ChatPopup = () => {
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
             if (tokenAge < tokenTimeout) {
                 setIsLoggedIn(true);
+                setToken(storedToken); // Set token state
             } else {
                 localStorage.removeItem('token');
                 localStorage.removeItem('tokenTimestamp');
             }
-
-            socket.on('message', (message) => {
-                console.log(`Message received: ${message}`);
-                setMessages((prevMessages) => [...prevMessages, message]);
-            });
         }
 
         return () => {
-            socket.off('message');
-            console.log('Toi quit');
+            if (socketRef.current) {
+                socketRef.current.disconnect();
+            }
         };
     }, []);
+
+    const connectSocket = (token) => {
+        socketRef.current = io('http://localhost:3001');
+        
+        // Send token to server for login and authentication
+        socketRef.current.emit('login', { token });
+
+        socketRef.current.on('message', (message) => {
+            setMessages((prevMessages) => [...prevMessages, message]);
+        });
+
+        socketRef.current.on('disconnect', () => {
+            console.log('Socket disconnected');
+        });
+    };
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget);
@@ -53,13 +68,53 @@ const ChatPopup = () => {
         setAnchorEl(null);
     };
 
+    const handleStartChat = () => {
+        if (!isConnected && token) {
+            connectSocket(token); // Kết nối socket với token sau khi đăng nhập thành công
+            setIsConnected(true);
+    
+            socketRef.current.on('connect', () => {
+                console.log('Socket connected');
+                // Sau khi kết nối, gửi yêu cầu tham gia room chat với receptionist
+                socketRef.current.emit('joinRoom', { receiverId:2 }); // Thay thế bằng id thực của receptionist
+            });
+    
+            socketRef.current.on('message', (message) => {
+                setMessages((prevMessages) => [...prevMessages, message]);
+            });
+    
+            socketRef.current.on('disconnect', () => {
+                setIsConnected(false);
+                console.log('Socket disconnected');
+            });
+        }
+    };
+    
+
     const handleSendMessage = () => {
-        const message = inputMessage.trim();
-        if (message) {
-            socket.emit('message', { to: 'consultant', message });
-            console.log(`Message sent: ${message}`);
-            setMessages((prevMessages) => [...prevMessages, { from: 'Tôi', message }]);
+        if (inputMessage.trim() || selectedImage) {
+            const message = {
+                text: inputMessage.trim(),
+                image: selectedImage,
+                receiverId: 2, // Thay thế bằng id thực của receptionist
+            };
+    
+            socketRef.current.emit('message', message);
+            setMessages((prevMessages) => [...prevMessages, { ...message, fromSelf: true }]);
             setInputMessage('');
+            setSelectedImage(null); // Clear selected image after sending
+        }
+    };
+    
+
+    const handleSelectImage = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedImage(reader.result);
+            };
+            reader.readAsDataURL(file);
         }
     };
 
@@ -70,12 +125,12 @@ const ChatPopup = () => {
         setIsLoggedIn(true);
         localStorage.setItem('token', token);
         localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
-        window.location.href = '/'; // Reload the page
+        setToken(token); // Update token state
+        window.location.href = '/';
     };
 
     const handleLogin = async ({ username, password }) => {
         try {
-            // Assuming login function returns a token
             const { token } = await login(username, password);
             updateToken(token);
             handleCloseLogin();
@@ -94,88 +149,83 @@ const ChatPopup = () => {
     };
 
     const popoverStyle = {
-        padding: '16px',
-        maxHeight: '300px',
-        overflowY: 'auto',
-    };
-
-    const closeIconStyle = {
-        cursor: 'pointer',
-        float: 'right',
-        marginTop: '-8px',
-        marginRight: '-8px',
+        padding: '20px',
+        width: '300px',
     };
 
     return (
         <>
-            <Fab color="primary" style={fabStyle} aria-describedby={id} onClick={handleClick}>
+            <Fab color="primary" style={fabStyle} onClick={handleClick}>
                 <Badge badgeContent={messages.length} color="error">
                     <ChatIcon />
                 </Badge>
             </Fab>
-            {!isLoggedIn && (
-                <Popover
-                    anchorEl={anchorEl}
-                    open={open} // Make sure 'open' prop is passed here
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                    }}
-                >
-                    <Box style={popoverStyle}>
-                        <Typography variant="h6">Bạn cần đăng nhập để chat</Typography>
-                        <Button onClick={handleShowLogin} variant="contained" color="primary" fullWidth>
-                            Đăng nhập
-                        </Button>
+            <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                    vertical: 'top',
+                    horizontal: 'left',
+                }}
+            >
+                <Box sx={popoverStyle}>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6">Chat</Typography>
+                        <IconButton onClick={handleClose}>
+                            <CloseIcon />
+                        </IconButton>
                     </Box>
-                </Popover>
-            )}
-            {isLoggedIn && (
-                <Popover
-                    id={id}
-                    open={open} // Make sure 'open' prop is passed here
-                    anchorEl={anchorEl}
-                    onClose={handleClose}
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                    }}
-                    transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                    }}
-                >
-                    <Box style={popoverStyle}>
-                        <Typography variant="h6">Chat Messages</Typography>
-                        <CloseIcon style={closeIconStyle} onClick={handleClose} />
-                        <Box mb={2}>
-                            {messages.map((msg, index) => (
-                                <Typography key={index}><strong>{msg.from}:</strong> {msg.message}</Typography>
-                            ))}
-                        </Box>
-                        <TextField
-                            fullWidth
-                            variant="outlined"
-                            placeholder="Type a message"
-                            value={inputMessage}
-                            onChange={(e) => setInputMessage(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSendMessage();
-                                }
-                            }}
-                        />
-                        <Button onClick={handleSendMessage} variant="contained" color="primary" fullWidth>
-                            Send
-                        </Button>
+                    <Button onClick={handleStartChat} variant="contained" color="primary" fullWidth>
+                        Start Chat
+                    </Button>
+                    <Box mt={2}>
+                        {messages.map((msg, index) => (
+                            <Box key={index} mb={1} display="flex" flexDirection="column" alignItems={msg.fromSelf ? 'flex-end' : 'flex-start'}>
+                                {msg.text && (
+                                    <Typography
+                                        variant="body1"
+                                        sx={{
+                                            background: msg.fromSelf ? '#cfe9ff' : '#e5e5e5',
+                                            padding: '10px',
+                                            borderRadius: '10px',
+                                        }}
+                                    >
+                                        {msg.text}
+                                    </Typography>
+                                )}
+                                {msg.image && (
+                                    <img src={msg.image} alt="sent" style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '10px' }} />
+                                )}
+                            </Box>
+                        ))}
                     </Box>
-                </Popover>
-            )}
+                    <TextField
+                        fullWidth
+                        variant="outlined"
+                        placeholder="Type a message"
+                        value={inputMessage}
+                        onChange={(e) => setInputMessage(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                handleSendMessage();
+                            }
+                        }}
+                        InputProps={{
+                            endAdornment: (
+                                <IconButton color="primary" component="label">
+                                    <ImageIcon />
+                                    <input type="file" hidden onChange={handleSelectImage} />
+                                </IconButton>
+                            ),
+                        }}
+                    />
+                    <Button onClick={handleSendMessage} variant="contained" color="primary" fullWidth>
+                        Send
+                    </Button>
+                </Box>
+            </Popover>
             <LoginForm 
                 show={showLogin} 
                 handleLogin={handleLogin} 

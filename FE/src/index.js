@@ -6,7 +6,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import Sidebar from './pages/AdminDashBoard/component/side_bar';
 import AdminDash from './pages/AdminDashBoard';
-import View_appointment from './pages/AdminDashBoard/view_appoiment_admin';
+import View_schedule from './pages/AdminDashBoard/schedule_admin';
 import ChatPopup from './layouts/ChatNotification';
 import ConsultantChat from './layouts/ChatNotification/ConsultantChat';
 import { AuthProvider } from './utils/AuthContext'
@@ -20,7 +20,7 @@ root.render(
       {/* <ChatPopup />
       <ConsultantChat /> */}
       {/* <Sidebar /> */}
-      {/* <View_appointment /> */}
+      {/* < View_schedule  /> */}
       {/* <AdminDash /> */}
       </AuthProvider>
 

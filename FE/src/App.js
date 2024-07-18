@@ -10,14 +10,14 @@ import ListBlog from './pages/ArticleManagement/list_blog';
 import ArticleDash from './pages/ArticleManagement';
 import Receptionist from '../src/pages/Receptionist'
 // import ViewInforAppoint from './pages/Appointment-patient/ViewInforAppoint';
-import ViewAppointmentAdmin from './pages/AdminDashBoard/view_appoiment_admin'
+import ScheduleAdmin from './pages/AdminDashBoard/schedule_admin'
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
-        <Route path="view-appointment-admin" element={<ViewAppointmentAdmin/>} />
+        <Route path="schedule" element={<ScheduleAdmin/>} />
       </Route>
       <Route path="/receptionist-account" element={<ProtectedRoute requiredRole="Receptionist">< Receptionist /></ProtectedRoute>} />
 
@@ -25,7 +25,6 @@ function App() {
         <Route path="list_blog" element={<ListBlog />} />
         <Route path="list_article" element={<ListArticle />} />
       </Route>
-      <Route path="/getAppointment" element={<ViewAppointmentAdmin/>}></Route>
 
     </Routes>
   );
