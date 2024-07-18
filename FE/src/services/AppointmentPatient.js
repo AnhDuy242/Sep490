@@ -66,8 +66,7 @@ export const getListDoctor = async () => {
     throw error; // Rethrow the error so caller can handle it
   }
 };
-
-
+//lấy ra list danh sách department 
 const listDepart = 'https://localhost:7240/api/PatientAppointment/GetListDepartment';
 
 export const getListDepartment = async () => {

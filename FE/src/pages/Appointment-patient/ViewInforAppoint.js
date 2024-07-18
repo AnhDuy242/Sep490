@@ -190,7 +190,6 @@ const GetAppointment = () => {
                     <Table className="appointment-table" aria-label="Danh sách cuộc hẹn">
                         <TableHead>
                             <TableRow>
-                                <TableCell><strong>Tên bệnh nhân</strong></TableCell>
                                 <TableCell><strong>Thời gian</strong></TableCell>
                                 <TableCell><strong>Ngày</strong></TableCell>
                                 <TableCell><strong>Bác sĩ</strong></TableCell>
@@ -203,7 +202,6 @@ const GetAppointment = () => {
                             {appointments.length > 0 ? (
                                 appointments.map(appointment => (
                                     <TableRow key={appointment.id}>
-                                        <TableCell>{appointment.patientName}</TableCell>
                                         <TableCell>{appointment.time}</TableCell>
                                         <TableCell>{appointment.date}</TableCell>
                                         <TableCell>{appointment.doctorName}</TableCell>
