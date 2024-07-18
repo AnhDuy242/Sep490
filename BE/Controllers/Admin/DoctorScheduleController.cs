@@ -95,7 +95,7 @@ namespace BE.Controllers.Admin
                 var schedules = new List<Schedule>();
                 DateTime currentDate = model.StartDate;
 
-                var listDateDuplicate = new List<string>();
+                var listDateDuplicate = "";
                 while (currentDate <= model.EndDate)
                 {
                     int dayOfWeek = (int)currentDate.DayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
@@ -115,7 +115,7 @@ namespace BE.Controllers.Admin
                         if (s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
                         {
                             shouldContinue = true;
-                            listDateDuplicate.Add($"{s.Date}");
+                            listDateDuplicate += $"{s.Date}, ";
                             break;
                         }
                     }
@@ -134,12 +134,12 @@ namespace BE.Controllers.Admin
                 await _context.SaveChangesAsync();
 
 
-                if (listDateDuplicate.Any())
+                if (string.IsNullOrWhiteSpace(listDateDuplicate))
                 {
-                    return StatusCode(StatusCodes.Status201Created, $"Nhung ngay duoi day khong duoc them vao do da ton tai: {listDateDuplicate}");
+                    return StatusCode(StatusCodes.Status201Created, $"Những ngày dưới đây không được thêm vào do đã tồn tại: {listDateDuplicate}");
                 }
 
-                
+
 
                 return CreatedAtAction(nameof(GetAllSchedulesByDoctorId), new { doctorId = model.DoctorId }, schedules);
             }
