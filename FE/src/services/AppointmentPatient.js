@@ -17,7 +17,33 @@ export const fetchAppointments = async (patientId) => {
     throw error;
   }
 };
-
+//fetch service
+// export const fetchServices = async (depId) => {
+//   try {
+//     const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListService?deId=${depId}`);
+//     if (!response.ok) {
+//       throw new Error('Network response was not ok');
+//     }
+//     const data = await response.json();
+//     return data.$values || [];
+//   } catch (error) {
+//     console.error('Failed to fetch services:', error);
+//     throw error;
+//   }
+// };
+export const fetchServices = async (depId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListService?deId=${depId}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data.$values || []; // chỉ trả về mảng $values
+  } catch (error) {
+    console.error('Failed to fetch services:', error);
+    throw error;
+  }
+};
 //hàm book appointment cho patient 
 
 const bookAppoint = 'https://localhost:7240/api/PatientAppointment/BookAppointment';
