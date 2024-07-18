@@ -46,6 +46,7 @@ namespace BE.Controllers.Appointment_Management
                 DoctorId = appointmentDto.DoctorId,
                 SlotId = appointmentDto.SlotId,
                 Status = "Đang chờ phê duyệt",
+                ServiceId = appointmentDto.ServiceId,
             };
             _alo2Context.Appointments.Add(appointment);
             _alo2Context.SaveChanges();
