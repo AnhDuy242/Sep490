@@ -51,16 +51,10 @@ public partial class MedPalContext : DbContext
 
     public virtual DbSet<Slot> Slots { get; set; }
 
-    public virtual DbSet<Week> Weeks { get; set; }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("server=DESKTOP-4E1UIAO;database=MedPal;user=sa;password=123;TrustServerCertificate=true");
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-        if (!optionsBuilder.IsConfigured)
-        {
-            var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
-        }
-
-    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
@@ -411,7 +405,6 @@ public partial class MedPalContext : DbContext
                 .HasColumnName("date");
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.Morning).HasColumnName("morning");
-            entity.Property(e => e.WeekId).HasColumnName("week_id");
             entity.Property(e => e.Weekdays)
                 .HasMaxLength(50)
                 .HasColumnName("weekdays");
@@ -420,11 +413,6 @@ public partial class MedPalContext : DbContext
                 .HasForeignKey(d => d.DoctorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Schedule_Doctor");
-
-            entity.HasOne(d => d.Week).WithMany(p => p.Schedules)
-                .HasForeignKey(d => d.WeekId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Schedule_Week");
         });
 
         modelBuilder.Entity<Service>(entity =>
@@ -453,19 +441,6 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.Time)
                 .IsUnicode(false)
                 .HasColumnName("time");
-        });
-
-        modelBuilder.Entity<Week>(entity =>
-        {
-            entity.ToTable("Week");
-
-            entity.Property(e => e.WeekId).HasColumnName("week_id");
-            entity.Property(e => e.EndDate)
-                .HasColumnType("date")
-                .HasColumnName("end_date");
-            entity.Property(e => e.StartDate)
-                .HasColumnType("date")
-                .HasColumnName("start_date");
         });
 
         OnModelCreatingPartial(modelBuilder);

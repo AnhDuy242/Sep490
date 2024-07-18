@@ -9,5 +9,5 @@ public partial class Slot
 
     public string Time { get; set; } = null!;
 
-    public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
+    public virtual ICollection<Appointment> Appointments { get; } = new List<Appointment>();
 }

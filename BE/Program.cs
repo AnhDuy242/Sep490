@@ -16,6 +16,8 @@ using BE.Service.IService;
 using BE.DTOs;
 using BE.Service;
 using BE.Service.ImplService;
+//using BE.Hub;
+using BE;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -97,7 +99,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddAuthorization();
 
-
+builder.Services.AddSignalR();
 
 // Cấu hình AutoMapper
 
@@ -134,10 +136,13 @@ app.UseCors("AllowAllOrigins");
 // Áp dụng chính sách CORS
 app.UseCors("AllowAll");
 
+
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+//app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

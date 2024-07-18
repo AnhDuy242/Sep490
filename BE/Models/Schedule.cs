@@ -17,11 +17,7 @@ public partial class Schedule
 
     public DateTime Date { get; set; }
 
-    public int WeekId { get; set; }
-
     public int? Appointments { get; set; }
 
     public virtual Doctor Doctor { get; set; } = null!;
-
-    public virtual Week Week { get; set; } = null!;
 }
