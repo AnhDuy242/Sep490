@@ -140,7 +140,7 @@ namespace BE.Controllers.Appointment_Management
             }
             else
             {
-                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).Where(x => x.DepId == deId).ToList();
+                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).Where(x => x.ServiceId == deId).ToList();
                 var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
 
                 return Ok(list);

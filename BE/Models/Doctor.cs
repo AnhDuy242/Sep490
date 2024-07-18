@@ -13,15 +13,13 @@ public partial class Doctor
 
     public int Age { get; set; }
 
-    public int DepId { get; set; }
+    public int ServiceId { get; set; }
 
     public bool? IsActive { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
-
-    public virtual Department Dep { get; set; } = null!;
 
     public virtual Account Doc { get; set; } = null!;
 
@@ -30,4 +28,6 @@ public partial class Doctor
     public virtual ICollection<Question> Questions { get; set; } = new List<Question>();
 
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
+
+    public virtual Service Service { get; set; } = null!;
 }

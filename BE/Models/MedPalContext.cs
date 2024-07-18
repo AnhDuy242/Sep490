@@ -51,16 +51,16 @@ public partial class MedPalContext : DbContext
 
     public virtual DbSet<Slot> Slots { get; set; }
 
-    public virtual DbSet<Week> Weeks { get; set; }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
         if (!optionsBuilder.IsConfigured)
         {
-            var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
-            optionsBuilder.UseSqlServer(config.GetConnectionString("DefaultConnection"));
+            var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(ConnectionString);
         }
 
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
@@ -123,18 +123,22 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.Note).HasColumnName("note");
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
             entity.Property(e => e.SlotId).HasColumnName("slot_id");
             entity.Property(e => e.Status).HasColumnName("status");
 
             entity.HasOne(d => d.Doctor).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.DoctorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Appointment_Doctor");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PatientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Appointment_Patient");
+
+            entity.HasOne(d => d.Service).WithMany(p => p.Appointments)
+                .HasForeignKey(d => d.ServiceId)
+                .HasConstraintName("FK_Appointment_Service");
 
             entity.HasOne(d => d.Slot).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.SlotId)
@@ -212,22 +216,22 @@ public partial class MedPalContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("doc_id");
             entity.Property(e => e.Age).HasColumnName("age");
-            entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
                 .HasColumnName("gender");
             entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
-
-            entity.HasOne(d => d.Dep).WithMany(p => p.Doctors)
-                .HasForeignKey(d => d.DepId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Doctor_Department");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
 
             entity.HasOne(d => d.Doc).WithOne(p => p.Doctor)
                 .HasForeignKey<Doctor>(d => d.DocId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Doctor_Account");
+
+            entity.HasOne(d => d.Service).WithMany(p => p.Doctors)
+                .HasForeignKey(d => d.ServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Doctor_Service");
         });
 
         modelBuilder.Entity<Feedback>(entity =>
@@ -411,7 +415,6 @@ public partial class MedPalContext : DbContext
                 .HasColumnName("date");
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.Morning).HasColumnName("morning");
-            entity.Property(e => e.WeekId).HasColumnName("week_id");
             entity.Property(e => e.Weekdays)
                 .HasMaxLength(50)
                 .HasColumnName("weekdays");
@@ -420,11 +423,6 @@ public partial class MedPalContext : DbContext
                 .HasForeignKey(d => d.DoctorId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Schedule_Doctor");
-
-            entity.HasOne(d => d.Week).WithMany(p => p.Schedules)
-                .HasForeignKey(d => d.WeekId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Schedule_Week");
         });
 
         modelBuilder.Entity<Service>(entity =>
@@ -453,19 +451,6 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.Time)
                 .IsUnicode(false)
                 .HasColumnName("time");
-        });
-
-        modelBuilder.Entity<Week>(entity =>
-        {
-            entity.ToTable("Week");
-
-            entity.Property(e => e.WeekId).HasColumnName("week_id");
-            entity.Property(e => e.EndDate)
-                .HasColumnType("date")
-                .HasColumnName("end_date");
-            entity.Property(e => e.StartDate)
-                .HasColumnType("date")
-                .HasColumnName("start_date");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -40,7 +40,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                 )
                 .Join(
                     _context.Departments,
-                    accountDoctor => accountDoctor.doctor.DepId,
+                    accountDoctor => accountDoctor.doctor.ServiceId,
                     department => department.DepId,
                     (accountDoctor, department) => new AccountDoctor
                     {
@@ -85,7 +85,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                 )
                 .Join(
                     _context.Departments,
-                    accountDoctor => accountDoctor.doctor.DepId,
+                    accountDoctor => accountDoctor.doctor.ServiceId,
                     department => department.DepId,
                     (accountDoctor, department) => new AccountDoctor
                     {
@@ -138,7 +138,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             doctor.Gender = model.Gender;
             doctor.Age = model.Age;
             doctor.IsActive = model.IsActive;
-            doctor.DepId = model.DepId;
+            doctor.ServiceId = model.DepId;
 
             _context.Doctors.Update(doctor);
             _context.Accounts.Update(member);
@@ -155,7 +155,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                 Gender = doctor.Gender,
                 Age = doctor.Age,
                 RoleId = member.RoleId,
-                DepId = doctor.DepId,
+                DepId = doctor.ServiceId,
                 // Các thuộc tính khác của Account
                 IsActive = member.IsActive
             };
