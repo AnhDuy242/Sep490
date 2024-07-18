@@ -107,16 +107,27 @@ namespace BE.Controllers.Admin
                         Date = currentDate,
                         Appointments = model.Appointments
                     };
+
+                    bool shouldContinue = false;
                     foreach (var s in existingSchedule)
                     {
                         if (s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
                         {
-                            continue;
+                            shouldContinue = true;
+                            break;
                         }
                     }
+
+                    if (shouldContinue)
+                    {
+                        currentDate = currentDate.AddDays(1);
+                        continue;
+                    }
+
                     schedules.Add(schedule);
                     currentDate = currentDate.AddDays(1);
                 }
+
 
                 await _context.Schedules.AddRangeAsync(schedules);
                 await _context.SaveChangesAsync();
