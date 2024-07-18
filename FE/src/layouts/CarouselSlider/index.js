@@ -75,7 +75,7 @@ function Carousel2() {
     return (
         <Box sx={{ position: 'relative', width: '100%', height: '800px', overflow: 'hidden' }}>
             <img src={img2} alt="My Image" style={{ width: '100%', height: '100%' }} />
-            <Box sx={{ position: 'absolute', top: '35%', left: '60%', transform: 'translate(-50%, -50%)', display: 'grid', width: '200px' }}>
+            <Box className="boxcarousel" sx={{ position: 'absolute', top: '35%', left: '60%', transform: 'translate(-50%, -50%)', display: 'grid', width: '200px' }}>
                 {isLoggedIn ? (
                     <Link to="/CreateAppointment" className="button-link" style={{ textDecoration: 'none', margin: '10px 10px' }}>
                         <Button variant="contained" color="primary">

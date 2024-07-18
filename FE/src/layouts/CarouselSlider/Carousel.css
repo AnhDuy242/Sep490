@@ -16,11 +16,11 @@
     align-items: center;
     text-align: center;
     text-transform: uppercase;
-    border-radius: 15px;
+    border-radius: 20px;
     width: 200px;
     height: 100px;
 }
-.buttonCreate{
+.boxcarousel .buttonCreate{
     visibility: visible;
     animation-duration: 1s;
     animation-delay: 0s;

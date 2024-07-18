@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Drawer, List, ListItem, ListItemText, ListItemIcon, Collapse, Typography, Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -8,7 +8,8 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../../../assets/images/background-img.jpg'; // Adjust the path accordingly
-import { logout } from '../../../services/Authentication';
+// import { logout } from '../../../services/Authentication';
+import { AuthContext } from '../../../utils/AuthContext'; // Adjust this path as needed
 
 const drawerWidth = '300px'; // Fixed width for the sidebar
 
@@ -73,6 +74,7 @@ const Sidebar = () => {
   const handleAccountClick = () => {
     setOpenAccount(!openAccount);
   };
+  const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
 
   const handleLogoutClick = () => {
     logout();
