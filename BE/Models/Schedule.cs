@@ -13,15 +13,11 @@ public partial class Schedule
 
     public bool Afternoon { get; set; }
 
-    public string? Weekdays { get; set; } = null!;
+    public string Weekdays { get; set; } = null!;
 
     public DateTime Date { get; set; }
-
-    public int WeekId { get; set; }
 
     public int? Appointments { get; set; }
 
     public virtual Doctor Doctor { get; set; } = null!;
-
-    public virtual Week Week { get; set; } = null!;
 }

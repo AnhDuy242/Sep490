@@ -12,9 +12,9 @@ namespace BE.Controllers.Admin
     [ApiController]
     public class CreateEmployeeController : ControllerBase
     {
-        private readonly Alo2Context _context;
+        private readonly MedPalContext _context;
         private readonly ISMSService _smsService;
-        public CreateEmployeeController(ISMSService smsService, Alo2Context context)
+        public CreateEmployeeController(ISMSService smsService, MedPalContext context)
         {
             _smsService = smsService;
             _context = context;

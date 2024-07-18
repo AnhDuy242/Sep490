@@ -13,9 +13,9 @@ namespace BE.Controllers.Admin
     [ApiController]
     public class AdminAppointmentController : ControllerBase
     {
-        private readonly Alo2Context _context;
+        private readonly MedPalContext _context;
 
-        public AdminAppointmentController(Alo2Context context)
+        public AdminAppointmentController(MedPalContext context)
         {
             _context = context;
         }

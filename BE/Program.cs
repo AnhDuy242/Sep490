@@ -33,7 +33,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Đăng ký DbContext
-builder.Services.AddDbContext<Alo2Context>(options =>
+builder.Services.AddDbContext<MedPalContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Cấu hình Twilio
@@ -48,7 +48,7 @@ builder.Services.AddSingleton<ISMSService>(provider =>
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
 
-builder.Services.AddDbContext<Alo2Context>(options =>
+builder.Services.AddDbContext<MedPalContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<AuthService>(); // Change to Scoped
