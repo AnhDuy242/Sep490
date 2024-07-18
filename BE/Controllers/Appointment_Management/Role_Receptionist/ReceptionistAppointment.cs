@@ -1,7 +1,10 @@
-﻿using BE.Models;
+﻿using AutoMapper;
+using BE.DTOs.AppointmentDto;
+using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace BE.Controllers.Appointment
 {
@@ -10,34 +13,30 @@ namespace BE.Controllers.Appointment
     public class ReceptionistAppointment : ControllerBase
     {
         private readonly MedPalContext _context;
-        public ReceptionistAppointment(MedPalContext context) { _context = context; }
+        private readonly IMapper _mapper;
+        public ReceptionistAppointment(MedPalContext context, IMapper mapper) { _context = context; _mapper = mapper; }
 
         [HttpGet] 
         public async Task<IActionResult> GetAllAppointment()
         {
-            var list = _context.Appointments.ToList();
+            var appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).ToList();
+            var list = _mapper.Map<List<AppointmentReceptionist>>(appointments);
             return Ok(list);
         }
         [HttpPut]
-        public async Task<IActionResult> ApproveAppointment(int appId, string status)
+        public async Task<IActionResult> ApproveAppointment(int appId)
         {
-            var appointment = await _context.Appointments.FindAsync(appId);
-
-            if (appointment == null)
-            {
-                return NotFound("Appointment not found.");
-            }
-            appointment.Status = status;
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-
+            var appointment =  _context.Appointments.FirstOrDefault(x => x.Id == appId);
+            appointment.Status = "Đã phê duyệt";
+            await _context.SaveChangesAsync();
             return Ok("Appointment approved successfully.");
+        }
+        [HttpDelete]
+        public async Task<IActionResult> CancelAppointment(int appId)
+        {
+            var appointment = _context.Appointments.FirstOrDefault(x => x.Id == appId);          
+             _context.Appointments.Remove(appointment);
+            return Ok("Appointment cancel successfully.");
         }
     }
 }

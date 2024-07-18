@@ -24,6 +24,12 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Time, otp => otp.MapFrom(src => src.Slot.Time))
             .ForMember(dest => dest.Date, otp => otp.MapFrom(src => src.Date.Date))
             .ReverseMap();
+        CreateMap<Appointment, AppointmentReceptionist>()
+           .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
+           .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doctor.Name))
+           .ForMember(dest => dest.Time, otp => otp.MapFrom(src => src.Slot.Time))
+           .ForMember(dest => dest.Date, otp => otp.MapFrom(src => src.Date.Date))
+           .ReverseMap();
         CreateMap<Slot, SlotAppointment>().ReverseMap();
     }
 }
