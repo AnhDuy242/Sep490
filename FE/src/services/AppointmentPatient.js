@@ -143,3 +143,28 @@ export const fetchSlots = async () => {
       throw error;
   }
 };
+
+//set trạng thái để xóa cho appointment
+export const cancelAppointment = async (appointmentId) => {
+  try {
+      const response = await fetch(`https://localhost:7240/api/PatientAppointment/CancelAppointment?aid=${appointmentId}`, {
+          method: 'PUT', // Hoặc 'GET' tùy thuộc vào yêu cầu của API
+          headers: {
+              'Content-Type': 'application/json',
+              // Các headers khác nếu cần thiết
+          },
+          // body: JSON.stringify(data) // Nếu cần gửi dữ liệu body
+      });
+
+      if (!response.ok) {
+          throw new Error('Failed to cancel appointment');
+      }
+
+      const data = await response.json();
+      return data; // Hoặc xử lý response tùy vào yêu cầu
+  } catch (error) {
+      console.error('Error cancelling appointment:', error);
+      throw error;
+  }
+};
+
