@@ -123,7 +123,7 @@ namespace BE.Controllers.Appointment_Management
             }
             catch (DbUpdateException ex)
             {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
+                return BadRequest(ex.Message);
             }
 
             return Ok("Appointment deleted successfully.");
