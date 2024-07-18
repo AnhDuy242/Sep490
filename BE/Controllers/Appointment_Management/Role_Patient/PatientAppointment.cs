@@ -28,7 +28,7 @@ namespace BE.Controllers.Appointment_Management
         [HttpGet]
         public async Task<IActionResult> GetAppointment(int pid)
         {
-            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Where(x => x.PatientId == pid).ToList();
+            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Include(x => x.Service).Where(x => x.PatientId == pid).ToList();
             var list = _mapper.Map<List<AppointmentPatient>>(appointments);
             return Ok(list);
         }
