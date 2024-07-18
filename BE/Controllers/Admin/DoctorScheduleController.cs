@@ -105,7 +105,7 @@ namespace BE.Controllers.Admin
                         Afternoon = model.Afternoon[dayOfWeek],
                         Weekdays = currentDate.DayOfWeek.ToString(),
                         Date = currentDate,
-                        Appointments = model.Appointments
+                        Appointments = 0
                     };
 
                     bool shouldContinue = false;
