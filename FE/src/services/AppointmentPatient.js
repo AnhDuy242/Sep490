@@ -18,19 +18,6 @@ export const fetchAppointments = async (patientId) => {
   }
 };
 //fetch service
-// export const fetchServices = async (depId) => {
-//   try {
-//     const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListService?deId=${depId}`);
-//     if (!response.ok) {
-//       throw new Error('Network response was not ok');
-//     }
-//     const data = await response.json();
-//     return data.$values || [];
-//   } catch (error) {
-//     console.error('Failed to fetch services:', error);
-//     throw error;
-//   }
-// };
 export const fetchServices = async (depId) => {
   try {
     const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListService?deId=${depId}`);
@@ -41,6 +28,20 @@ export const fetchServices = async (depId) => {
     return data.$values || []; // chỉ trả về mảng $values
   } catch (error) {
     console.error('Failed to fetch services:', error);
+    throw error;
+  }
+};
+//fetch doctor
+export const fetchDoctorByService = async (seId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListDoctor?seId=${seId}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data.$values || []; // chỉ trả về mảng $values
+  } catch (error) {
+    console.error('Failed to fetch doctor by service:', error);
     throw error;
   }
 };
