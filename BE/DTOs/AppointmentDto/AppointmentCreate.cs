@@ -9,7 +9,7 @@ namespace BE.DTOs.AppointmentDto
 
         public int PatientId { get; set; }
 
-        public int DoctorId { get; set; }
+        public int? DoctorId { get; set; }
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateTime Date { get; set; }
 
@@ -18,6 +18,6 @@ namespace BE.DTOs.AppointmentDto
         public int ServiceId { get; set; }
 
 
-       
+
     }
 }
