@@ -8,16 +8,17 @@ import Sidebar from './pages/AdminDashBoard/component/side_bar';
 import AdminDash from './pages/AdminDashBoard';
 import View_appointment from './pages/AdminDashBoard/view_appoiment_admin';
 import { AuthProvider } from './utils/AuthContext';
-
+import MedicalNotebookForPatient from './pages/MedicalNotebook-patient'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <Router>
     <AuthProvider>
-      <App />
+      {/* <App /> */}
       {/* <Sidebar /> */}
       {/* <View_appointment /> */}
       {/* <AdminDash /> */}
+      <MedicalNotebookForPatient/>
       </AuthProvider>
 
     </Router>

@@ -74,7 +74,7 @@ const Navbar = () => {
         <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
           <MenuIcon />
         </IconButton>
-        <Box  sx={{ flexGrow: 1, display: 'flex',justifyContent:'space-between' }}>
+        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'space-between' }}>
           <Button color="inherit" component={NavLink} to="/">Trang chủ</Button>
           <Button
             color="inherit"
@@ -98,8 +98,12 @@ const Navbar = () => {
           <Button color="inherit" component={NavLink} to="/doctor">Đội ngũ bác sĩ</Button>
           <Button color="inherit" component={NavLink} to="/contact">Liên hệ</Button>
           <Button color="inherit" component={NavLink} to="/get-started" >Bạn có biết?</Button>
-          {isLoggedIn&& (
-            <Button color="inherit" component={Link} to="/getAppointment">Xem lịch khám</Button>
+          {isLoggedIn && (
+            <>
+              <Button color="inherit" component={Link} to="/getAppointment">Xem lịch khám</Button>
+
+              <Button color="inherit" component={Link} to="/getMedicalNotebook">Tra cứu kết quả</Button>
+            </>
           )}
         </Box>
         <Search>
@@ -121,4 +125,3 @@ const Navbar = () => {
 };
 
 export default Navbar;
- 
