@@ -127,7 +127,7 @@ const Sidebar = () => {
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="View appointment" />
+            <ListItemText primary="Lịch làm việc" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">

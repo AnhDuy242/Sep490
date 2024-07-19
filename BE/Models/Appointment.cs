@@ -9,7 +9,7 @@ public partial class Appointment
 
     public int PatientId { get; set; }
 
-    public int DoctorId { get; set; }
+    public int? DoctorId { get; set; }
 
     public DateTime Date { get; set; }
 
@@ -19,9 +19,13 @@ public partial class Appointment
 
     public string? Note { get; set; }
 
-    public virtual Doctor Doctor { get; set; } = null!;
+    public int? ServiceId { get; set; }
+
+    public virtual Doctor? Doctor { get; set; }
 
     public virtual Patient Patient { get; set; } = null!;
+
+    public virtual Service? Service { get; set; }
 
     public virtual Slot Slot { get; set; } = null!;
 }

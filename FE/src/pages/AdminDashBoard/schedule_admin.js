@@ -441,7 +441,7 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
       )}
       <Box mt={4}>
         <Button variant="contained" color="primary" onClick={handleSubmit}>
-          Lưu lịch làm việc
+          Chỉnh sửa 
         </Button>
       </Box>
     </>

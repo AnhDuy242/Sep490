@@ -36,28 +36,21 @@ namespace BE.Controllers.Admin
                     _context.Doctors,
                     account => account.AccId,
                     doctor => doctor.DocId,
-                    (account, doctor) => new { account, doctor }
-                )
-                .Join(
-                    _context.Departments,
-                    accountDoctor => accountDoctor.doctor.DepId,
-                    department => department.DepId,
-                    (accountDoctor, department) => new AccountDoctor
+                    (account, doctor) => new AccountDoctor
                     {
-                        AccId = accountDoctor.account.AccId,
-                        Email = accountDoctor.account.Email,
-                        Phone = accountDoctor.account.Phone,
-                        Password = accountDoctor.account.Password,
-                        Name = accountDoctor.doctor.Name,
-                        Gender = accountDoctor.doctor.Gender,
-                        Age = accountDoctor.doctor.Age,
-                        RoleId = accountDoctor.account.RoleId,
-                        DepId = department.DepId,
+                        AccId =account.AccId,
+                        Email = account.Email,
+                        Phone = account.Phone,
+                        Password =account.Password,
+                        Name =doctor.Name,
+                        Gender = doctor.Gender,
+                        Age =doctor.Age,
+                        RoleId =account.RoleId,
                         // Các thuộc tính khác của Account
-                        DepartmentName = department.Name,
-                        IsActive = accountDoctor.account.IsActive
+                        IsActive =account.IsActive
                     }
                 )
+               
                 .ToListAsync();
 
             return Ok(accountsWithDoctorInfo);
@@ -81,28 +74,21 @@ namespace BE.Controllers.Admin
                     _context.Doctors,
                     account => account.AccId,
                     doctor => doctor.DocId,
-                    (account, doctor) => new { account, doctor }
-                )
-                .Join(
-                    _context.Departments,
-                    accountDoctor => accountDoctor.doctor.DepId,
-                    department => department.DepId,
-                    (accountDoctor, department) => new AccountDoctor
+                    (account, doctor) => new AccountDoctor
                     {
-                        AccId = accountDoctor.account.AccId,
-                        Email = accountDoctor.account.Email,
-                        Phone = accountDoctor.account.Phone,
-                        Password = accountDoctor.account.Password,
-                        Name = accountDoctor.doctor.Name,
-                        Gender = accountDoctor.doctor.Gender,
-                        Age = accountDoctor.doctor.Age,
-                        RoleId = accountDoctor.account.RoleId,
-                        DepId = department.DepId,
-                        // Các thuộc tính khác của Account
-                        DepartmentName = department.Name,
-                        IsActive = accountDoctor.account.IsActive
+                        AccId =account.AccId,
+                        Email =account.Email,
+                        Phone = account.Phone,
+                        Password =account.Password,
+                        Name = doctor.Name,
+                        Gender = doctor.Gender,
+                        Age =doctor.Age,
+                        RoleId =account.RoleId,   
+                        IsActive =account.IsActive
                     }
                 )
+             
+                
                 .Where(a => a.Phone.Equals(phone))
                 .FirstOrDefaultAsync();
 
@@ -138,7 +124,6 @@ namespace BE.Controllers.Admin
             doctor.Gender = model.Gender;
             doctor.Age = model.Age;
             doctor.IsActive = model.IsActive;
-            doctor.DepId = model.DepId;
 
             _context.Doctors.Update(doctor);
             _context.Accounts.Update(member);
@@ -155,7 +140,6 @@ namespace BE.Controllers.Admin
                 Gender = doctor.Gender,
                 Age = doctor.Age,
                 RoleId = member.RoleId,
-                DepId = doctor.DepId,
                 // Các thuộc tính khác của Account
                 IsActive = member.IsActive
             };

@@ -115,7 +115,7 @@ namespace BE.Controllers.Admin
                         if (s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
                         {
                             shouldContinue = true;
-                            listDateDuplicate += $"{s.Date}, ";
+                            listDateDuplicate += $"{s.Date},\n  ";
                             break;
                         }
                     }

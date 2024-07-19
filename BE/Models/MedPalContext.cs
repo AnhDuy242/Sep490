@@ -117,18 +117,22 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.Note).HasColumnName("note");
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
             entity.Property(e => e.SlotId).HasColumnName("slot_id");
             entity.Property(e => e.Status).HasColumnName("status");
 
             entity.HasOne(d => d.Doctor).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.DoctorId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Appointment_Doctor");
 
             entity.HasOne(d => d.Patient).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.PatientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Appointment_Patient");
+
+            entity.HasOne(d => d.Service).WithMany(p => p.Appointments)
+                .HasForeignKey(d => d.ServiceId)
+                .HasConstraintName("FK_Appointment_Service");
 
             entity.HasOne(d => d.Slot).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.SlotId)
@@ -206,22 +210,22 @@ public partial class MedPalContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("doc_id");
             entity.Property(e => e.Age).HasColumnName("age");
-            entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
                 .HasColumnName("gender");
             entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
-
-            entity.HasOne(d => d.Dep).WithMany(p => p.Doctors)
-                .HasForeignKey(d => d.DepId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Doctor_Department");
+            entity.Property(e => e.ServiceId).HasColumnName("service_id");
 
             entity.HasOne(d => d.Doc).WithOne(p => p.Doctor)
                 .HasForeignKey<Doctor>(d => d.DocId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Doctor_Account");
+
+            entity.HasOne(d => d.Service).WithMany(p => p.Doctors)
+                .HasForeignKey(d => d.ServiceId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Doctor_Service");
         });
 
         modelBuilder.Entity<Feedback>(entity =>

@@ -64,7 +64,6 @@ namespace BE.Controllers.Admin
                     Name = model.Name,
                     Gender = model.Gender,
                     Age = model.Age,
-                    DepId = 1,
                     IsActive = true
                 };
                 await _context.Doctors.AddAsync(doctor);
