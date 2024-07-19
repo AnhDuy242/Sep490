@@ -158,6 +158,11 @@ function AddSchedule({ doctors, setSnackbar }) {
         </Select>
       </FormControl>
       <Box display="flex" justifyContent="space-between" mt={2}>
+         <Typography>Chọn ngày bắt đầu</Typography>
+         <Typography>Chọn ngày kết thúc</Typography>
+
+          </Box>
+      <Box display="flex" justifyContent="space-between" mt={2}>
         <TextField
           type="date"
           value={startDate ? format(startDate, 'yyyy-MM-dd') : ''}
