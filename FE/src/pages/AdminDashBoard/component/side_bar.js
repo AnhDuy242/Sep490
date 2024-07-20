@@ -113,7 +113,7 @@ const Sidebar = () => {
               </ListItem>
             </List>
           </Collapse>
-          <ListItem button className={classes.listItem} component={Link} to="/view-appoiment-admin">
+          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/schedule">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>

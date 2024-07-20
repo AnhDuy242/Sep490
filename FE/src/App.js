@@ -26,7 +26,7 @@ function App() {
       {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
-        <Route path="schedule" element={<ScheduleAdmin/>} />
+        <Route path="/admin/dashboard/schedule" element={<ScheduleAdmin />} />
       </Route>
       <Route path="/receptionist-account" element={<ProtectedRoute requiredRole="Receptionist">< Receptionist /></ProtectedRoute>} />
 

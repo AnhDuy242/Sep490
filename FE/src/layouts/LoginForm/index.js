@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { Modal, Box, Button, TextField, Typography, Alert, IconButton, Checkbox, FormControlLabel } from '@mui/material';
 import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
 import { useFormik } from 'formik';
@@ -24,7 +24,6 @@ const validationSchema = yup.object({
 
 const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
   const [error, setError] = useState(null);
-  const { updateToken } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -49,9 +48,7 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           navigate('/admin/dashboard/doctor-account', { replace: true });
         } else if (role === 'ArticleManager') {
           navigate('/article/dashboard', { replace: true });
-        } else if(role === 'Receptionist'){
-          navigate('/receptionist/dashboard/',{replace: true});
-        }else {
+        } else {
           navigate('/', { replace: true });
         }
       } catch (error) {
