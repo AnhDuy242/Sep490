@@ -1,4 +1,4 @@
-﻿namespace BE.Models.DTOs
+﻿namespace BE.DTOs
 {
     public class LoginDto
     {

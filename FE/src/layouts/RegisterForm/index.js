@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   Box,
@@ -12,24 +12,31 @@ import {
   DialogContent,
   DialogContentText,
   MenuItem,
+  Snackbar,
+  SnackbarContent,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { handleReceiveOTPForEmail, handleRegisterForEmail, handleSentOTPConfirm, RegisterCompleteForm } from '../../services/Authentication';
 
-// Schema validate cho OTP
-const validationSchema = yup.object({
-  phoneNumber: yup
-    .string('Nhập số điện thoại')
-    .matches(/^(0\d{9,10})$/, 'Số điện thoại phải có 10 ký tự và bắt đầu bằng số 0')
-    .required('Số điện thoại là bắt buộc'),
+// Schema validation for OTP form
+const otpValidationSchema = yup.object({
+  contact: yup
+    .string()
+    .required('Thông tin liên hệ là bắt buộc')
+    .test(
+      'is-phone-or-email',
+      'Thông tin liên hệ không hợp lệ',
+      value => /^(0\d{9,10})$/.test(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+    ),
   otp: yup
     .string('Nhập mã OTP')
     .matches(/^\d{6}$/, 'Mã OTP phải có 6 chữ số')
     .required('Mã OTP là bắt buộc'),
 });
 
-// Schema validate cho thông tin cá nhân
+// Schema validation for personal information form
 const personalInfoSchema = yup.object({
   name: yup
     .string('Nhập tên')
@@ -48,6 +55,7 @@ const personalInfoSchema = yup.object({
   address: yup
     .string('Nhập địa chỉ')
     .required('Địa chỉ là bắt buộc'),
+  phone: yup.string('Nhập số điện thoại').required('Số điện thoại là bắt buộc'),
   password: yup
     .string('Nhập mật khẩu')
     .min(6, 'Mật khẩu phải có ít nhất 6 ký tự.')
@@ -60,51 +68,70 @@ const personalInfoSchema = yup.object({
 
 const RegisterForm = ({ show, handleClose }) => {
   const [otpSent, setOtpSent] = useState(false);
+  const [otpReceived, setOtpReceived] = useState(null);
   const [otpError, setOtpError] = useState('');
   const [open, setOpen] = useState(false);
   const [timer, setTimer] = useState(0);
-  const [phoneNumberForDialog, setPhoneNumberForDialog] = useState('');
+  const [contactForDialog, setContactForDialog] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+  const [registrationData, setRegistrationData] = useState(null);
+  const [email, setEmail] = useState('');
 
-  useEffect(() => {
-    let interval;
-    if (timer > 0) {
-      interval = setInterval(() => {
-        setTimer((prevTimer) => prevTimer - 1);
-      }, 1000);
-    } else if (timer === 0 && otpSent) {
-      setOtpSent(false);
-    }
-    return () => clearInterval(interval);
-  }, [timer, otpSent]);
-
-  const formik = useFormik({
+  const formikOTP = useFormik({
     initialValues: {
-      phoneNumber: '',
-      otp: ''
+      contact: '',
+      otp: '',
     },
-    validationSchema: validationSchema,
-    onSubmit: (values) => {
-      if (values.otp !== '123456') {
+    validationSchema: otpValidationSchema,
+    onSubmit: async (values) => {
+      if (values.otp !== otpReceived) {
         setOtpError('Mã OTP không chính xác');
         return;
       }
       setOtpError('');
       setOpen(true);
-    }
+    },
   });
 
-  const handleSendOtp = () => {
-    if (!validationSchema.fields.phoneNumber.isValidSync(formik.values.phoneNumber)) {
-      setOtpError('Vui lòng nhập số điện thoại hợp lệ trước khi yêu cầu mã OTP.');
+  const handleSendOtp = async () => {
+    const isPhoneNumber = /^(0\d{9,10})$/.test(formikOTP.values.contact);
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formikOTP.values.contact);
+
+    if (!isPhoneNumber && !isEmail) {
+      setOtpError('Vui lòng nhập thông tin liên hệ hợp lệ trước khi yêu cầu mã OTP.');
       return;
     }
 
-    console.log('Gửi OTP đến số điện thoại:', formik.values.phoneNumber);
+    if (isEmail) {
+      const email = formikOTP.values.contact;
+      setEmail(email);
+      handleRegisterForEmail(email);
+      try {
+        const otp = await handleReceiveOTPForEmail(email);
+        setOtpReceived(otp);
+        console.log(otp);
+        setSnackbarMessage('Đã gửi thành công mã OTP');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error receiving OTP:', error);
+        setOtpError('Đã xảy ra lỗi khi nhận OTP. Vui lòng thử lại sau.');
+      }
+    } else {
+      console.log('Gửi OTP đến số điện thoại:', formikOTP.values.contact);
+    }
+
     setOtpSent(true);
     setOtpError('');
-    setTimer(60); // Đặt bộ đếm thời gian là 60 giây
+    setTimer(60);
+    setContactForDialog(formikOTP.values.contact);
+  };
 
-    setPhoneNumberForDialog(formik.values.phoneNumber);
+  const handleSentOtpConfirm = () => {
+    const otp = formikOTP.values.otp;
+    const contact = formikOTP.values.contact;
+    handleSentOTPConfirm(contact, otp);
   };
 
   const handleCloseDialog = () => {
@@ -112,222 +139,290 @@ const RegisterForm = ({ show, handleClose }) => {
     handleClose();
   };
 
-  // Formik cho form thông tin cá nhân
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
+  };
+
+  const handleSnackbarOpen = (message, severity) => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
   const formikPersonalInfo = useFormik({
     initialValues: {
       name: '',
-      email: '',
+      email: email,
       dob: '',
       gender: '',
       address: '',
+      phone: '',
       password: '',
-      repassword: ''
+      repassword: '',
     },
     validationSchema: personalInfoSchema,
     onSubmit: (values) => {
-      console.log('Thông tin cá nhân:', values);
-      handleCloseDialog();
-    }
+      const registrationDetails = {
+        Name: values.name,
+        email: values.email,
+        dob: values.dob,
+        Gender: values.gender,
+        address: values.address,
+       Phone: '0123456739',
+        password: values.password,
+      };
+      console.log('Thông tin đăng ký hoàn tất:', registrationDetails);
+      setRegistrationData(registrationDetails);
+      RegisterCompleteForm(registrationDetails)
+      .then(() => {
+        handleCloseDialog();
+        handleSnackbarOpen('Đăng ký thành công!', 'success');
+      })
+      .catch((error) => {
+        console.log(error+" day la error");
+        handleSnackbarOpen(`Đăng ký thất bại: ${error.message}`, 'failed');
+
+      });
+
+    },
   });
 
-
   return (
-    
-    <Modal open={show} onClose={handleClose}>
-
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: 400,
-          bgcolor: 'background.paper',
-          boxShadow: 24,
-          p: 4,
-        }}
+    <>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <Box display="flex" justifyContent="space-between" alignItems="center" >
-          <Typography variant="h6">Đăng ký</Typography>
-          <IconButton onClick={handleClose}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-
-        {otpError && (
-          <Alert severity="error" sx={{ mt: 2 }}>
-            {otpError}
-          </Alert>
-        )}
-
-        <Box component="form" onSubmit={formik.handleSubmit} sx={{ mt: 2 }}>
-          <TextField
-            label="Nhập số điện thoại"
-            fullWidth
-            margin="normal"
-            name="phoneNumber"
-            value={formik.values.phoneNumber}
-            onChange={formik.handleChange}
-            error={formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)}
-            helperText={formik.touched.phoneNumber && formik.errors.phoneNumber}
-          />
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSendOtp}
-            fullWidth
-            sx={{ mt: 2 }}
-            disabled={otpSent}
-          >
-            {otpSent ? `Gửi lại mã OTP sau ${timer} giây` : 'Gửi mã OTP'}
-          </Button>
-
-          {otpSent && (
-            <>
-              <TextField
-                label="Nhập mã OTP"
-                fullWidth
-                margin="normal"
-                name="otp"
-                value={formik.values.otp}
-                onChange={formik.handleChange}
-                error={formik.touched.otp && Boolean(formik.errors.otp)}
-                helperText={formik.touched.otp && formik.errors.otp}
-                sx={{ mt: 2 }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                fullWidth
-                sx={{ mt: 2 }}
-              >
-                Xác nhận đăng ký
-              </Button>
-            </>
-          )}
-        </Box>
-
-        <Dialog open={open} onClose={(event, reason) => {
-          if (reason !== 'backdropClick') {
-            handleCloseDialog(event, reason);
+        <SnackbarContent
+          onClose={handleSnackbarClose}
+          message={snackbarMessage}
+          action={
+            <IconButton size="small" color="inherit" onClick={handleSnackbarClose}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
           }
-        }} maxWidth="xs" fullWidth>
+          sx={{ backgroundColor: snackbarSeverity === 'success' ? '#43a047' : '#d32f2f' }}
+        />
+      </Snackbar>
+
+      <Modal open={show} onClose={handleClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <DialogTitle>Xác Minh Thành Công</DialogTitle>
-            <IconButton onClick={handleCloseDialog}>
+            <Typography variant="h6">Đăng ký</Typography>
+            <IconButton onClick={handleClose}>
               <CloseIcon />
             </IconButton>
           </Box>
-          <DialogContent>
-            <DialogContentText>
-              Bạn đã xác minh OTP thành công. Vui lòng nhập thông tin cá nhân để hoàn tất quá trình.
-            </DialogContentText>
-            <Box component="form" onSubmit={formikPersonalInfo.handleSubmit} sx={{ mt: 2 }}>
-              <TextField
-                label="Tên"
-                variant="outlined"
-                name="name"
-                value={formikPersonalInfo.values.name}
-                onChange={formikPersonalInfo.handleChange}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.name && Boolean(formikPersonalInfo.errors.name)}
-                helperText={formikPersonalInfo.touched.name && formikPersonalInfo.errors.name}
-                sx={{ mb: 2 }}
-              />
-              <Typography variant="subtitle1" sx={{ mt: 2 }} marginBottom={{}}>
-                Số điện thoại: {phoneNumberForDialog}
-              </Typography>
-              <TextField
-                label="Email"
-                variant="outlined"
-                name="email"
-                value={formikPersonalInfo.values.email}
-                onChange={formikPersonalInfo.handleChange}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.email && Boolean(formikPersonalInfo.errors.email)}
-                helperText={formikPersonalInfo.touched.email && formikPersonalInfo.errors.email}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Ngày sinh"
-                type="date"
-                variant="outlined"
-                name="dob"
-                value={formikPersonalInfo.values.dob}
-                onChange={formikPersonalInfo.handleChange}
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.dob && Boolean(formikPersonalInfo.errors.dob)}
-                helperText={formikPersonalInfo.touched.dob && formikPersonalInfo.errors.dob}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Giới tính"
-                select
-                variant="outlined"
-                name="gender"
-                value={formikPersonalInfo.values.gender}
-                onChange={formikPersonalInfo.handleChange}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.gender && Boolean(formikPersonalInfo.errors.gender)}
-                helperText={formikPersonalInfo.touched.gender && formikPersonalInfo.errors.gender}
-                sx={{ mb: 2 }}
-              >
-                <MenuItem value="male">Nam</MenuItem>
-                <MenuItem value="female">Nữ</MenuItem>
-              </TextField>
-              <TextField
-                label="Địa chỉ"
-                variant="outlined"
-                name="address"
-                value={formikPersonalInfo.values.address}
-                onChange={formikPersonalInfo.handleChange}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.address && Boolean(formikPersonalInfo.errors.address)}
-                helperText={formikPersonalInfo.touched.address && formikPersonalInfo.errors.address}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Mật khẩu"
-                variant="outlined"
-                type="password"
-                name="password"
-                value={formikPersonalInfo.values.password}
-                onChange={formikPersonalInfo.handleChange}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.password && Boolean(formikPersonalInfo.errors.password)}
-                helperText={formikPersonalInfo.touched.password && formikPersonalInfo.errors.password}
-                sx={{ mb: 2 }}
-              />
-              <TextField
-                label="Nhập lại mật khẩu"
-                variant="outlined"
-                type="password"
-                name="repassword"
-                value={formikPersonalInfo.values.repassword}
-                onChange={formikPersonalInfo.handleChange}
-                fullWidth
-                required
-                error={formikPersonalInfo.touched.repassword && Boolean(formikPersonalInfo.errors.repassword)}
-                helperText={formikPersonalInfo.touched.repassword && formikPersonalInfo.errors.repassword}
-                sx={{ mb: 2 }}
-              />
-              <Button type="submit" variant="contained" color="primary" fullWidth>
-                Hoàn tất đăng ký
-              </Button>
+
+          {otpError && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              {otpError}
+            </Alert>
+          )}
+
+          <Box component="form" onSubmit={formikOTP.handleSubmit} sx={{ mt: 2 }}>
+            <TextField
+              label="Nhập số điện thoại hoặc email"
+              fullWidth
+              margin="normal"
+              name="contact"
+              value={formikOTP.values.contact}
+              onChange={formikOTP.handleChange}
+              error={formikOTP.touched.contact && Boolean(formikOTP.errors.contact)}
+              helperText={formikOTP.touched.contact && formikOTP.errors.contact}
+            />
+
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={handleSendOtp}
+              fullWidth
+              sx={{ mt: 2 }}
+              disabled={otpSent}
+            >
+              {otpSent ? `Gửi lại mã OTP sau ${timer} giây` : 'Gửi mã OTP'}
+            </Button>
+
+            {otpSent && (
+              <>
+                <TextField
+                  label="Nhập mã OTP"
+                  fullWidth
+                  margin="normal"
+                  name="otp"
+                  value={formikOTP.values.otp}
+                  onChange={formikOTP.handleChange}
+                  error={formikOTP.touched.otp && Boolean(formikOTP.errors.otp)}
+                  helperText={formikOTP.touched.otp && formikOTP.errors.otp}
+                  sx={{ mt: 2 }}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={handleSentOtpConfirm}
+                  sx={{ mt: 2 }}
+                >
+                  Xác nhận đăng ký
+                </Button>
+              </>
+            )}
+          </Box>
+
+          <Dialog open={open} onClose={(event, reason) => {
+            if (reason !== 'backdropClick') {
+              handleCloseDialog(event, reason);
+            }
+          }} maxWidth="xs" fullWidth>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <DialogTitle>Xác Minh Thành Công</DialogTitle>
+              <IconButton onClick={handleCloseDialog}>
+                <CloseIcon />
+              </IconButton>
             </Box>
-          </DialogContent>
-        </Dialog>
-      </Box>
-    </Modal>
+            <DialogContent>
+              <DialogContentText>
+                Bạn đã xác minh OTP thành công. Vui lòng nhập thông tin cá nhân để hoàn tất quá trình.
+              </DialogContentText>
+              <Box component="form" onSubmit={formikPersonalInfo.handleSubmit} sx={{ mt: 2 }}>
+                <TextField
+                  label="Tên"
+                  variant="outlined"
+                  name="name"
+                  value={formikPersonalInfo.values.name}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  margin='normal'
+                  error={formikPersonalInfo.touched.name && Boolean(formikPersonalInfo.errors.name)}
+                  helperText={formikPersonalInfo.touched.name && formikPersonalInfo.errors.name}
+                />
+                <TextField
+                  label="Email"
+                  variant="outlined"
+                  name="email"
+                  margin='normal'
+                  value={formikPersonalInfo.values.email}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  error={formikPersonalInfo.touched.email && Boolean(formikPersonalInfo.errors.email)}
+                  helperText={formikPersonalInfo.touched.email && formikPersonalInfo.errors.email}
+                />
+                <TextField
+                  label="Ngày sinh"
+                  variant="outlined"
+                  type="date"
+                  name="dob"
+                  margin='normal'
+                  value={formikPersonalInfo.values.dob}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  error={formikPersonalInfo.touched.dob && Boolean(formikPersonalInfo.errors.dob)}
+                  helperText={formikPersonalInfo.touched.dob && formikPersonalInfo.errors.dob}
+                />
+                <TextField
+                  label="Số điện thoại"
+                  variant="outlined"
+                  name="phone"
+                  margin='normal'
+                  value={formikPersonalInfo.values.phone}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  InputLabelProps={{
+                    shrink: true,
+                  }}
+                  error={formikPersonalInfo.touched.phone && Boolean(formikPersonalInfo.errors.phone)}
+                  helperText={formikPersonalInfo.touched.phone && formikPersonalInfo.errors.phone}
+                />
+                <TextField
+                  label="Giới tính"
+                  variant="outlined"
+                  select
+                  name="gender"
+                  margin='normal'
+                  value={formikPersonalInfo.values.gender}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  error={formikPersonalInfo.touched.gender && Boolean(formikPersonalInfo.errors.gender)}
+                  helperText={formikPersonalInfo.touched.gender && formikPersonalInfo.errors.gender}
+                >
+                  <MenuItem value="Male">Nam</MenuItem>
+                  <MenuItem value="Female">Nữ</MenuItem>
+                </TextField>
+                <TextField
+                  label="Địa chỉ"
+                  variant="outlined"
+                  name="address"
+                  margin='normal'
+                  value={formikPersonalInfo.values.address}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  error={formikPersonalInfo.touched.address && Boolean(formikPersonalInfo.errors.address)}
+                  helperText={formikPersonalInfo.touched.address && formikPersonalInfo.errors.address}
+                />
+                <TextField
+                  label="Mật khẩu"
+                  variant="outlined"
+                  type="password"
+                  name="password"
+                  margin='normal'
+                  value={formikPersonalInfo.values.password}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  error={formikPersonalInfo.touched.password && Boolean(formikPersonalInfo.errors.password)}
+                  helperText={formikPersonalInfo.touched.password && formikPersonalInfo.errors.password}
+                />
+                <TextField
+                  label="Nhập lại mật khẩu"
+                  variant="outlined"
+                  type="password"
+                  name="repassword"
+                  margin='normal'
+                  value={formikPersonalInfo.values.repassword}
+                  onChange={formikPersonalInfo.handleChange}
+                  fullWidth
+                  required
+                  error={formikPersonalInfo.touched.repassword && Boolean(formikPersonalInfo.errors.repassword)}
+                  helperText={formikPersonalInfo.touched.repassword && formikPersonalInfo.errors.repassword}
+                />
+                <Button
+                  type="submit"
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  sx={{ mt: 2 }}
+                >
+                  Hoàn tất đăng ký
+                </Button>
+              </Box>
+            </DialogContent>
+          </Dialog>
+        </Box>
+      </Modal>
+    </>
   );
 };
 

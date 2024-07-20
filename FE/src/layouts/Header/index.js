@@ -117,11 +117,43 @@ function Header() {
                 </Toolbar>
             </AppBar>
 
-            {/* Render Login and Register forms */}
-            <LoginForm show={showLogin} handleLogin={handleLogin} />
-            <RegisterForm show={showRegister} handleRegister={handleRegister} />
-        </>
-    );
-}
+    handleCloseRegister();
+  };
+
+  return (
+    <>
+      <AppBar position="static" color="default">
+        <Toolbar>
+          <NavLink to="/" className="nav__logo">
+            <img src={NavLogo} alt="Logo" className="logo-image" />
+          </NavLink>
+
+          <Box className="info-class" display="flex">
+            {/* Your info boxes */}
+          </Box>
+
+          <Box className="card-header-self card-hehe">
+            {isLoggedIn ? (
+              <Button onClick={handleLogout} variant="contained" className="login-button" color="secondary">Đăng xuất</Button>
+            ) : (
+              <>
+                <Button onClick={handleShowLogin} variant="contained" className="login-button" color="primary">Đăng nhập</Button>
+                <Button onClick={handleShowRegister} variant="contained" className="login-button" color="secondary">Đăng ký</Button>
+              </>
+            )}
+          </Box>
+        </Toolbar>
+      </AppBar>
+
+      <LoginForm
+        show={showLogin}
+        handleLogin={handleLogin}
+        handleClose={handleCloseLogin}
+        handleRegister={handleRegister}
+      />
+      <RegisterForm show={showRegister} handleRegister={handleRegister} handleClose={handleCloseRegister} />
+    </>
+  );
+};
 
 export default Header;

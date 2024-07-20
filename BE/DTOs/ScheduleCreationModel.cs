@@ -18,5 +18,4 @@
         public List<bool> Afternoon { get; set; } = new List<bool>(); // 7 items for each day of the week
     }
 
-
 }

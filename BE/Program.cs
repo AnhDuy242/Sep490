@@ -3,17 +3,21 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-﻿
 
-﻿using CloudinaryDotNet;
-using BE.Service;
-﻿using BE.Service;
+
+using CloudinaryDotNet;
 using Twilio.Clients;
 using Twilio;
 using Microsoft.Extensions.Options;
 using BE.Models;
 using Microsoft.EntityFrameworkCore;
 using CloudinaryDotNet;
+using BE.Service.IService;
+using BE.DTOs;
+using BE.Service;
+using BE.Service.ImplService;
+//using BE.Hub;
+using BE;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,6 +32,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 // Thêm dịch vụ vào container
 builder.Services.AddControllers();
+builder.Services.AddScoped<IAccountService, AccountService>();
+
 // Thêm Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -45,8 +51,17 @@ builder.Services.AddSingleton<ISMSService>(provider =>
         configuration["Twilio:AuthToken"],
         configuration["Twilio:PhoneNumber"]);
 });
+//Validate Service Configure
+builder.Services.AddTransient<IValidateService, ValidateService>();
+//mail
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddTransient<IEmailService, EmailService>();
+//builder.Services.AddTransient<IAccountService, AccountService>();
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
+//otp service
+builder.Services.AddSingleton<OtpService>();
+
 
 builder.Services.AddDbContext<MedPalContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -86,7 +101,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddAuthorization();
 
-
+builder.Services.AddSignalR();
 
 // Cấu hình AutoMapper
 
@@ -123,10 +138,13 @@ app.UseCors("AllowAllOrigins");
 // Áp dụng chính sách CORS
 app.UseCors("AllowAll");
 
+
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+//app.MapHub<ChatHub>("/chatHub");
 
 app.Run();

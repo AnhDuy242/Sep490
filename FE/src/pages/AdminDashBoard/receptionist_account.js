@@ -1,13 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState,useEffect } from 'react';
 import {
-    Snackbar, SnackbarContent,
-    Container, TextField, Button, IconButton, Table, TableBody, TableCell,
-    TableContainer, TableHead, TableRow, Paper, Checkbox, Dialog, DialogActions,
-    DialogContent, DialogTitle, ToggleButtonGroup, Avatar, Typography, TablePagination, FormControl, InputLabel, Select, MenuItem, FormHelperText
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    TextField,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Button,
+    IconButton,
+    InputAdornment,
+    Typography,
+    Container,
+    Paper,
+    TableContainer,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
+    TablePagination,
+    Snackbar,
+    SnackbarContent,
+    Avatar,
+    DialogActions,
+    FormHelperText
 } from '@mui/material';
-import { Edit, Visibility } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Edit, Visibility as ViewIcon } from '@mui/icons-material';
 import { Formik, Form } from 'formik';
 import * as yup from 'yup';
+
 import {
     loadReceptionists,
     addReceptionist,
@@ -16,6 +39,7 @@ import {
 } from '../../services/receptionist_service'; // Import API functions
 import './component/ReceptionistAccount.css'; // Import CSS
 import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 const ReceptionistAccount = () => {
     const [accounts, setAccounts] = useState([]);
@@ -25,6 +49,7 @@ const ReceptionistAccount = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [addDialogOpen, setAddDialogOpen] = useState(false);
     const [viewEditDialogOpen, setViewEditDialogOpen] = useState(false);
+    const [passwordVisible, setPasswordVisible] = useState({});
 
     //hiển thị thông báo bằng snackbar
     const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -37,6 +62,23 @@ const ReceptionistAccount = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const getAge = (dob) => {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    };
+
+    const handleTogglePasswordVisibility = (accId) => {
+        setPasswordVisible((prev) => ({
+            ...prev,
+            [accId]: !prev[accId],
+        }));
+    };
     // Validation schema using yup
     const validationSchema = yup.object().shape({
         name: yup.string().required('Name is required'),
@@ -45,7 +87,7 @@ const ReceptionistAccount = () => {
         phone: yup.string().required('Phone is required').matches(/^\d{10,11}$/, 'Invalid phone number'),
         dob: yup.date().required('Date of Birth is required').nullable(),
         email: yup.string().email('Invalid email format').required('Email is required'),
-        Password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
+        // Password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
     });
     const validationSchemaforEdit = yup.object().shape({
         name: yup.string().required('Name is required'),
@@ -61,22 +103,22 @@ const ReceptionistAccount = () => {
     // Function to load receptionists from API
     useEffect(() => {
         const fetchData = async () => {
-          try {
-            setLoading(true);
-            await loadReceptionists((data) => {
-              console.log('Fetched data:', data); // Debugging statement
-              setAccounts(Array.isArray(data) ? data : []);
-            }, setError);
-          } catch (error) {
-            setError(error.message);
-          } finally {
-            setLoading(false);
-          }
+            try {
+                setLoading(true);
+                await loadReceptionists((data) => {
+                    console.log('Fetched data:', data); // Debugging statement
+                    setAccounts(Array.isArray(data) ? data : []);
+                }, setError);
+            } catch (error) {
+                setError(error.message);
+            } finally {
+                setLoading(false);
+            }
         };
-      
+
         fetchData();
-      }, []);
-      
+    }, []);
+
     // Handle opening and closing of snackbar
     const handleSnackbarClose = () => {
         setSnackbarOpen(false);
@@ -91,36 +133,36 @@ const ReceptionistAccount = () => {
     // Function to handle form submission
     const handleEditFormSubmit = async (values, { setSubmitting }) => {
         try {
-          setSubmitting(true); // Start submitting
-          // Update receptionist if in edit mode
-          const updatedReceptionist = await updateReceptionist(currentAccount.accId, values);
-      
-          if (updatedReceptionist) {
-            // Handle the case where the response includes data
-            console.log('Updated receptionist data:', updatedReceptionist);
-          } else {
-            // Handle the case where no content was returned
-            console.log('Receptionist updated successfully with no content returned');
-          }
-      
-          handleOpenSnackbar(`Account ${currentAccount ? 'updated' : 'added'} successfully!`, 'success');
-          closeDialogs(); // Close dialog after successful submission
-      
-          // Load receptionists and ensure setAccounts is called with an array
-          await loadReceptionists((receptionists) => {
-            console.log('Loaded receptionists:', receptionists); // Debugging statement
-            setAccounts(Array.isArray(receptionists) ? receptionists : []);
-          }, setLoading, setError); // Reload receptionist data
-      
+            setSubmitting(true); // Start submitting
+            // Update receptionist if in edit mode
+            const updatedReceptionist = await updateReceptionist(currentAccount.accId, values);
+
+            if (updatedReceptionist) {
+                // Handle the case where the response includes data
+                console.log('Updated receptionist data:', updatedReceptionist);
+            } else {
+                // Handle the case where no content was returned
+                console.log('Receptionist updated successfully with no content returned');
+            }
+
+            handleOpenSnackbar(`Account ${currentAccount ? 'updated' : 'added'} successfully!`, 'success');
+            closeDialogs(); // Close dialog after successful submission
+
+            // Load receptionists and ensure setAccounts is called with an array
+            await loadReceptionists((receptionists) => {
+                console.log('Loaded receptionists:', receptionists); // Debugging statement
+                setAccounts(Array.isArray(receptionists) ? receptionists : []);
+            }, setLoading, setError); // Reload receptionist data
+
         } catch (error) {
-          console.error('Error submitting form:', error);
-          // setError(error.message);
+            console.error('Error submitting form:', error);
+            // setError(error.message);
         } finally {
-          setSubmitting(false); // Stop submitting
+            setSubmitting(false); // Stop submitting
         }
-      };
-      
-      
+    };
+
+
 
     const handleAddFormSubmit = async (values, { setSubmitting }) => {
         try {
@@ -249,13 +291,13 @@ const ReceptionistAccount = () => {
 
     const filteredAccounts = accounts.filter((account) => {
         if (searchType === 'name') {
-          return account.name.toLowerCase().includes(searchTerm.toLowerCase());
+            return account.name.toLowerCase().includes(searchTerm.toLowerCase());
         } else if (searchType === 'phone') {
-          return account.phone.includes(searchTerm);
+            return account.phone.includes(searchTerm);
         }
         return true;
-      });
-      
+    });
+
 
     return (
         <div className="full-height-container">
@@ -304,6 +346,7 @@ const ReceptionistAccount = () => {
                                     <TableCell>Name</TableCell>
                                     <TableCell>Gender</TableCell>
                                     <TableCell>DOB</TableCell>
+                                    <TableCell>Password</TableCell>
                                     <TableCell>Phone</TableCell>
                                     <TableCell>Email</TableCell>
                                     <TableCell>Status</TableCell>
@@ -323,6 +366,14 @@ const ReceptionistAccount = () => {
                                         <TableCell>{account.name}</TableCell>
                                         <TableCell>{account.gender}</TableCell>
                                         <TableCell>{formatDate(account.dob)}</TableCell>
+                                        <TableCell>
+                                            <TextField type={passwordVisible[account.accId] ? "text" : "password"} value={account.password} InputProps={{
+                                                readOnly: true, endAdornment:
+                                                    (<InputAdornment position="end">
+                                                        <IconButton aria-label="toggle password visibility" onClick={() => handleTogglePasswordVisibility(account.accId)} > {passwordVisible[account.accId] ? <Visibility /> : <VisibilityOff />} </IconButton>
+                                                    </InputAdornment>),
+                                            }} />
+                                        </TableCell>
 
                                         <TableCell>{account.phone}</TableCell>
                                         <TableCell>{account.email}</TableCell>
@@ -391,6 +442,7 @@ const ReceptionistAccount = () => {
                             onSubmit={handleAddFormSubmit}
                         >
                             {({
+                                setFieldValue,
                                 values,
                                 errors,
                                 touched,
@@ -462,7 +514,11 @@ const ReceptionistAccount = () => {
                                         name="dob"
                                         type="date"
                                         value={values.dob}
-                                        onChange={handleChange}
+                                        onChange={(e) => {
+                                            handleChange(e);
+                                            const age = getAge(e.target.value);
+                                            setFieldValue('age', age);
+                                        }}
                                         onBlur={handleBlur}
                                         error={touched.dob && !!errors.dob}
                                         helperText={touched.dob && errors.dob}
@@ -473,7 +529,7 @@ const ReceptionistAccount = () => {
                                         }}
                                         InputProps={{
                                             inputProps: {
-                                                max: formatDate(new Date()), // Helper function to format date
+                                                max: new Date().toISOString().split('T')[0], // Current date in YYYY-MM-DD format
                                             },
                                         }}
                                     />
@@ -488,7 +544,7 @@ const ReceptionistAccount = () => {
                                         fullWidth
                                         margin="normal"
                                     />
-                                    <TextField
+                                    {/* <TextField
                                         label="Password"
                                         name="Password"
                                         type="password"
@@ -499,7 +555,7 @@ const ReceptionistAccount = () => {
                                         helperText={touched.Password && errors.Password}
                                         fullWidth
                                         margin="normal"
-                                    />
+                                    /> */}
 
                                     <DialogActions>
                                         <Button onClick={closeDialogs} color="primary">
@@ -520,7 +576,7 @@ const ReceptionistAccount = () => {
                     <DialogContent>
                         <Formik
                             initialValues={{
-                                accId:currentAccount?.accId ||'',
+                                accId: currentAccount?.accId || '',
                                 name: currentAccount?.name || '',
                                 gender: currentAccount?.gender || '',
                                 phone: currentAccount?.phone || '',
@@ -554,7 +610,7 @@ const ReceptionistAccount = () => {
                                         helperText={touched.name && errors.name}
                                         fullWidth
                                         margin="normal"
-                                    sx={{display:"none"}}
+                                        sx={{ display: "none" }}
                                     />
                                     <TextField
                                         label="Name"

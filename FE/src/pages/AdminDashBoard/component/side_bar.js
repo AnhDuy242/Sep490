@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Drawer, List, ListItem, ListItemText, ListItemIcon, Collapse, Typography, Box, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
@@ -8,7 +8,8 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../../../assets/images/background-img.jpg'; // Adjust the path accordingly
-import { logout } from '../../../services/Authentication';
+// import { logout } from '../../../services/Authentication';
+import { AuthContext } from '../../../utils/AuthContext'; // Adjust this path as needed
 
 const drawerWidth = '300px'; // Fixed width for the sidebar
 
@@ -73,6 +74,7 @@ const Sidebar = () => {
   const handleAccountClick = () => {
     setOpenAccount(!openAccount);
   };
+  const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
 
   const handleLogoutClick = () => {
     logout();
@@ -111,23 +113,11 @@ const Sidebar = () => {
               </ListItem>
             </List>
           </Collapse>
-          <ListItem button className={classes.listItem}>
-            <ListItemIcon>
-              <MailIcon style={{ color: 'white' }} />
-            </ListItemIcon>
-            <ListItemText primary="Notification" />
-          </ListItem>
-          <ListItem button className={classes.listItem}>
+          <ListItem button className={classes.listItem} component={Link} to="/view-appoiment-admin">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Employee list" />
-          </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/schedule">
-            <ListItemIcon>
-              <InboxIcon style={{ color: 'white' }} />
-            </ListItemIcon>
-            <ListItemText primary="Lịch làm việc" />
+            <ListItemText primary="Xem lịch khám" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
