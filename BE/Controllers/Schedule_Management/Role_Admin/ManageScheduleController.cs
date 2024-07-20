@@ -15,7 +15,6 @@ namespace BE.Controllers.Admin
     {
         private readonly MedPalContext _context;
 
-        
         public ManageScheduleController(MedPalContext context)
         {
             _context = context;
@@ -28,7 +27,6 @@ namespace BE.Controllers.Admin
         {
             try
             {
-                
 
 
                 // Truy vấn để lấy các schedule có WeekId trong các tuần tìm được
@@ -65,7 +63,6 @@ namespace BE.Controllers.Admin
                 // Tìm schedule theo id
                 var schedule = await _context.Schedules
                     .Include(s => s.Doctor)
-                    .Include(s => s.Week)
                     .FirstOrDefaultAsync(s => s.Id == id);
 
                 if (schedule == null)
@@ -92,21 +89,57 @@ namespace BE.Controllers.Admin
 
             try
             {
-                var schedule = new Schedule
-                {
-                    DoctorId = model.DoctorId,
-                    Morning = model.Morning,
-                    Afternoon = model.Afternoon,
-                    Weekdays = model.Weekdays,
-                    Date = model.Date,
-                    WeekId = model.WeekId,
-                    Appointments = model.Appointments
-                };
+                var existingSchedule = _context.Schedules.ToList();
+                var schedules = new List<Schedule>();
+                DateTime currentDate = model.StartDate;
 
-                await _context.Schedules.AddAsync(schedule);
+                var listDateDuplicate = "";
+                while (currentDate <= model.EndDate)
+                {
+                    int dayOfWeek = (int)currentDate.DayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+                    var schedule = new Schedule
+                    {
+                        DoctorId = model.DoctorId,
+                        Morning = model.Morning[dayOfWeek],
+                        Afternoon = model.Afternoon[dayOfWeek],
+                        Weekdays = currentDate.DayOfWeek.ToString(),
+                        Date = currentDate,
+                        Appointments = 0
+                    };
+
+                    bool shouldContinue = false;
+                    foreach (var s in existingSchedule)
+                    {
+                        if (s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                        {
+                            shouldContinue = true;
+                            listDateDuplicate += $"{s.Date},\n  ";
+                            break;
+                        }
+                    }
+
+                    if (shouldContinue)
+                    {
+                        currentDate = currentDate.AddDays(1);
+                        continue;
+                    }
+
+                    schedules.Add(schedule);
+                    currentDate = currentDate.AddDays(1);
+                }
+
+                await _context.Schedules.AddRangeAsync(schedules);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetScheduleById), new { id = schedule.Id }, schedule);
+
+                if (!string.IsNullOrWhiteSpace(listDateDuplicate))
+                {
+                    return StatusCode(StatusCodes.Status201Created, $"Những ngày dưới đây không được thêm vào do đã tồn tại: {listDateDuplicate}");
+                }
+
+
+
+                return CreatedAtAction(nameof(GetAllSchedulesByDoctorId), new { doctorId = model.DoctorId }, schedules);
             }
             catch (Exception ex)
             {
@@ -114,9 +147,10 @@ namespace BE.Controllers.Admin
             }
         }
 
+
         // PUT api/<DoctorScheduleController>/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleCreationModel model)
+        public async Task<IActionResult> UpdateSchedule(int id, [FromBody] ScheduleUpdateModel model)
         {
             if (!ModelState.IsValid)
             {
@@ -138,7 +172,6 @@ namespace BE.Controllers.Admin
                 existingSchedule.Afternoon = model.Afternoon;
                 existingSchedule.Weekdays = model.Weekdays;
                 existingSchedule.Date = model.Date;
-                existingSchedule.WeekId = model.WeekId;
                 existingSchedule.Appointments = model.Appointments;
 
                 _context.Schedules.Update(existingSchedule);
@@ -173,9 +206,9 @@ namespace BE.Controllers.Admin
                 }
                 else
                 {
-                    foreach(var s in schedules)
+                    foreach (var s in schedules)
                     {
-                       
+
                     }
                 }
                 _context.Schedules.Remove(schedule);
@@ -197,7 +230,7 @@ namespace BE.Controllers.Admin
                 _context.Appointments,
                 schedule => schedule.DoctorId,
                 appointment => appointment.DoctorId,
-                (schedule, appointment) => new { schedule, appointment}
+                (schedule, appointment) => new { schedule, appointment }
                 )
                 .Where(s => s.schedule.DoctorId == doctorId)
                 .ToList<object>();

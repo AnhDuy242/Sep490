@@ -127,7 +127,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                 Dob = receptionist.Dob,
                 IsActive = member.IsActive
             };
-            return CreatedAtAction(nameof(GetReceptionistAccountDetail), new { phone = newUpdate.Phone }, newUpdate);
+            return CreatedAtAction(nameof(GetReceptionistAccountDetail), new {phone =  newUpdate.Phone}, newUpdate);
         }
 
 

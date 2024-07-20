@@ -61,6 +61,8 @@ builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.AddSingleton<OtpService>();
 
 
+builder.Services.AddDbContext<MedPalContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<AuthService>(); // Change to Scoped
 
