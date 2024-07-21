@@ -70,9 +70,9 @@ const AppointmentApproval = () => {
               {appointments.map((appointment) => (
                 <TableRow key={appointment.id}>
                   <TableCell>{appointment.id}</TableCell>
-                  <TableCell>{appointment.patientId}</TableCell>
-                  <TableCell>{appointment.doctorId}</TableCell>
-                  <TableCell>{appointment.slotId}</TableCell>
+                  <TableCell>{appointment.patientName}</TableCell>
+                  <TableCell>{appointment.doctorName}</TableCell>
+                  <TableCell>{appointment.time}</TableCell>
                   <TableCell>
                     <Select
                       value={appointment.status}
