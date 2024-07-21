@@ -99,7 +99,7 @@ const ViewAllNoteBooks = () => {
                         color="inherit"
                         onClick={handleClose}
                         aria-label="close"
-                        style={{ position: 'absolute', right: 8, top: 8 }}
+                        style={{ position: 'absolute', right: 12, top: 8 }}
                     >
                         <CloseIcon />
                     </IconButton>
