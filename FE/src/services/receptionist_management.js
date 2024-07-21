@@ -59,7 +59,7 @@ const BASE_URL = 'https://localhost:7240/api/ReceptionistAppointment';
 
 export const fetchAppointments = async () => {
   try {
-    const response = await fetch(`${BASE_URL}/GetAllAppointment`);
+    const response = await fetch('https://localhost:7240/api/ReceptionistAppointment/GetAllAppointment');
     if (!response.ok) {
       throw new Error('Network response was not ok ' + response.statusText);
     }
@@ -68,12 +68,40 @@ export const fetchAppointments = async () => {
     if (!Array.isArray(data)) {
       throw new Error('API response is not an array');
     }
-    return data.$values;
+    return data;
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
     return [];
   }
 };
+
+//lấy ra list danh sách doctor 
+const listDoctor = 'https://localhost:7240/api/PatientAppointment/GetListDoctor';
+
+export const getListDoctor = async () => {
+  try {
+    const response = await fetch('https://localhost:7240/api/ReceptionistAppointment/GetAllAppointment', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        // Add any other headers if needed
+      },
+      // Optionally, add a body if your API requires data to be sent
+      // body: JSON.stringify({ /* Your data object here */ }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json(); // Parse JSON response
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+    throw error; // Rethrow the error so caller can handle it
+  }
+};
+
+
+
 
 export const approveAppointment = async (appId, status) => {
   try {

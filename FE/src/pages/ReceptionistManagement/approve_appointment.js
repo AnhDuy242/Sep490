@@ -13,18 +13,27 @@ import {
   Select, 
   MenuItem 
 } from '@mui/material';
-import { fetchAppointments, approveAppointment } from '../../services/receptionist_management'; // Adjust the import path according to your project structure
+import { fetchAppointments, approveAppointment,getListDoctor } from '../../services/receptionist_management'; // Adjust the import path according to your project structure
 
 const AppointmentApproval = () => {
   const [appointments, setAppointments] = useState([]); // Initialize as an empty array
 
   useEffect(() => {
-    const getAppointments = async () => {
-      const data = await fetchAppointments();
-      setAppointments(data.$values);
-    };
-    getAppointments();
+    getListDoctor()
+            .then(data => {
+              setAppointments(data.$values);
+            })
+            .catch(error => {
+                console.error('Failed to fetch appointment:', error);
+            });
   }, []);
+  // useEffect(() => {
+  //   const getAppointments = async () => {
+  //     const data = await fetchAppointments();
+  //     setAppointments(data.$values);
+  //   };
+  //   getAppointments();
+  // }, []);
 
   useEffect(() => {
     console.log('Appointments state updated:', appointments); // Log state updates
@@ -58,8 +67,7 @@ const AppointmentApproval = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {appointments.length > 0 ? (
-              appointments.map((appointment) => (
+              {appointments.map((appointment) => (
                 <TableRow key={appointment.id}>
                   <TableCell>{appointment.id}</TableCell>
                   <TableCell>{appointment.patientId}</TableCell>
@@ -76,14 +84,8 @@ const AppointmentApproval = () => {
                     </Select>
                   </TableCell>
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell colSpan={5} align="center">
-                  No appointments found
-                </TableCell>
-              </TableRow>
-            )}
+              ))};
+          
           </TableBody>
         </Table>
       </TableContainer>
@@ -92,3 +94,5 @@ const AppointmentApproval = () => {
 };
 
 export default AppointmentApproval;
+
+
