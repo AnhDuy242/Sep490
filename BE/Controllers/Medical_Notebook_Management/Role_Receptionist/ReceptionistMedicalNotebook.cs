@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BE.DTOs.MedicalNoteBookDro;
 using BE.Models;
+using BE.Service.ImplService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,22 +15,42 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
     {
         private readonly MedPalContext _context;
         private readonly IMapper _mapper;
-        public ReceptionistMedicalNotebook(MedPalContext context, IMapper mapper)
+        private readonly CloudinaryService _cloudinaryService;
+        public ReceptionistMedicalNotebook(MedPalContext context, IMapper mapper, CloudinaryService cloudinaryService)
         {
             _context = context;
             _mapper = mapper;
+            _cloudinaryService = cloudinaryService;
         }
 
         [HttpPut]
-        public async Task<IActionResult> CreateMedicalNoteBook(int mid, string rs)
+        public async Task<IActionResult> CreateMedicalNoteBook(int mid, IFormFile file)
         {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("No file uploaded.");
+            }
+
+            var filePath = Path.GetTempFileName();
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await file.CopyToAsync(stream);
+            }
+
+            var uploadResult = await _cloudinaryService.UploadImageAsync(filePath);
+
+            if (uploadResult == null)
+            {
+                return StatusCode(500, "Error uploading file to Cloudinary.");
+            }
             var m = _context.MedicalNotebooks.FirstOrDefault(x => x.Id == mid);
-            m.TestResult = rs;
+            m.TestResult = uploadResult.Url.ToString();
             await _context.SaveChangesAsync();
-            return Ok(m);
+            return Ok(m.TestResult);
         }
         [HttpGet]
-        public async Task<IActionResult> GetAllMedicalNotBook()
+        public async Task<IActionResult> GetAllMedicalNoteBook()
         {
             var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).ToList();
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
