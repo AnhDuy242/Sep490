@@ -10,46 +10,57 @@ import {
   TableHead, 
   TableRow, 
   Paper, 
-  Select, 
-  MenuItem 
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Button
 } from '@mui/material';
-import { fetchAppointments, approveAppointment,getListDoctor } from '../../services/receptionist_management'; // Adjust the import path according to your project structure
+import { fetchAppointments, approveAppointment, getListDoctor } from '../../services/receptionist_management'; // Adjust the import path according to your project structure
 
 const AppointmentApproval = () => {
   const [appointments, setAppointments] = useState([]); // Initialize as an empty array
+  const [open, setOpen] = useState(false);
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+  const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
     getListDoctor()
-            .then(data => {
-              setAppointments(data.$values);
-            })
-            .catch(error => {
-                console.error('Failed to fetch appointment:', error);
-            });
+      .then(data => {
+        setAppointments(data.$values || []);
+      })
+      .catch(error => {
+        console.error('Failed to fetch appointments:', error);
+      });
   }, []);
-  // useEffect(() => {
-  //   const getAppointments = async () => {
-  //     const data = await fetchAppointments();
-  //     setAppointments(data.$values);
-  //   };
-  //   getAppointments();
-  // }, []);
 
-  useEffect(() => {
-    console.log('Appointments state updated:', appointments); // Log state updates
-  }, [appointments]);
+  const handleStatusChangeClick = (appointment, status) => {
+    setSelectedAppointment(appointment);
+    setNewStatus(status);
+    setOpen(true);
+  };
 
-  const handleStatusChange = async (id, newStatus) => {
-    try {
-      const updatedAppointment = await approveAppointment(id, newStatus);
-      const updatedAppointments = appointments.map(app => 
-        app.id === id ? { ...app, status: newStatus } : app
-      );
-      setAppointments(updatedAppointments);
-      console.log('Appointment status updated successfully:', updatedAppointment);
-    } catch (error) {
-      console.error('Failed to update appointment status:', error);
+  const handleConfirmStatusChange = async () => {
+    if (selectedAppointment) {
+      try {
+        await approveAppointment(selectedAppointment.id, newStatus);
+        const updatedAppointments = appointments.map(app =>
+          app.id === selectedAppointment.id ? { ...app, status: newStatus } : app
+        );
+        setAppointments(updatedAppointments);
+        console.log('Appointment status updated successfully');
+      } catch (error) {
+        console.error('Failed to update appointment status:', error);
+      }
+      setOpen(false);
     }
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+    setSelectedAppointment(null);
+    setNewStatus('');
   };
 
   return (
@@ -64,35 +75,62 @@ const AppointmentApproval = () => {
               <TableCell>Doctor ID</TableCell>
               <TableCell>Slot ID</TableCell>
               <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-              {appointments.map((appointment) => (
-                <TableRow key={appointment.id}>
-                  <TableCell>{appointment.id}</TableCell>
-                  <TableCell>{appointment.patientName}</TableCell>
-                  <TableCell>{appointment.doctorName}</TableCell>
-                  <TableCell>{appointment.time}</TableCell>
-                  <TableCell>
-                    <Select
-                      value={appointment.status}
-                      onChange={(e) => handleStatusChange(appointment.appId, e.target.value)}
-                    >
-                      <MenuItem value="Pending">Pending</MenuItem>
-                      <MenuItem value="Approve">Approve</MenuItem>
-                      <MenuItem value="Cancel">Cancel</MenuItem>
-                    </Select>
-                  </TableCell>
-                </TableRow>
-              ))};
-          
+            {appointments.map((appointment) => (
+              <TableRow key={appointment.id}>
+                <TableCell>{appointment.id}</TableCell>
+                <TableCell>{appointment.patientName}</TableCell>
+                <TableCell>{appointment.doctorName}</TableCell>
+                <TableCell>{appointment.time}</TableCell>
+                <TableCell>{appointment.status}</TableCell>
+                <TableCell>
+                  <Button
+                    variant="contained"
+                    color={appointment.status === 'Approve' ? 'secondary' : 'primary'}
+                    onClick={() => handleStatusChangeClick(appointment, 'Approve')}
+                    disabled={appointment.status === 'Approve'}
+                  >
+                    Phê Duyệt
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color={appointment.status === 'Cancel' ? 'secondary' : 'primary'}
+                    onClick={() => handleStatusChangeClick(appointment, 'Cancel')}
+                    disabled={appointment.status === 'Cancel'}
+                  >
+                    Hủy
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+      >
+        <DialogTitle>Xác nhận thay đổi</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Bạn có muốn thay đổi trạng thái của lịch khám này không? {newStatus}?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmStatusChange} color="primary">
+            Xác Nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
 
 export default AppointmentApproval;
-
-
