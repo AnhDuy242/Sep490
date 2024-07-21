@@ -13,6 +13,7 @@ import CreateAppointment from './pages/Appointment-patient/CreateAppointment';
 import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
 import ReceptionistDash from '../src/pages/ReceptionistManagement';
 import CreatePatientAccount from'../src/pages/ReceptionistManagement/create_patient_account';
+import ApproveAppointment from '../src/pages/ReceptionistManagement/approve_appointment';
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
       {/*Receptionist*/}
       <Route path="/receptionist/dashboard/" element={<ProtectedRoute requiredRole="Receptionist"><ReceptionistDash /></ProtectedRoute>}>
         <Route path="create_patient_account" element={<CreatePatientAccount />} />
+        <Route path="Approve_appointment" element={<ApproveAppointment />} />
         </Route>
       {/**Route article */}
       <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>

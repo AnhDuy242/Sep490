@@ -102,6 +102,12 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Tạo tài khoản bệnh nhân" />
           </ListItem>
+          <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/approve_appointment">
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Phê Duyệt lịch khám" />
+          </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
           <Button variant="contained" className={classes.logoutButton} onClick={handleLogoutClick}>
