@@ -96,19 +96,11 @@ const Sidebar = () => {
           <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
-          <ListItem button onClick={handleAccountClick} className={classes.listItem}>
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> {/**sua o cho nay */}
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Tài khoản" />
-            {openAccount ? <ExpandLess style={{ color: 'white' }} /> : <ExpandMore style={{ color: 'white' }} />}
-          </ListItem>
-          
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard"> {/**sua o cho nay */}
-            <ListItemIcon>
-              <InboxIcon style={{ color: 'white' }} />
-            </ListItemIcon>
-            <ListItemText primary="Xem lịch khám" />
+            <ListItemText primary="Tạo sổ tay khám bệnh" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">

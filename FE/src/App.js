@@ -15,7 +15,8 @@ import ReceptionistDash from '../src/pages/ReceptionistManagement';
 import CreatePatientAccount from '../src/pages/ReceptionistManagement/create_patient_account';
 import MedicalNotebook from '../src/pages/MedicalNotebook-patient';
 import ViewAllNotebooks from './pages/ReceptionistManagement/view_notebooks'
-import DoctorDash from './pages/DoctorManagement/doctormanagement';
+import DoctorDash from '../src/pages/DoctorManagement';
+import CreateNoteBook from '../src/pages/DoctorManagement/doctormanagement'
 function App() {
   return (
     <Routes>
@@ -57,10 +58,10 @@ function App() {
 
         </Route>
          {/*Doctor*/}
-        <Route path="/doctor/dasboard" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
+        <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
+        <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />
+
         </Route>
-
-
     </Routes>
   );
 }
