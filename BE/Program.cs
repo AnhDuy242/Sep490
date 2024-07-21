@@ -15,6 +15,8 @@ using CloudinaryDotNet;
 using BE.Service.IService;
 using BE.DTOs;
 using BE.Service;
+using BE.Service.ImplService;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +51,11 @@ builder.Services.AddSingleton<ISMSService>(provider =>
 //mail
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
+//remider
+builder.Services.AddTransient<ReminderService>();
+
+builder.Services.AddHangfire(config => config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
 //otp service
@@ -133,5 +140,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseHangfireDashboard();
+app.UseHangfireServer();
+
+// Configure Hangfire job
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate<ReminderService>("send-reminders", service => service.CheckAppointments(), Cron.Daily);
 
 app.Run();

@@ -1,6 +1,6 @@
 ﻿using BE.DTOs;
 
-namespace BE.Service.IService
+namespace BE.Service.ImplService
 {
     public class OtpService
     {
