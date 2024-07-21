@@ -1,79 +1,110 @@
-const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const cors = require('cors');
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server, {
-    cors: {
-        origin: '*',
-        methods: ['GET', 'POST']
-    
-}
-}
-);
+    const express = require('express');
+    const http = require('http');
+    const { Server } = require('socket.io');
+    const jwt = require('jsonwebtoken');
 
-const users = {}; // Lưu trữ thông tin người dùng
-const receptionist = {}; // Lưu trữ thông tin receptionist
-
-io.on('connection', (socket) => {
-    console.log('A user connected');
-
-    socket.on('login', ({ token }) => {
-        const userId = getUserIdFromToken(token);
-        if (!userId) {
-            return socket.disconnect();
+    const app = express();
+    const server = http.createServer(app);
+    const io = new Server(server, {
+        cors: {
+            origin: '*',
+            methods: ['GET', 'POST']
         }
+    });
 
-        socket.userId = userId;
+    const users = {}; // Stores user sockets
+    const receptionists = {}; // Stores receptionist sockets
+    const availableReceptionists = []; // List of available receptionists
+    const JWT_SECRET = 'your_secret_key_here'; // Secret key for JWT
 
-        if (!users[userId]) {
-            users[userId] = socket;
-        }
+    // Function to generate JWT token
+    function generateToken(nameId) {
+        return jwt.sign({ nameId }, JWT_SECRET, { expiresIn: '1h' });
+    }
 
-        console.log(`User ${userId} logged in`);
+
+
+    io.on('connection', (socket) => {
+        console.log('A user connected');
+        socket.on('login', ({ token, nameId }) => {
+            console.log("User logged in with token:", token);
+            if (nameId) {
+                console.log(`User ${nameId} logged in`);
+                socket.nameId = nameId;
+                users[nameId] = socket;
+                socket.emit('newToken', generateToken(nameId));
+            } else {
+                console.log('Invalid token, disconnecting socket.');
+                socket.disconnect();
+            }
+        });
+        
+        socket.on('loginReceptionist', ({ token, nameId }) => {
+            if (nameId) {
+                if (!availableReceptionists.includes(nameId)) {
+                    availableReceptionists.push(nameId); // Add only if not present
+                }
+                receptionists[nameId] = socket;
+                socket.nameId = nameId;
+                io.emit('availableReceptionists', availableReceptionists); // Update all connected clients
+            } else {
+                socket.disconnect();
+            }
+        });
+        
+        
 
         socket.on('joinRoom', ({ receiverId }) => {
-            const roomId = generateRoomId(userId, receiverId);
-            socket.join(roomId);
-            console.log(`User ${userId} joined room: ${roomId}`);
+            if (socket.nameId) {
+                const roomId = generateRoomId(socket.nameId, receiverId);
+                socket.join(roomId);
+                console.log(`User ${socket.nameId} joined room: ${roomId}`);
+        
+                // Notify the receptionist about the new conversation if they are online
+                if (receptionists[receiverId]) {
+                    io.to(receptionists[receiverId].id).emit('newConversation', { roomId, nameId: socket.nameId });
+                } else {
+                    console.log(`Receptionist ${receiverId} not found`);
+                }
+            }
         });
 
         socket.on('message', ({ receiverId, message }) => {
-            const roomId = generateRoomId(userId, receiverId);
-            io.to(roomId).emit('message', { userId, ...message });
+            if (socket.nameId && receiverId) {
+                const roomId = generateRoomId(socket.nameId, receiverId);
+                if (roomId) {
+                    console.log(`Message from ${socket.nameId} to room ${roomId}:`, message);
+                    io.to(roomId).emit('message', { from: socket.nameId, ...message });
+                } else {
+                    console.error(`Failed to send message: Invalid roomId`);
+                }
+            } else {
+                console.error(`Message event failed: socket.nameId or receiverId is undefined`);
+            }
+        });
+        
+        
+
+        socket.on('getAvailableReceptionists', () => {
+            socket.emit('availableReceptionists', availableReceptionists);
         });
 
         socket.on('disconnect', () => {
-            console.log(`User ${userId} disconnected`);
-            delete users[userId];
+            console.log(`Socket ${socket.nameId} disconnected`);
+            delete users[socket.nameId];
+            delete receptionists[socket.nameId];
+            const index = availableReceptionists.indexOf(socket.nameId);
+            if (index !== -1) {
+                availableReceptionists.splice(index, 1); // Remove from available receptionists
+            }
         });
     });
 
-    socket.on('disconnect', () => {
-        console.log('A user disconnected without login');
-    });
-});
-
-
-function getUserIdFromToken(token) {
-    try {
-        // Giải mã token bằng secret key (được sử dụng để ký token)
-        const decodedToken = jwt.verify(token, 'your_jwt_secret');
-        // Trích xuất userId từ payload giải mã được
-        const userId = decodedToken.userId;
-        return userId;
-    } catch (error) {
-        console.error('Error decoding token:', error);
-        return null;
+    function generateRoomId(nameId1, nameId2) {
+        const sortedNameIds = [nameId1, nameId2].sort();
+        return `${sortedNameIds[0]}_${sortedNameIds[1]}`;
     }
-}
 
-function generateRoomId(userId1, userId2) {
-    const sortedUserIds = [userId1, userId2].sort();
-    return `${sortedUserIds[0]}_${sortedUserIds[1]}`;
-}
-
-server.listen(3001, () => {
-    console.log('listening on *:3001');
-});
+    server.listen(3001, () => {
+        console.log('Server listening on port 3001');
+    });

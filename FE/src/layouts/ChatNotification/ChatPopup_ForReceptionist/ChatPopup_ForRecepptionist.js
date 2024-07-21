@@ -1,22 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Dialog, Box, Typography, TextField, Button, Fab, Badge, List, ListItem, ListItemText, IconButton } from '@mui/material';
-import ChatIcon from '@mui/icons-material/Chat';
+import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import ImageIcon from '@mui/icons-material/Image';
 import io from 'socket.io-client';
 import LoginForm from '../../LoginForm';
 import { login } from '../../../services/Authentication';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
-const ChatPopup_ForReceptionist = () => {
-    const [showLogin, setShowLogin] = useState(false);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [conversations, setConversations] = useState([]); // All conversations
-    const [currentConversation, setCurrentConversation] = useState(null); // Selected conversation
+const Chatpopup_Forceptionist = () => {
+    const [conversations, setConversations] = useState([]);
+    const [currentConversation, setCurrentConversation] = useState(null);
     const [inputMessage, setInputMessage] = useState('');
+    const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
-    const socketRef = useRef(null); // Ref to store the socket instance
+    const [token, setToken] = useState('');
+    const nameId = localStorage.getItem('nameId');
+    const socketRef = useRef(null);
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -26,7 +26,8 @@ const ChatPopup_ForReceptionist = () => {
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
             if (tokenAge < tokenTimeout) {
                 setIsLoggedIn(true);
-                connectSocket(storedToken); // Connect socket after successful login
+                setToken(storedToken);
+                connectSocket(storedToken);
             } else {
                 localStorage.removeItem('token');
                 localStorage.removeItem('tokenTimestamp');
@@ -42,9 +43,14 @@ const ChatPopup_ForReceptionist = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        
-        // Send token to server for login and authentication
-        socketRef.current.emit('loginReceptionist', { token });
+        socketRef.current.emit('loginReceptionist', { token, nameId });
+
+        socketRef.current.on('newConversation', ({ roomId, nameId }) => {
+            setConversations((prevConversations) => [
+                ...prevConversations,
+                { id: roomId, userId: nameId, messages: [] }
+            ]);
+        });
 
         socketRef.current.on('message', (message) => {
             setConversations((prevConversations) => {
@@ -57,152 +63,153 @@ const ChatPopup_ForReceptionist = () => {
                 }
                 return updatedConversations;
             });
+        
+            if (message.roomId === currentConversation?.id) {
+                setCurrentConversation((prevConversation) => ({
+                    ...prevConversation,
+                    messages: [...prevConversation.messages, message]
+                }));
+            }
         });
+        
 
         socketRef.current.on('disconnect', () => {
             console.log('Socket disconnected');
         });
     };
 
-    const handleToggleDialog = () => {
-        setDialogOpen(!dialogOpen);
-    };
-
     const handleSendMessage = () => {
-        const message = inputMessage.trim();
-        if (message && currentConversation) {
-            const newMessage = { from: 'receptionist', roomId: currentConversation.id, message }; // Send message to specific room
-            socketRef.current.emit('message', newMessage);
-            setConversations((prevConversations) => {
-                const updatedConversations = [...prevConversations];
-                const conversationIndex = updatedConversations.findIndex(c => c.id === currentConversation.id);
-                updatedConversations[conversationIndex].messages.push({ from: 'Me', message });
-                return updatedConversations;
+        if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
+            const message = {
+                text: inputMessage.trim(),
+                image: selectedImage,
+                roomId: currentConversation.id
+            };
+    
+            // Include receiverId here
+            socketRef.current.emit('message', {
+                receiverId: currentConversation.userId, // Assuming userId is the receiverId
+                message
             });
+    
+            setCurrentConversation((prevConversation) => ({
+                ...prevConversation,
+                messages: [...prevConversation.messages, { from: 'Me', ...message }]
+            }));
             setInputMessage('');
+            setSelectedImage(null);
         }
     };
+    
 
-    const handleCloseLogin = () => setShowLogin(false);
-    const handleShowLogin = () => setShowLogin(true);
+    const handleSelectImage = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setSelectedImage(reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
 
     const updateToken = (token) => {
         setIsLoggedIn(true);
         localStorage.setItem('token', token);
         localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
-        connectSocket(token); // Connect socket after successful login
-        window.location.href = '/';
+        setToken(token);
+        connectSocket(token);
     };
 
     const handleLogin = async ({ username, password }) => {
         try {
             const { token } = await login(username, password);
             updateToken(token);
-            handleCloseLogin();
         } catch (error) {
             console.error('Login failed:', error);
         }
     };
 
-    const handleSelectConversation = (conversation) => {
-        setCurrentConversation(conversation);
-    };
-
-    const fabStyle = {
-        position: 'fixed',
-        bottom: '16px',
-        right: '16px',
-    };
-
-    const dialogStyle = {
-        display: 'flex',
-        flexDirection: 'row',
-        height: '80vh',
-        width: '97vw',
-    };
-
-    const sidebarStyle = {
-        width: '300px',
-        flexShrink: 0,
-        overflowY: 'auto',
-        borderRight: '1px solid #ccc',
-    };
-
-    const containerStyle = {
-        flexGrow: 1,
-        padding: '16px',
-        overflowY: 'auto',
+    const handleConversationClick = (conversationId) => {
+        const conversation = conversations.find(c => c.id === conversationId);
+        if (conversation) {
+            setCurrentConversation(conversation);
+        }
     };
 
     return (
-        <>
-            <Fab color="primary" style={fabStyle} onClick={handleToggleDialog}>
-                <Badge badgeContent={conversations.reduce((count, conv) => count + conv.messages.length, 0)} color="error">
-                    <ChatIcon />
-                </Badge>
-            </Fab>
-            <Dialog
-                open={dialogOpen}
-                onClose={handleToggleDialog}
-                maxWidth="lg"
-                fullWidth
-            >
-                <Box sx={dialogStyle}>
-                    <Box sx={sidebarStyle}>
-                        <Typography variant="h6" sx={{ padding: '16px' }}>Conversations</Typography>
-                        <List>
-                            {conversations.map((conv, index) => (
-                                <ListItem button key={index} onClick={() => handleSelectConversation(conv)}>
-                                    <ListItemText primary={`Conversation ${index + 1}`} secondary={`${conv.messages.length} messages`} />
-                                </ListItem>
-                            ))}
-                        </List>
+        <Box display="flex" flexDirection="column" height="100vh">
+            {isLoggedIn ? (
+                <>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" p={2} bgcolor="grey.300">
+                        <Typography variant="h6">Receptionist Chat</Typography>
+                        <IconButton>
+                            <CloseIcon />
+                        </IconButton>
                     </Box>
-                    <Box sx={containerStyle}>
-                        <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Typography variant="h6">Chat</Typography>
-                            <IconButton onClick={handleToggleDialog}>
-                                <CloseIcon />
-                            </IconButton>
-                        </Box>
-                        {currentConversation ? (
+                    <Box display="flex" flexGrow={1}>
+                        <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
+                            <Typography variant="h6">Conversations</Typography>
                             <Box>
-                                {currentConversation.messages.map((msg, index) => (
-                                    <Typography key={index} variant="body1">
-                                        <strong>{msg.from}:</strong> {msg.message}
-                                    </Typography>
+                                {conversations.map(conversation => (
+                                    <Box
+                                        key={conversation.id}
+                                        p={1}
+                                        bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
+                                        onClick={() => handleConversationClick(conversation.id)}
+                                    >
+                                        <Typography variant="body2">User: {conversation.userId}</Typography>
+                                    </Box>
                                 ))}
                             </Box>
-                        ) : (
-                            <Typography variant="body2">Select a conversation to view the chat</Typography>
-                        )}
-                        <Box mt={2}>
-                            <TextField
-                                fullWidth
-                                variant="outlined"
-                                placeholder="Type a message"
-                                value={inputMessage}
-                                onChange={(e) => setInputMessage(e.target.value)}
-                                onKeyPress={(e) => {
-                                    if (e.key === 'Enter') {
-                                        handleSendMessage();
-                                    }
-                                }}
-                            />
-                            <Button onClick={handleSendMessage} variant="contained" color="primary" fullWidth>
-                                Send
-                            </Button>
+                        </Box>
+                        <Box flexGrow={1} p={2} display="flex" flexDirection="column">
+                            {currentConversation ? (
+                                <>
+                                    <Box flexGrow={1} overflow="auto">
+                                        {currentConversation.messages.map((message, index) => (
+                                            <Box key={index} mb={1}>
+                                                <Typography variant="body2"><strong>{message.from}:</strong> {message.text}</Typography>
+                                                {message.image && <img src={message.image} alt="sent" width="100%" />}
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                    <Box display="flex" alignItems="center">
+                                        <TextField
+                                            fullWidth
+                                            variant="outlined"
+                                            value={inputMessage}
+                                            onChange={(e) => setInputMessage(e.target.value)}
+                                            placeholder="Type a message..."
+                                        />
+                                        <input
+                                            accept="image/*"
+                                            style={{ display: 'none' }}
+                                            id="icon-button-file"
+                                            type="file"
+                                            onChange={handleSelectImage}
+                                        />
+                                        <label htmlFor="icon-button-file">
+                                            <IconButton color="primary" aria-label="upload picture" component="span">
+                                                <ImageIcon />
+                                            </IconButton>
+                                        </label>
+                                        <Button color="primary" variant="contained" onClick={handleSendMessage}>
+                                            Send
+                                        </Button>
+                                    </Box>
+                                </>
+                            ) : (
+                                <Typography variant="body2">Select a conversation to start chatting</Typography>
+                            )}
                         </Box>
                     </Box>
-                </Box>
-            </Dialog>
-            <LoginForm 
-                show={showLogin} 
-                handleLogin={handleLogin} 
-                handleClose={handleCloseLogin} 
-            />
-        </>
+                </>
+            ) : (
+                <LoginForm onLogin={handleLogin} />
+            )}
+        </Box>
     );
 };
 
-export default ChatPopup_ForReceptionist;
+export default  Chatpopup_Forceptionist;

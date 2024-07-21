@@ -25,12 +25,12 @@ function App() {
       <Route path="/article/dashboard" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
         <Route path="list_blog" element={<ListBlog />} />
         <Route path="list_article" element={<ListArticle />} />
-        <Route path="/article/dashboard/add_blog" element={<Add_blog />} />
+        {/* <Route path="/article/dashboard/add_blog" element={<Add_blog />} /> */}
       </Route>
       {/*Receptionist*/}
-      <Route path="/receptionist/dashboard/" element={<ProtectedRoute requiredRole="Receptionist"><ReceptionistDash /></ProtectedRoute>}>
-        <Route path="create_patient_account" element={<CreatePatientAccount />} />
-      </Route>
+      {/* <Route path="/receptionist/dashboard/" element={<ProtectedRoute requiredRole="Receptionist"><ReceptionistDash /></ProtectedRoute>}> */}
+        {/* <Route path="create_patient_account" element={<CreatePatientAccount />} /> */}
+      {/* </Route> */}
 
     </Routes>
   );

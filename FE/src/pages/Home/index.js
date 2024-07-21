@@ -20,6 +20,7 @@ function Home() {
     <div>
       <Header />
       <NavBar />
+      {/* <ChatPopup/> */}
       <CarouselSlider></CarouselSlider>
       <DoctorList/>
       <Blog/>
