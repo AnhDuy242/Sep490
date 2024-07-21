@@ -1,7 +1,10 @@
 ﻿using AutoMapper;
+using BE.DTOs.MedicalNoteBookDro;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
 {
@@ -24,6 +27,13 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             m.TestResult = rs;
             await _context.SaveChangesAsync();
             return Ok(m);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllMedicalNotBook()
+        {
+            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).ToList();
+            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
         }
     }
 }
