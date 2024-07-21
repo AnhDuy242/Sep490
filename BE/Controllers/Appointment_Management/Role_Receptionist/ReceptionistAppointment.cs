@@ -1,7 +1,10 @@
-﻿using BE.Models;
+﻿using AutoMapper;
+using BE.DTOs.AppointmentDto;
+using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace BE.Controllers.Appointment
 {
@@ -10,12 +13,14 @@ namespace BE.Controllers.Appointment
     public class ReceptionistAppointment : ControllerBase
     {
         private readonly MedPalContext _context;
-        public ReceptionistAppointment(MedPalContext context) { _context = context; }
+        private readonly IMapper _mapper;
+        public ReceptionistAppointment(MedPalContext context, IMapper mapper) { _context = context; _mapper = mapper; }
 
         [HttpGet] 
         public async Task<IActionResult> GetAllAppointment()
         {
-            var list = _context.Appointments.ToList();
+            var appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).ToList();
+            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
             return Ok(list);
         }
         [HttpPut]
@@ -41,5 +46,6 @@ namespace BE.Controllers.Appointment
 
             return Ok("Appointment approved successfully.");
         }
+      
     }
 }
