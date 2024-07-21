@@ -15,6 +15,7 @@ import ReceptionistDash from '../src/pages/ReceptionistManagement';
 import CreatePatientAccount from '../src/pages/ReceptionistManagement/create_patient_account';
 import MedicalNotebook from '../src/pages/MedicalNotebook-patient';
 import ViewAllNotebooks from './pages/ReceptionistManagement/view_notebooks'
+import DoctorDash from './pages/DoctorManagement/doctormanagement';
 function App() {
   return (
     <Routes>
@@ -54,6 +55,9 @@ function App() {
         {/**Rout patient create appointment */}
         <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment /></ProtectedRoute>}>
 
+        </Route>
+         {/*Doctor*/}
+        <Route path="/doctor/dasboard" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
         </Route>
 
 
