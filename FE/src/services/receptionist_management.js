@@ -49,3 +49,43 @@ export const getAllPatients = async () => {
         return [];
     }
 };
+
+//hàm approve lịch khám 
+// ApproveAppointmentAPI.js
+
+// src/services/receptionist_management.js
+
+const BASE_URL = 'https://localhost:7240/api/ReceptionistAppointment';
+
+export const fetchAppointments = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/GetAllAppointment`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok ' + response.statusText);
+    }
+    const data = await response.json();
+    console.log('Fetched Appointments:', data); // Log the fetched data
+    if (!Array.isArray(data)) {
+      throw new Error('API response is not an array');
+    }
+    return data.$values;
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+    return [];
+  }
+};
+
+export const approveAppointment = async (appId, status) => {
+  try {
+    const response = await fetch(`${BASE_URL}/ApproveAppointment?appId=${appId}&status=${encodeURIComponent(status)}`, {
+      method: 'PUT',
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('There was a problem with the fetch operation:', error);
+  }
+};
+
