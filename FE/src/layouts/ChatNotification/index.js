@@ -13,13 +13,12 @@ const ChatPopup = () => {
     const [showLogin, setShowLogin] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showChat, setShowChat] = useState(false);
-    const [conversations, setConversations] = useState([]);
-    const [currentConversation, setCurrentConversation] = useState({ id: 'default', messages: [] });
+    const [availableReceptionists, setAvailableReceptionists] = useState([]);
+    const [currentConversation, setCurrentConversation] = useState({ id: '', messages: [] });
     const [inputMessage, setInputMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState('');
-    const [availableReceptionists, setAvailableReceptionists] = useState([]);
     const nameId = localStorage.getItem('nameId');
     const socketRef = useRef(null);
 
@@ -48,36 +47,22 @@ const ChatPopup = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        const nameId = localStorage.getItem('nameId');
         if (!nameId) {
             console.error('nameId not found in localStorage');
             return;
         }
         socketRef.current.emit('login', { token, nameId });
-        socketRef.current.on('availableReceptionists', (receptionists) => {
-            setAvailableReceptionists((prevReceptionists) => {
-                const receptionistSet = new Set([...prevReceptionists, ...receptionists]);
-                return Array.from(receptionistSet);
-            });
-        });
 
+        socketRef.current.on('availableReceptionists', (receptionists) => {
+            setAvailableReceptionists(receptionists);
+        });
 
         socketRef.current.on('connect', () => {
             socketRef.current.emit('getAvailableReceptionists');
         });
 
         socketRef.current.on('message', (message) => {
-            setConversations((prevConversations) => {
-                const updatedConversations = [...prevConversations];
-                const conversationIndex = updatedConversations.findIndex(c => c.id === message.roomId);
-                if (conversationIndex >= 0) {
-                    updatedConversations[conversationIndex].messages.push(message);
-                } else {
-                    updatedConversations.push({ id: message.roomId, messages: [message] });
-                }
-                return updatedConversations;
-            });
-
+            console.log('Received message:', message); // Debug log to check the received message
             if (message.roomId === currentConversation.id) {
                 setCurrentConversation((prevConversation) => ({
                     ...prevConversation,
@@ -85,7 +70,7 @@ const ChatPopup = () => {
                 }));
             }
         });
-
+        
         socketRef.current.on('disconnect', () => {
             console.log('Socket disconnected');
         });
@@ -94,6 +79,7 @@ const ChatPopup = () => {
     const handleToggleDialog = () => {
         setDialogOpen(!dialogOpen);
     };
+
     const handleSendMessage = () => {
         if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
             const message = {
@@ -101,13 +87,13 @@ const ChatPopup = () => {
                 image: selectedImage,
                 roomId: currentConversation.id
             };
-    
+
             // Include receiverId here
             socketRef.current.emit('message', {
-                receiverId: currentConversation.userId, // Ensure this is set correctly
+                receiverId: currentConversation.userId,
                 message
             });
-    
+
             setCurrentConversation((prevConversation) => ({
                 ...prevConversation,
                 messages: [...prevConversation.messages, { from: 'Me', ...message }]
@@ -116,7 +102,6 @@ const ChatPopup = () => {
             setSelectedImage(null);
         }
     };
-    
 
     const handleSelectImage = (event) => {
         const file = event.target.files[0];
@@ -161,6 +146,7 @@ const ChatPopup = () => {
         const roomId = `${[nameId, receptionistId].sort().join('_')}`;
         socketRef.current.emit('joinRoom', { receiverId: receptionistId });
         setCurrentConversation({ id: roomId, userId: receptionistId, messages: [] });
+        setShowChat(true);
     };
 
     return (
@@ -230,10 +216,7 @@ const ChatPopup = () => {
                                         {availableReceptionists.map((receptionist) => (
                                             <Button
                                                 key={receptionist}
-                                                onClick={() => {
-                                                    selectReceptionistAndJoinRoom(receptionist);
-                                                    setShowChat(true);
-                                                }}
+                                                onClick={() => selectReceptionistAndJoinRoom(receptionist)}
                                                 variant="contained"
                                                 color="primary"
                                                 fullWidth

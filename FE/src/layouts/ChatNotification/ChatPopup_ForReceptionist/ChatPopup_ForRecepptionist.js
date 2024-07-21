@@ -46,6 +46,7 @@ const Chatpopup_Forceptionist = () => {
         socketRef.current.emit('loginReceptionist', { token, nameId });
 
         socketRef.current.on('newConversation', ({ roomId, nameId }) => {
+            console.log('New conversation:', { roomId, nameId }); // Log new conversation
             setConversations((prevConversations) => [
                 ...prevConversations,
                 { id: roomId, userId: nameId, messages: [] }
@@ -53,6 +54,7 @@ const Chatpopup_Forceptionist = () => {
         });
 
         socketRef.current.on('message', (message) => {
+            console.log('Message received:', message); // Log tin nhắn nhận được
             setConversations((prevConversations) => {
                 const updatedConversations = [...prevConversations];
                 const conversationIndex = updatedConversations.findIndex(c => c.id === message.roomId);
@@ -61,17 +63,19 @@ const Chatpopup_Forceptionist = () => {
                 } else {
                     updatedConversations.push({ id: message.roomId, messages: [message] });
                 }
+                console.log('Updated conversations:', updatedConversations); // Log danh sách cuộc trò chuyện sau khi cập nhật
                 return updatedConversations;
             });
-        
+
             if (message.roomId === currentConversation?.id) {
                 setCurrentConversation((prevConversation) => ({
                     ...prevConversation,
                     messages: [...prevConversation.messages, message]
                 }));
+                console.log('Current conversation after update:', currentConversation); // Log cuộc trò chuyện hiện tại sau khi cập nhật
             }
         });
-        
+
 
         socketRef.current.on('disconnect', () => {
             console.log('Socket disconnected');
@@ -85,13 +89,14 @@ const Chatpopup_Forceptionist = () => {
                 image: selectedImage,
                 roomId: currentConversation.id
             };
-    
-            // Include receiverId here
+
+            console.log('Sending message:', { receiverId: currentConversation.userId, message }); // Log message before sending
+
             socketRef.current.emit('message', {
                 receiverId: currentConversation.userId, // Assuming userId is the receiverId
                 message
             });
-    
+
             setCurrentConversation((prevConversation) => ({
                 ...prevConversation,
                 messages: [...prevConversation.messages, { from: 'Me', ...message }]
@@ -100,7 +105,6 @@ const Chatpopup_Forceptionist = () => {
             setSelectedImage(null);
         }
     };
-    
 
     const handleSelectImage = (event) => {
         const file = event.target.files[0];
@@ -212,4 +216,4 @@ const Chatpopup_Forceptionist = () => {
     );
 };
 
-export default  Chatpopup_Forceptionist;
+export default Chatpopup_Forceptionist;
