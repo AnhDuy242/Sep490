@@ -89,17 +89,17 @@ const AppointmentApproval = () => {
                 <TableCell>
                   <Button
                     variant="contained"
-                    color={appointment.status === 'Approve' ? 'secondary' : 'primary'}
-                    onClick={() => handleStatusChangeClick(appointment, 'Approve')}
-                    disabled={appointment.status === 'Approve'}
+                    color={appointment.status === 'Đã Phê Duyệt' ? 'secondary' : 'primary'}
+                    onClick={() => handleStatusChangeClick(appointment, 'Phê Duyệt')}
+                    disabled={appointment.status === 'Phê Duyệt'}
                   >
                     Phê Duyệt
                   </Button>
                   <Button
                     variant="contained"
-                    color={appointment.status === 'Cancel' ? 'secondary' : 'primary'}
-                    onClick={() => handleStatusChangeClick(appointment, 'Cancel')}
-                    disabled={appointment.status === 'Cancel'}
+                    color={appointment.status === 'Đã Hủy' ? 'secondary' : 'primary'}
+                    onClick={() => handleStatusChangeClick(appointment, 'Hủy')}
+                    disabled={appointment.status === 'Hủy'}
                   >
                     Hủy
                   </Button>
