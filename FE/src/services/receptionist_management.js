@@ -49,3 +49,29 @@ export const getAllPatients = async () => {
         return [];
     }
 };
+//hàm get notebooks bệnh nhân
+export const getMedicalNotebooks = async () => {
+    const url = 'https://localhost:7240/api/ReceptionistMedicalNotebook/GetAllMedicalNotBook';
+
+    try {
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log('Fetched patients successfully:', result);
+
+        // Kiểm tra và trả về đúng định dạng
+        return result.$values ? result.$values : [];
+    } catch (error) {
+        console.error('Error fetching patients:', error);
+        return [];
+    }
+};

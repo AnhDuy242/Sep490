@@ -12,16 +12,23 @@ import MedicalNotebookForPatient from './pages/MedicalNotebook-patient'
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <Router>
-    <AuthProvider>
-      {/* <App /> */}
-      {/* <Sidebar /> */}
-      {/* <View_appointment /> */}
-      {/* <AdminDash /> */}
-      <MedicalNotebookForPatient/>
+    {/* <Router>
+    <AuthProvider> */}
+    {/* <App /> */}
+    {/* <Sidebar /> */}
+    {/* <View_appointment /> */}
+    {/* <AdminDash /> */}
+    {/* <MedicalNotebookForPatient/>
       </AuthProvider>
 
+    </Router> */}
+
+    <Router>
+      <AuthProvider>
+      <App />
+      </AuthProvider>
     </Router>
+
   </React.StrictMode>
 );
 

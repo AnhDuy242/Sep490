@@ -14,6 +14,7 @@ import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
 import ReceptionistDash from '../src/pages/ReceptionistManagement';
 import CreatePatientAccount from '../src/pages/ReceptionistManagement/create_patient_account';
 import MedicalNotebook from '../src/pages/MedicalNotebook-patient';
+import ViewAllNotebooks from './pages/ReceptionistManagement/view_notebooks'
 function App() {
   return (
     <Routes>
@@ -34,6 +35,7 @@ function App() {
       {/*Receptionist*/}
       <Route path="/receptionist/dashboard/" element={<ProtectedRoute requiredRole="Receptionist"><ReceptionistDash /></ProtectedRoute>}>
         <Route path="create_patient_account" element={<CreatePatientAccount />} />
+        <Route path="ViewAllPatientMedicalNotebooks" element={<ViewAllNotebooks />} />
       </Route>
       {/**Route article */}
       <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
