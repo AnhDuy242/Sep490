@@ -4,6 +4,8 @@ using BE.DTOs.AppointmentDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
 using BE.DTOs.ServiceDto;
+using BE.DTOs.MedicalNoteBookDro;
+using BE.DTOs.ScheduleDto;
 using BE.DTOs.SlotDto;
 using BE.Models;
 
@@ -44,5 +46,12 @@ public class MappingProfile : Profile
 
         CreateMap<Service, ServiceAppointment>().ReverseMap();
         CreateMap<Department, DepartmentAppointment>().ReverseMap();
+        //MedicalNotebook
+        CreateMap<MedicalNotebook, MedicalNotebookPatient>()
+            .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
+            .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doctor.Name))
+            .ReverseMap();
+        CreateMap<Schedule, ScheduleDoctor>()
+            .ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Doctor.Name)).ReverseMap();
     }
 }

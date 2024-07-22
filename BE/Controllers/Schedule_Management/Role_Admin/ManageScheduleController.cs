@@ -2,8 +2,6 @@
 using BE.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,7 +13,6 @@ namespace BE.Controllers.Admin
     {
         private readonly MedPalContext _context;
 
-        
         public ManageScheduleController(MedPalContext context)
         {
             _context = context;
@@ -28,7 +25,6 @@ namespace BE.Controllers.Admin
         {
             try
             {
-                
 
 
                 // Truy vấn để lấy các schedule có WeekId trong các tuần tìm được
@@ -96,6 +92,7 @@ namespace BE.Controllers.Admin
                 var schedules = new List<Schedule>();
                 DateTime currentDate = model.StartDate;
 
+                var listDateDuplicate = "";
                 while (currentDate <= model.EndDate)
                 {
                     int dayOfWeek = (int)currentDate.DayOfWeek; // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
@@ -106,21 +103,38 @@ namespace BE.Controllers.Admin
                         Afternoon = model.Afternoon[dayOfWeek],
                         Weekdays = currentDate.DayOfWeek.ToString(),
                         Date = currentDate,
-                        Appointments = model.Appointments
+                        Appointments = 0
                     };
-                    foreach(var s in existingSchedule)
+
+                    bool shouldContinue = false;
+                    foreach (var s in existingSchedule)
                     {
-                        if(s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
+                        if (s.DoctorId == schedule.DoctorId && s.Date == schedule.Date)
                         {
-                            continue;
+                            shouldContinue = true;
+                            listDateDuplicate += $"{s.Date},\n  ";
+                            break;
                         }
                     }
+
+                    if (shouldContinue)
+                    {
+                        currentDate = currentDate.AddDays(1);
+                        continue;
+                    }
+
                     schedules.Add(schedule);
                     currentDate = currentDate.AddDays(1);
                 }
 
                 await _context.Schedules.AddRangeAsync(schedules);
                 await _context.SaveChangesAsync();
+
+
+                if (!string.IsNullOrWhiteSpace(listDateDuplicate))
+                {
+                    return StatusCode(StatusCodes.Status302Found, $"Đã thêm mới các ngày khác thành công trừ những ngày dưới đây không được thêm vào do đã tồn tại: {listDateDuplicate}");
+                }
 
                 return CreatedAtAction(nameof(GetAllSchedulesByDoctorId), new { doctorId = model.DoctorId }, schedules);
             }
@@ -190,9 +204,9 @@ namespace BE.Controllers.Admin
                 }
                 else
                 {
-                    foreach(var s in schedules)
+                    foreach (var s in schedules)
                     {
-                       
+
                     }
                 }
                 _context.Schedules.Remove(schedule);
@@ -214,7 +228,7 @@ namespace BE.Controllers.Admin
                 _context.Appointments,
                 schedule => schedule.DoctorId,
                 appointment => appointment.DoctorId,
-                (schedule, appointment) => new { schedule, appointment}
+                (schedule, appointment) => new { schedule, appointment }
                 )
                 .Where(s => s.schedule.DoctorId == doctorId)
                 .ToList<object>();

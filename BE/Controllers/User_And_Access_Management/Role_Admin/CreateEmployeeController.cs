@@ -17,10 +17,11 @@ namespace BE.Controllers.User_And_Access_Management.Admin
         private readonly MedPalContext _context;
         private readonly ISMSService _smsService;
         private readonly IValidateService _validateService;
-        public CreateEmployeeController(ISMSService smsService, MedPalContext context, IValidateService validateService)
+        public CreateEmployeeController(ISMSService smsService, MedPalContext context, ValidateService validateService)
         {
             _smsService = smsService;
             _context = context;
+            _validateService = validateService;
             _validateService = validateService;
         }
         // GET: api/<EmployeeController>
@@ -49,7 +50,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             string password = _validateService.GenerateRandomPassword();
             string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
 
-
+    
 
             if (model.Role == "Doctor")
             {

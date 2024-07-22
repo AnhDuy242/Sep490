@@ -48,9 +48,7 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           navigate('/admin/dashboard/doctor-account', { replace: true });
         } else if (role === 'ArticleManager') {
           navigate('/article/dashboard', { replace: true });
-        } else if(role === 'Receptionist'){
-          navigate('/receptionist/dashboard/',{replace: true});
-        }else {
+        } else {
           navigate('/', { replace: true });
         }
       } catch (error) {
