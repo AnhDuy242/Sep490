@@ -52,9 +52,9 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
                         RoleId = accountDoctor.account.RoleId,
-                        DepId = department.DepId,
-                        // Các thuộc tính khác của Account
-                        DepartmentName = department.Name,
+                        //DepId = department.DepId,
+                        //// Các thuộc tính khác của Account
+                        //DepartmentName = department.Name,
                         IsActive = accountDoctor.account.IsActive
                     }
                 )
@@ -97,9 +97,9 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                         Gender = accountDoctor.doctor.Gender,
                         Age = accountDoctor.doctor.Age,
                         RoleId = accountDoctor.account.RoleId,
-                        DepId = department.DepId,
-                        // Các thuộc tính khác của Account
-                        DepartmentName = department.Name,
+                        //DepId = department.DepId,
+                        //// Các thuộc tính khác của Account
+                        //DepartmentName = department.Name,
                         IsActive = accountDoctor.account.IsActive
                     }
                 )
@@ -138,7 +138,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             doctor.Gender = model.Gender;
             doctor.Age = model.Age;
             doctor.IsActive = model.IsActive;
-            doctor.ServiceId = model.DepId;
+            //doctor.ServiceId = model.DepId;
 
             _context.Doctors.Update(doctor);
             _context.Accounts.Update(member);
@@ -155,7 +155,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                 Gender = doctor.Gender,
                 Age = doctor.Age,
                 RoleId = member.RoleId,
-                DepId = doctor.ServiceId,
+                //DepId = doctor.ServiceId,
                 // Các thuộc tính khác của Account
                 IsActive = member.IsActive
             };

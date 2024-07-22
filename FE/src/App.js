@@ -56,6 +56,9 @@ function App() {
       {/**Route patient view update delete appointment*/}
       <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment /></ProtectedRoute>}>
       </Route>
+      <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment/></ProtectedRoute>}>
+        
+        </Route>
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
 
