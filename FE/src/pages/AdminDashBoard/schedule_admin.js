@@ -105,16 +105,19 @@ function AddSchedule({ doctors, setSnackbar }) {
         let message;
         try {
           const data = JSON.parse(responseText);
-          message = data.message;
-          // Remove the time part from the dates
-          message = message.replace(/(\d+\/\d+\/\d+)\s\d+:\d+:\d+\s[APM]{2}/g, '$1');
+          if (Array.isArray(data.$values) && data.$values.every(item => item.appointments !== undefined)) {
+            // If response has the expected structure
+            message = 'Lịch làm việc đã được thêm mới thành công!';
+          } else {
+            message = 'Dữ liệu không đúng định dạng';
+          }
         } catch {
           message = responseText;
         }
         setSnackbar({
           open: true,
           message: message,
-          severity: 'warning',
+          severity: 'success',
         });
       } else if (response.ok) {
         setSnackbar({
