@@ -2,8 +2,6 @@
 using BE.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using NuGet.Protocol;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -134,10 +132,8 @@ namespace BE.Controllers.Admin
 
                 if (!string.IsNullOrWhiteSpace(listDateDuplicate))
                 {
-                    return StatusCode(StatusCodes.Status201Created, $"Những ngày dưới đây không được thêm vào do đã tồn tại: {listDateDuplicate}");
+                    return StatusCode(StatusCodes.Status302Found, $"Đã thêm mới các ngày khác thành công trừ những ngày dưới đây không được thêm vào do đã tồn tại: {listDateDuplicate}");
                 }
-
-
 
                 return CreatedAtAction(nameof(GetAllSchedulesByDoctorId), new { doctorId = model.DoctorId }, schedules);
             }
