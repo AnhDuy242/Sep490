@@ -3,6 +3,7 @@ using BE.DTOs.DoctorDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 
 namespace BE.Controllers.Marketing
@@ -22,19 +23,25 @@ namespace BE.Controllers.Marketing
         [HttpGet]
         public async Task<IActionResult> GetAllDoctor()
         {
-            var list = _context.Doctors.Where(x => x.IsActive == true).ToList();
-            var result = _mapper.Map<List<DoctorAppointment>>(list);
+            var listDoc = _context.Doctors.Include(x => x.Service).ThenInclude(x => x.Dep).Where(x => x.IsActive == true).ToList();
+            var result = _mapper.Map<List<DoctorMarketing>>(listDoc);
             return Ok(result);
         }
 
         [HttpGet]
         public async Task<IActionResult> GetDoctorDetailById(int id)
         {
-            var listDoc = _context.Doctors.Where(x => x.IsActive == true).Where(x => x.DocId == id).ToList();
+            var listDoc = _context.Doctors.Include(x => x.Service).ThenInclude(x => x.Dep).Where(x => x.IsActive == true).Where(x => x.DocId == id).ToList();
             var result = _mapper.Map<List<DoctorMarketing>>(listDoc);
             return Ok(result);
         }
 
-       
+        [HttpGet]
+        public async Task<IActionResult> GetService()
+        {
+            var list = _context.Doctors.Where(x => x.IsActive == true).ToList();
+            var result = _mapper.Map<List<DoctorAppointment>>(list);
+            return Ok(result);
+        }
     }
 }
