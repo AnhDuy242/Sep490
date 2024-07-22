@@ -95,7 +95,7 @@ const Navbar = () => {
             <MenuItem onClick={handleDropdownClose} component={NavLink} to="/category2">Category 2</MenuItem>
           </Menu>
           <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
-          <Button color="inherit" component={NavLink} to="/doctor">Đội ngũ bác sĩ</Button>
+          <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
           <Button color="inherit" component={NavLink} to="/contact">Liên hệ</Button>
           <Button color="inherit" component={NavLink} to="/get-started" >Bạn có biết?</Button>
           {isLoggedIn&& (
