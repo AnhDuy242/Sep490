@@ -49,20 +49,13 @@ export const fetchDoctorByService = async (seId) => {
 
 const bookAppoint = 'https://localhost:7240/api/PatientAppointment/BookAppointment';
 
-
-export const bookAppointment = (appointmentDto) => {
+export const bookAppointment = (appointmentData) => {
   return fetch(bookAppoint, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      patientId: appointmentDto.patientId,
-      doctorId: appointmentDto.doctorId,
-      date: appointmentDto.date,
-      slotId: appointmentDto.time, // Đây là slotId hay time, phụ thuộc vào yêu cầu của backend
-      note: appointmentDto.note
-    }),
+    body: JSON.stringify(appointmentData),
   })
   .then(response => {
     if (!response.ok) {
