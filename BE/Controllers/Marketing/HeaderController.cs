@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BE.DTOs.DoctorDto;
+using BE.DTOs.ServiceDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -40,7 +41,7 @@ namespace BE.Controllers.Marketing
         public async Task<IActionResult> GetService()
         {
             var list = _context.Services.Where(x => x.IsActive == true).ToList();
-            var result = _mapper.Map<List<DoctorAppointment>>(list);
+            var result = _mapper.Map<List<ServiceMarketing>>(list);
             return Ok(result);
         }
     }
