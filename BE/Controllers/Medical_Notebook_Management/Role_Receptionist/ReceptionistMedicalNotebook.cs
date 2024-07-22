@@ -56,5 +56,13 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
             return Ok(lists);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMedicalNoteBookByPatientId(int pid)
+        {
+            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Where(x => x.PatientId == pid).ToList();
+            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
+        }
     }
 }
