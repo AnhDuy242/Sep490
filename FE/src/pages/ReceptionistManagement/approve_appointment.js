@@ -65,7 +65,7 @@ const AppointmentApproval = () => {
 
   return (
     <Container>
-      <h1>Approve Appointments</h1>
+      <h1>Phê Duyệt Lịch Khám</h1>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
