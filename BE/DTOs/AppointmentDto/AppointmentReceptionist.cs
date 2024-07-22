@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace BE.DTOs.AppointmentDto
 {
-    public class AppointmentPatient
+    public class AppointmentReceptionist
     {
         public int Id { get; set; }
 
@@ -12,8 +12,6 @@ namespace BE.DTOs.AppointmentDto
 
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }
-        public int ServiceId { get; set; }
-        public string ServiceName { get; set; }
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateTime Date { get; set; }
 

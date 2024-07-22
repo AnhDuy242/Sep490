@@ -2,6 +2,7 @@
 using BE.DTOs.AppointmentDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
+using BE.DTOs.ServiceDto;
 using BE.DTOs.SlotDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +28,7 @@ namespace BE.Controllers.Appointment_Management
         [HttpGet]
         public async Task<IActionResult> GetAppointment(int pid)
         {
-            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Where(x => x.PatientId == pid).ToList();
+            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Include(x => x.Service).Where(x => x.PatientId == pid).ToList();
             var list = _mapper.Map<List<AppointmentPatient>>(appointments);
             return Ok(list);
         }
@@ -131,14 +132,40 @@ namespace BE.Controllers.Appointment_Management
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListDoctor()
+        public async Task<IActionResult> GetListDoctor(int seId)
         {
-            var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).ToList();
-            var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
-            return Ok(list);
+            if (seId == null)
+            {
+                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).ToList();
+                var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
+                return Ok(list);
+            }
+            else
+            {
+                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).Where(x => x.ServiceId == seId).ToList();
+                var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
+
+                return Ok(list);
+            }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetListService(int deId)
+        {
+            if (deId == null)
+            {
+                var listDoc = _alo2Context.Services.Where(x => x.IsActive == true).ToList();
+                var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
+                return Ok(list);
+            }
+            else
+            {
+                var listDoc = _alo2Context.Services.Where(x => x.IsActive == true).Where(x => x.DepId == deId).ToList();
+                var list = _mapper.Map<List<ServiceAppointment>>(listDoc);
 
+                return Ok(list);
+            }
+        }
         [HttpGet]
         public async Task<IActionResult> GetListDepartment()
         {
@@ -154,5 +181,23 @@ namespace BE.Controllers.Appointment_Management
             var list = _mapper.Map<List<SlotAppointment>>(listDe);
             return Ok(list);
         }
+        [HttpPut]
+        public async Task<IActionResult> CancelAppointment(int aid)
+        {
+            Models.Appointment app = _alo2Context.Appointments.FirstOrDefault(x => x.Id == aid);   
+            if(app.Status == "Đang chờ phê duyệt")
+            {
+                _alo2Context.Appointments.Remove(app);
+                await _alo2Context.SaveChangesAsync();
+            }
+            else if(app.Status == "Đã phê duyệt")
+            {
+                app.Status = "Đã hủy";
+                await _alo2Context.SaveChangesAsync();
+            }
+            return Ok(app);
+        }
+
+   
     }
 }

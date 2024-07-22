@@ -18,6 +18,7 @@ using BE.Service;
 using BE.Service.ImplService;
 //using BE.Hub;
 using BE;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,6 +58,11 @@ builder.Services.AddTransient<IValidateService, ValidateService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
 //builder.Services.AddTransient<IAccountService, AccountService>();
+//remider
+builder.Services.AddTransient<ReminderService>();
+
+builder.Services.AddHangfire(config => config.UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddHangfireServer();
 //auto mapper
 builder.Services.AddAutoMapper(typeof(Program));
 //otp service
@@ -144,5 +150,11 @@ app.UseAuthorization();
 
 app.MapControllers();
 //app.MapHub<ChatHub>("/chatHub");
+app.UseHangfireDashboard();
+app.UseHangfireServer();
+
+// Configure Hangfire job
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate<ReminderService>("send-reminders", service => service.CheckAppointments(), Cron.Daily);
 
 app.Run();

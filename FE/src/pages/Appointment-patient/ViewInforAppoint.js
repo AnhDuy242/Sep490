@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAppointments, updateAppointment, fetchDoctors, fetchSlots, deleteAppointment } from '../../services/AppointmentPatient';
+import { fetchAppointments, updateAppointment, fetchDoctors, fetchSlots, cancelAppointment } from '../../services/AppointmentPatient';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, Button, Snackbar } from '@mui/material';
 import './../../assets/css/GetAppointment.css';
 import EditIcon from '@mui/icons-material/Edit';
@@ -8,18 +8,18 @@ import Header from '../../layouts/Header';
 import Navbar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
 import { format, parse, compareDesc } from 'date-fns';
+import Alert from '@mui/material/Alert'; // Import Alert component
 
 const GetAppointment = () => {
     const [appointments, setAppointments] = useState([]);
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [doctors, setDoctors] = useState([]);
-    const [openEditDialog, setOpenEditDialog] = useState(false);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [open, setOpen] = useState(false);
+    const [slot, setSlot] = useState([]);
+    const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // Default severity for success
-
-    const [slot, setSlot] = useState([]);
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // Default to success (green)
 
     useEffect(() => {
         const accountId = localStorage.getItem('accountId');
@@ -74,21 +74,11 @@ const GetAppointment = () => {
             ...appointment,
             date: formatDate(appointment.date) // Convert date to ISO 8601 for input type date
         });
-        setOpenEditDialog(true);
+        setOpen(true);
     };
 
-    const handleDeleteClick = (appointmentId) => {
-        setSelectedAppointment({ id: appointmentId });
-        setOpenDeleteDialog(true);
-    };
-
-    const handleCloseEditDialog = () => {
-        setOpenEditDialog(false);
-        setSelectedAppointment(null);
-    };
-
-    const handleCloseDeleteDialog = () => {
-        setOpenDeleteDialog(false);
+    const handleClose = () => {
+        setOpen(false);
         setSelectedAppointment(null);
     };
 
@@ -119,58 +109,68 @@ const GetAppointment = () => {
                             console.error('Failed to fetch updated appointments:', error);
                         });
                 }
-                handleCloseEditDialog();
-                setSnackbarMessage('Cuộc hẹn đã được cập nhật thành công.');
-                setSnackbarSeverity('success');
-                setSnackbarOpen(true);
-                setTimeout(() => {
-                    setSnackbarOpen(false);
-                }, 6000); // Auto hide after 6 seconds
+                handleClose();
             } catch (error) {
                 console.error('Failed to update appointment:', error);
             }
         }
     };
 
+    const handleDeleteClick = async (appointmentId) => {
+        try {
+            setDeleteAppointmentId(appointmentId); // Set the appointment ID to delete
+        } catch (error) {
+            console.error('Failed to delete appointment:', error);
+        }
+    };
+
     const handleConfirmDelete = async () => {
-        if (selectedAppointment) {
-            try {
-                await deleteAppointment(selectedAppointment.id);
-                setSnackbarMessage('Cuộc hẹn đã được xóa thành công.');
-                setSnackbarSeverity('success');
-                setSnackbarOpen(true);
-                const accountId = localStorage.getItem('accountId');
-                if (accountId) {
-                    fetchAppointments(accountId)
-                        .then(data => {
-                            if (data && data.$values) {
-                                const sortedAppointments = data.$values.sort((a, b) => {
-                                    const dateA = parse(a.date, 'dd-MM-yyyy', new Date());
-                                    const dateB = parse(b.date, 'dd-MM-yyyy', new Date());
-                                    return compareDesc(dateA, dateB);
-                                });
-                                setAppointments(sortedAppointments);
-                            } else {
-                                setAppointments([]);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Failed to fetch updated appointments:', error);
-                        });
-                }
-                handleCloseDeleteDialog();
-                setTimeout(() => {
-                    setSnackbarOpen(false);
-                }, 3000); // Auto hide after 6 seconds
-            } catch (error) {
-                console.error('Failed to delete appointment:', error);
+        try {
+            await cancelAppointment(deleteAppointmentId);
+            setDeleteAppointmentId(null); // Reset delete appointment ID after deletion
+            const accountId = localStorage.getItem('accountId');
+            if (accountId) {
+                fetchAppointments(accountId)
+                    .then(data => {
+                        if (data && data.$values) {
+                            const sortedAppointments = data.$values.sort((a, b) => {
+                                const dateA = parse(a.date, 'dd-MM-yyyy', new Date());
+                                const dateB = parse(b.date, 'dd-MM-yyyy', new Date());
+                                return compareDesc(dateA, dateB);
+                            });
+                            setAppointments(sortedAppointments);
+                        } else {
+                            setAppointments([]);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Failed to fetch updated appointments:', error);
+                    });
             }
+            handleSnackbarOpen('Xóa cuộc hẹn thành công', 'success');
+        } catch (error) {
+            console.error('Failed to cancel appointment:', error);
+            handleSnackbarOpen('Xóa cuộc hẹn thất bại', 'error');
         }
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
         setSelectedAppointment({ ...selectedAppointment, [name]: value });
+    };
+
+    const handleDeleteConfirmationOpen = (appointmentId) => {
+        setDeleteAppointmentId(appointmentId);
+    };
+
+    const handleDeleteConfirmationClose = () => {
+        setDeleteAppointmentId(null);
+    };
+
+    const handleSnackbarOpen = (message, severity) => {
+        setSnackbarMessage(message);
+        setSnackbarSeverity(severity);
+        setSnackbarOpen(true);
     };
 
     const handleSnackbarClose = (event, reason) => {
@@ -190,7 +190,6 @@ const GetAppointment = () => {
                     <Table className="appointment-table" aria-label="Danh sách cuộc hẹn">
                         <TableHead>
                             <TableRow>
-                                <TableCell><strong>Tên bệnh nhân</strong></TableCell>
                                 <TableCell><strong>Thời gian</strong></TableCell>
                                 <TableCell><strong>Ngày</strong></TableCell>
                                 <TableCell><strong>Bác sĩ</strong></TableCell>
@@ -203,7 +202,6 @@ const GetAppointment = () => {
                             {appointments.length > 0 ? (
                                 appointments.map(appointment => (
                                     <TableRow key={appointment.id}>
-                                        <TableCell>{appointment.patientName}</TableCell>
                                         <TableCell>{appointment.time}</TableCell>
                                         <TableCell>{appointment.date}</TableCell>
                                         <TableCell>{appointment.doctorName}</TableCell>
@@ -213,7 +211,7 @@ const GetAppointment = () => {
                                             <IconButton title="Chỉnh sửa" color="primary" onClick={() => handleEditClick(appointment)}>
                                                 <EditIcon />
                                             </IconButton>
-                                            <IconButton title="Xóa lịch hẹn" sx={{ color: '#ff0000' }} onClick={() => handleDeleteClick(appointment.id)}>
+                                            <IconButton title="Xóa lịch hẹn" sx={{ color: '#ff0000' }} onClick={() => handleDeleteConfirmationOpen(appointment.id)}>
                                                 <DeleteIcon />
                                             </IconButton>
                                         </TableCell>
@@ -227,24 +225,8 @@ const GetAppointment = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
-                <Snackbar
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'left',
-                    }}
-                    open={snackbarOpen}
-                    autoHideDuration={6000}
-                    onClose={handleSnackbarClose}
-                    message={snackbarMessage}
-                    ContentProps={{
-                        style: {
-                            backgroundColor: snackbarSeverity === 'success' ? '#4CAF50' : '#f44336',
-                            color: '#FFFFFF',
-                        },
-                    }}
-                />
                 {selectedAppointment && (
-                    <Dialog open={openEditDialog} onClose={handleCloseEditDialog} fullWidth maxWidth="sm">
+                    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
                         <DialogTitle>Chỉnh sửa cuộc hẹn</DialogTitle>
                         <DialogContent>
                             <TextField
@@ -284,23 +266,37 @@ const GetAppointment = () => {
                             </Select>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={handleCloseEditDialog} color="primary">Hủy</Button>
+                            <Button onClick={handleClose} color="primary">Hủy</Button>
                             <Button onClick={handleSave} color="primary">Lưu</Button>
                         </DialogActions>
                     </Dialog>
                 )}
-                {selectedAppointment && (
-                    <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog} fullWidth maxWidth="sm">
-                        <DialogTitle>Xóa cuộc hẹn</DialogTitle>
-                        <DialogContent>
-                            <p>Bạn có chắc chắn muốn xóa cuộc hẹn này?</p>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleCloseDeleteDialog} color="primary">Không</Button>
-                            <Button onClick={handleConfirmDelete} style={{ backgroundColor: '#f44336', color: '#FFFFFF' }}>Xóa</Button>
-                        </DialogActions>
-                    </Dialog>
-                )}
+                <Dialog
+                    open={!!deleteAppointmentId}
+                    onClose={handleDeleteConfirmationClose}
+                    aria-labelledby="alert-dialog-title"
+                    aria-describedby="alert-dialog-description"
+                >
+                    <DialogTitle id="alert-dialog-title">Xác nhận xóa cuộc hẹn</DialogTitle>
+                    <DialogActions>
+                        <Button onClick={handleDeleteConfirmationClose} color="primary">
+                            Hủy
+                        </Button>
+                        <Button onClick={handleConfirmDelete} color="primary" autoFocus>
+                            Đồng ý
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+                <Snackbar
+                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+                    open={snackbarOpen}
+                    autoHideDuration={3000} // 3 seconds
+                    onClose={handleSnackbarClose}
+                >
+                    <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+                        {snackbarMessage}
+                    </Alert>
+                </Snackbar>
             </div>
             <Footer />
         </>

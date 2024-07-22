@@ -24,28 +24,19 @@ namespace BE.Controllers.Appointment
             return Ok(list);
         }
         [HttpPut]
-        public async Task<IActionResult> ApproveAppointment(int appId, string status)
+        public async Task<IActionResult> ApproveAppointment(int appId)
         {
-            var appointment = await _context.Appointments.FindAsync(appId);
-
-            if (appointment == null)
-            {
-                return NotFound("Appointment not found.");
-            }
-
-            appointment.Status = status;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException ex)
-            {
-                return StatusCode(500, $"Internal server error: {ex.Message}");
-            }
-
+            var appointment =  _context.Appointments.FirstOrDefault(x => x.Id == appId);
+            appointment.Status = "Đã phê duyệt";
+            await _context.SaveChangesAsync();
             return Ok("Appointment approved successfully.");
         }
-      
+        [HttpDelete]
+        public async Task<IActionResult> CancelAppointment(int appId)
+        {
+            var appointment = _context.Appointments.FirstOrDefault(x => x.Id == appId);          
+             _context.Appointments.Remove(appointment);
+            return Ok("Appointment cancel successfully.");
+        }
     }
 }

@@ -65,6 +65,7 @@ namespace BE.Controllers.Admin
                 // Tìm schedule theo id
                 var schedule = await _context.Schedules
                     .Include(s => s.Doctor)
+             
                     .FirstOrDefaultAsync(s => s.Id == id);
 
                 if (schedule == null)
@@ -154,6 +155,7 @@ namespace BE.Controllers.Admin
                 existingSchedule.Afternoon = model.Afternoon;
                 existingSchedule.Weekdays = model.Weekdays;
                 existingSchedule.Date = model.Date;
+            
                 existingSchedule.Appointments = model.Appointments;
 
                 _context.Schedules.Update(existingSchedule);

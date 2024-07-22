@@ -1,10 +1,11 @@
 ﻿using BE.DTOs;
+using BE.Service.IService;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;
 using MimeKit;
 
-namespace BE.Service.IService
+namespace BE.Service.ImplService
 {
     public class EmailService : IEmailService
     {
