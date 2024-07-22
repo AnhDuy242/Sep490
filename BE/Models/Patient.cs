@@ -17,6 +17,8 @@ public partial class Patient
 
     public bool? IsActive { get; set; }
 
+    public int? Check { get; set; }
+
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     public virtual ICollection<Feedback> Feedbacks { get; set; } = new List<Feedback>();

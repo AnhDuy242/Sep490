@@ -21,6 +21,8 @@ public partial class Question
 
     public string? Answer { get; set; }
 
+    public virtual Department? Dep { get; set; }
+
     public virtual Doctor? Doc { get; set; }
 
     public virtual Patient Patient { get; set; } = null!;

@@ -19,9 +19,15 @@ namespace BE.Controllers.Question_Management.Role_Patient
         }
 
         [HttpPost] 
-        public async Task<IActionResult> CreateQuestion()
+        public async Task<IActionResult> CreateQuestion(int pid, string question, int depId)
         {
-            return BadRequest();
+           var q = new Question()
+           {
+               PatientId = pid,
+               QuesDate = DateTime.Now,
+               DepId = depId,
+               Question1 = question
+           };
         }
     }
 }
