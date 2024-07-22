@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Typography, TextField, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Checkbox, IconButton, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle
+  Typography, TextField, Button, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, Paper, Checkbox, IconButton, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Snackbar, Alert
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { loadBlogs, deleteBlog, addBlog } from '../../services/blog_service';
@@ -26,6 +26,8 @@ const BlogTable = () => {
     thumbnail: '',
   });
   const [validationError, setValidationError] = useState('');
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   // Search and store in array
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,7 +45,9 @@ const BlogTable = () => {
       const updatedBlogs = blogs.filter((blog) => blog.blogid !== deleteBlogId);
       setBlogs(updatedBlogs);
       handleCloseDeleteDialog();
-      window.location.reload();
+      setSnackbarMessage('Blog deleted successfully.');
+      setSnackbarOpen(true);
+      window.location.reload()
     } catch (error) {
       console.error('Error deleting blog:', error);
     }
@@ -77,28 +81,26 @@ const BlogTable = () => {
   };
 
   // Add a blog
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const navigateAdd = () => {
     navigate('/article/dashboard/add_blog');
-  }
+  };
   const handleAddBlog = async () => {
     if (!newBlog.title || !newBlog.author || !newBlog.content || !newBlog.date || !newBlog.thumbnail || !newBlog.doctorid) {
       setValidationError('All fields are required.');
       return;
     }
-  
+
     try {
       const addedBlog = await addBlog(newBlog);
       setBlogs([...blogs, addedBlog]);
       handleCloseAddDialog();
-  
-      // Chuyển hướng người dùng sang một URL mới sau khi thêm blog thành công
-      window.location.href = '/add_blog'; // Đường dẫn bạn mong muốn
+      setSnackbarMessage('Blog added successfully.');
+      setSnackbarOpen(true);
     } catch (error) {
       console.error('Error adding blog:', error);
     }
   };
-  
 
   // Handle checkbox change
   const handleCheckboxChange = (id) => {
@@ -126,6 +128,8 @@ const BlogTable = () => {
       setBlogs(updatedBlogs);
       setSelectedBlogs([]);
       handleCloseMultipleDeleteDialog();
+      setSnackbarMessage('Selected blogs deleted successfully.');
+      setSnackbarOpen(true);
     } catch (error) {
       console.error('Error deleting blogs:', error);
     }
@@ -140,6 +144,10 @@ const BlogTable = () => {
         blog.author.toLowerCase().includes(value.toLowerCase())
       ).slice(0, 5); // Limit displayed results
     setFilteredBlogs(filtered);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
   };
 
   if (loading) return <CircularProgress />;
@@ -163,9 +171,9 @@ const BlogTable = () => {
           />
         )}
       />
-     <Button className="btn_add" variant="contained" component="a" onClick={navigateAdd}>
-  Add Blog
-</Button>
+      <Button className="btn_add" variant="contained" component="a" onClick={navigateAdd}>
+        Add Blog
+      </Button>
 
       <Button
         className="btn_delete"
@@ -188,11 +196,11 @@ const BlogTable = () => {
           </TableHead>
           <TableBody>
             {(searchQuery ? filteredBlogs : blogs).map((blog) => (
-              <TableRow key={blog.blogId}>
+              <TableRow key={blog.blogid}>
                 <TableCell>
                   <Checkbox
-                    checked={selectedBlogs.includes(blog.blogId)}
-                    onChange={() => handleCheckboxChange(blog.blogId)}
+                    checked={selectedBlogs.includes(blog.blogid)}
+                    onChange={() => handleCheckboxChange(blog.blogid)}
                   />
                 </TableCell>
                 <TableCell>{blog.title}</TableCell>
@@ -296,7 +304,7 @@ const BlogTable = () => {
           <TextField
             margin="dense"
             id="author"
-            label="AuthorId"
+            label="Author"
             type="text"
             fullWidth
             value={newBlog.author}
@@ -352,6 +360,15 @@ const BlogTable = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert onClose={handleCloseSnackbar} severity="success">
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

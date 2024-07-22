@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using BE.Models;
 using BE.DTOs;
 using BE.Models.DTOs;
+using Microsoft.IdentityModel.Tokens;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -64,24 +65,27 @@ namespace BE.Controllers.Article_Manager
                 var uploadResults = new List<string>();
 
                 // Upload images to Cloudinary and collect URLs
-                foreach (var file in model.Files)
+                if(model.Files != null)
                 {
-                    if (file.Length > 0)
+                    foreach (var file in model.Files)
                     {
-                        using var stream = file.OpenReadStream();
-                        var uploadParams = new ImageUploadParams()
+                        if (file.Length > 0)
                         {
-                            /*phải cập nhật thêm, bằng cách lấy token của article_manager để đưa vào thư mục
-                             ví dụ article_manager với a_id = 4 thì hãy lấy giá trị của a_id đưa vào sau tên thư mục
-                            cụ thể đường dẫn có thể là $"Home/Image/BlogImage_{a_id}/{file.FileName}"
-                             để tránh bị trùng lặp ảnh của article manager khác 
-                             
-                             */
-                            File = new FileDescription(file.FileName, stream),
-                            PublicId = $"Home/Image/BlogImage/{file.FileName}"
-                        };
-                        var uploadResult = await _cloudinary.UploadAsync(uploadParams);
-                        uploadResults.Add(uploadResult.SecureUrl.ToString());
+                            using var stream = file.OpenReadStream();
+                            var uploadParams = new ImageUploadParams()
+                            {
+                                /*phải cập nhật thêm, bằng cách lấy token của article_manager để đưa vào thư mục
+                                 ví dụ article_manager với a_id = 4 thì hãy lấy giá trị của a_id đưa vào sau tên thư mục
+                                cụ thể đường dẫn có thể là $"Home/Image/BlogImage_{a_id}/{file.FileName}"
+                                 để tránh bị trùng lặp ảnh của article manager khác 
+
+                                 */
+                                File = new FileDescription(file.FileName, stream),
+                                PublicId = $"Home/Image/BlogImage/{file.FileName}"
+                            };
+                            var uploadResult = await _cloudinary.UploadAsync(uploadParams);
+                            uploadResults.Add(uploadResult.SecureUrl.ToString());
+                        }
                     }
                 }
 
@@ -92,7 +96,7 @@ namespace BE.Controllers.Article_Manager
                     DocId = model.DoctorId,
                     Content = model.Content,
                     Date = DateTime.Now,
-                    Thumbnail = uploadResults.FirstOrDefault(), // Assign the first uploaded image as thumbnail
+                    Thumbnail = uploadResults.IsNullOrEmpty() ? "" : uploadResults.FirstOrDefault(), // Assign the first uploaded image as thumbnail
                     AId = model.AuthorId
                 };
 

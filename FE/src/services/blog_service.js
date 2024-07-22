@@ -1,4 +1,5 @@
 // blog_service.js
+import axios from 'axios';
 
 // Hàm để gọi API lấy danh sách bác sĩ
 export const fetchBlogs = async () => {
@@ -66,3 +67,21 @@ export const fetchBlogs = async () => {
   //     throw new Error(`Error uploading image: ${error.message}`);
   //   }
   // };
+
+  // blogApi.js
+
+const API_URL = 'https://localhost:7240/api/Blog';
+
+export const createBlog = async (formData) => {
+  try {
+    const response = await axios.post(API_URL, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error creating blog:', error);
+    throw error;
+  }
+};

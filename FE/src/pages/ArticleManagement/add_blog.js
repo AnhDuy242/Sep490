@@ -1,151 +1,154 @@
+// AddBlog.js
 import React, { useState } from 'react';
 import {
-  Typography, TextField, Button, Paper, Container, CssBaseline, Grid
+  Button,
+  TextField,
+  Grid,
+  Typography,
+  Container,
+  Box,
+  Snackbar,
+  Alert,
 } from '@mui/material';
-import { addBlog } from './../../services/blog_service'; // Adjust the path if necessary
+import { createBlog } from '../../services/blog_service';
 
 const AddBlog = () => {
-  const [newBlog, setNewBlog] = useState({
-    aId: '',
-    title: '',
-    docId: '',
-    content: '',
-    thumbnail: '',
-    wordFile: null,
-  });
-  const [validationError, setValidationError] = useState('');
-  const [loading, setLoading] = useState(false); // State to manage loading status
+  const [title, setTitle] = useState('');
+  const [doctorId, setDoctorId] = useState('');
+  const [authorId, setAuthorId] = useState('');
+  const [content, setContent] = useState('');
+  const [files, setFiles] = useState([]);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
   const handleFileChange = (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      setNewBlog({ ...newBlog, wordFile: file });
+    setFiles(event.target.files);
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append('Title', title);
+    formData.append('DoctorId', doctorId);
+    formData.append('AuthorId', authorId);
+    formData.append('Content', content);
+    Array.from(files).forEach((file) => {
+      formData.append('Files', file);
+    });
+
+    try {
+      const response = await createBlog(formData);
+      setSnackbarMessage(response.message);
+      setSnackbarSeverity('success');
+    } catch (error) {
+      setSnackbarMessage('Failed to create blog');
+      setSnackbarSeverity('error');
+    } finally {
+      setSnackbarOpen(true);
     }
   };
 
-  const handleAddBlog = async () => {
-    // if (!newBlog.title || !newBlog.aId || !newBlog.docId || !newBlog.content) {
-    //   setValidationError('All fields are required.');
-    //   return;
-    // }
-
-    const formData = new FormData();
-    formData.append('aId', newBlog.aId);
-    formData.append('title', newBlog.title);
-    formData.append('docId', newBlog.docId);
-    formData.append('content', newBlog.content);
-    formData.append('thumbnail', newBlog.thumbnail);
-    if (newBlog.wordFile) {
-      formData.append('wordFile', newBlog.wordFile);
-    }
-
-    try {
-      await addBlog(formData);
-      alert('Blog added successfully');
-      setNewBlog({
-        aId: '',
-        title: '',
-        docId: '',
-        content: '',
-        thumbnail: '',
-        wordFile: null,
-      });
-      setValidationError('');
-    } catch (error) {
-      console.error('Error adding blog:', error);
-      setValidationError('Failed to add blog. Please try again.');
-    }
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false);
   };
 
   return (
-    <Container component="main" maxWidth="sm">
-      <CssBaseline />
-      <Paper style={{ padding: '20px', marginTop: '20px' }}>
-        <Typography component="h1" variant="h5">Add a New Blog</Typography>
-        {validationError && (
-          <Typography color="error" variant="body2">{validationError}</Typography>
-        )}
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              id="aId"
-              label="Author ID"
-              name="aId"
-              value={newBlog.aId}
-              onChange={(e) => setNewBlog({ ...newBlog, aId: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              id="docId"
-              label="Doctor ID"
-              name="docId"
-              value={newBlog.docId}
-              onChange={(e) => setNewBlog({ ...newBlog, docId: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              variant="outlined"
-              required
-              fullWidth
-              id="title"
-              label="Title"
-              name="title"
-              value={newBlog.title}
-              onChange={(e) => setNewBlog({ ...newBlog, title: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              variant="outlined"
-              // required
-              fullWidth
-              id="content"
-              label="Content"
-              name="content"
-              multiline
-              rows={4}
-              value={newBlog.content}
-              onChange={(e) => setNewBlog({ ...newBlog, content: e.target.value })}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              component="label"
-              fullWidth
-            >
-              Upload Word File
-              <input
-                type="file"
-                accept=".doc, .docx"
-                hidden
-                onChange={handleFileChange}
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Typography component="h1" variant="h5">
+          Create Blog
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                name="title"
+                required
+                fullWidth
+                id="title"
+                label="Title"
+                autoFocus
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
               />
-            </Button>
-            {newBlog.wordFile && (
-              <Typography>{newBlog.wordFile.name}</Typography>
-            )}
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="doctorId"
+                required
+                fullWidth
+                id="doctorId"
+                label="Doctor ID"
+                value={doctorId}
+                onChange={(e) => setDoctorId(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="authorId"
+                required
+                fullWidth
+                id="authorId"
+                label="Author ID"
+                value={authorId}
+                onChange={(e) => setAuthorId(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                name="content"
+                required
+                fullWidth
+                id="content"
+                label="Content"
+                multiline
+                rows={4}
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button
+                variant="contained"
+                component="label"
+              >
+                Upload Files
+                <input
+                  type="file"
+                  hidden
+                  multiple
+                  onChange={handleFileChange}
+                />
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              color="primary"
-              fullWidth
-              onClick={handleAddBlog}
-            >
-              Add Blog
-            </Button>
-          </Grid>
-        </Grid>
-      </Paper>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 3, mb: 2 }}
+          >
+            Submit
+          </Button>
+        </Box>
+      </Box>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleSnackbarClose}
+      >
+        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
