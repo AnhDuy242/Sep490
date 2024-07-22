@@ -10,12 +10,12 @@
 
         public int Age { get; set; }
 
-        public int ServiceId { get; set; }
-
-        public string ServiceName { get; set; }
-        public string DepartmentName { get; set; }
-
         public bool? IsActive { get; set; }
 
+        public string? Img { get; set; }
+
+        public string? Description { get; set; }
+        public string AllServiceName { get; set; }
+        public string AllDepartmentName { get; set; }
     }
 }

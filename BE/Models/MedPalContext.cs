@@ -19,11 +19,15 @@ public partial class MedPalContext : DbContext
 
     public virtual DbSet<Admin> Admins { get; set; }
 
+    public virtual DbSet<AggregatedCounter> AggregatedCounters { get; set; }
+
     public virtual DbSet<Appointment> Appointments { get; set; }
 
     public virtual DbSet<ArticleManager> ArticleManagers { get; set; }
 
     public virtual DbSet<Blog> Blogs { get; set; }
+
+    public virtual DbSet<Counter> Counters { get; set; }
 
     public virtual DbSet<Department> Departments { get; set; }
 
@@ -33,7 +37,17 @@ public partial class MedPalContext : DbContext
 
     public virtual DbSet<FeedbackRe> FeedbackRes { get; set; }
 
+    public virtual DbSet<Hash> Hashes { get; set; }
+
     public virtual DbSet<Img> Imgs { get; set; }
+
+    public virtual DbSet<Job> Jobs { get; set; }
+
+    public virtual DbSet<JobParameter> JobParameters { get; set; }
+
+    public virtual DbSet<JobQueue> JobQueues { get; set; }
+
+    public virtual DbSet<List> Lists { get; set; }
 
     public virtual DbSet<MedicalNotebook> MedicalNotebooks { get; set; }
 
@@ -47,9 +61,19 @@ public partial class MedPalContext : DbContext
 
     public virtual DbSet<Schedule> Schedules { get; set; }
 
+    public virtual DbSet<Schema> Schemas { get; set; }
+
+    public virtual DbSet<Server> Servers { get; set; }
+
     public virtual DbSet<Service> Services { get; set; }
 
+    public virtual DbSet<Set> Sets { get; set; }
+
     public virtual DbSet<Slot> Slots { get; set; }
+
+    public virtual DbSet<State> States { get; set; }
+
+    public virtual DbSet<TestResult> TestResults { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -58,7 +82,6 @@ public partial class MedPalContext : DbContext
             var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
             optionsBuilder.UseSqlServer(ConnectionString);
         }
-
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -110,6 +133,18 @@ public partial class MedPalContext : DbContext
                 .HasForeignKey<Admin>(d => d.AdminId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Admin_Account");
+        });
+
+        modelBuilder.Entity<AggregatedCounter>(entity =>
+        {
+            entity.HasKey(e => e.Key).HasName("PK_HangFire_CounterAggregated");
+
+            entity.ToTable("AggregatedCounter", "HangFire");
+
+            entity.HasIndex(e => e.ExpireAt, "IX_HangFire_AggregatedCounter_ExpireAt").HasFilter("([ExpireAt] IS NOT NULL)");
+
+            entity.Property(e => e.Key).HasMaxLength(100);
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
         });
 
         modelBuilder.Entity<Appointment>(entity =>
@@ -195,6 +230,17 @@ public partial class MedPalContext : DbContext
                 .HasConstraintName("FK_Blog_Doctor");
         });
 
+        modelBuilder.Entity<Counter>(entity =>
+        {
+            entity.HasKey(e => new { e.Key, e.Id }).HasName("PK_HangFire_Counter");
+
+            entity.ToTable("Counter", "HangFire");
+
+            entity.Property(e => e.Key).HasMaxLength(100);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Department>(entity =>
         {
             entity.HasKey(e => e.DepId);
@@ -216,22 +262,41 @@ public partial class MedPalContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("doc_id");
             entity.Property(e => e.Age).HasColumnName("age");
+            entity.Property(e => e.Description)
+                .IsUnicode(false)
+                .HasColumnName("description");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)
                 .HasColumnName("gender");
+            entity.Property(e => e.Img)
+                .IsUnicode(false)
+                .HasColumnName("img");
             entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
-            entity.Property(e => e.ServiceId).HasColumnName("service_id");
 
             entity.HasOne(d => d.Doc).WithOne(p => p.Doctor)
                 .HasForeignKey<Doctor>(d => d.DocId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Doctor_Account");
 
-            entity.HasOne(d => d.Service).WithMany(p => p.Doctors)
-                .HasForeignKey(d => d.ServiceId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Doctor_Service");
+            entity.HasMany(d => d.Services).WithMany(p => p.Docs)
+                .UsingEntity<Dictionary<string, object>>(
+                    "DoctorService",
+                    r => r.HasOne<Service>().WithMany()
+                        .HasForeignKey("ServiceId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_DoctorService_Service"),
+                    l => l.HasOne<Doctor>().WithMany()
+                        .HasForeignKey("DocId")
+                        .OnDelete(DeleteBehavior.ClientSetNull)
+                        .HasConstraintName("FK_DoctorService_Doctor"),
+                    j =>
+                    {
+                        j.HasKey("DocId", "ServiceId");
+                        j.ToTable("DoctorService");
+                        j.IndexerProperty<int>("DocId").HasColumnName("doc_id");
+                        j.IndexerProperty<int>("ServiceId").HasColumnName("service_id");
+                    });
         });
 
         modelBuilder.Entity<Feedback>(entity =>
@@ -281,6 +346,18 @@ public partial class MedPalContext : DbContext
                 .HasConstraintName("FK_Feedback_res_Receprionist");
         });
 
+        modelBuilder.Entity<Hash>(entity =>
+        {
+            entity.HasKey(e => new { e.Key, e.Field }).HasName("PK_HangFire_Hash");
+
+            entity.ToTable("Hash", "HangFire");
+
+            entity.HasIndex(e => e.ExpireAt, "IX_HangFire_Hash_ExpireAt").HasFilter("([ExpireAt] IS NOT NULL)");
+
+            entity.Property(e => e.Key).HasMaxLength(100);
+            entity.Property(e => e.Field).HasMaxLength(100);
+        });
+
         modelBuilder.Entity<Img>(entity =>
         {
             entity.ToTable("Img");
@@ -296,18 +373,70 @@ public partial class MedPalContext : DbContext
                 .HasConstraintName("FK_Img_Blog");
         });
 
+        modelBuilder.Entity<Job>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_HangFire_Job");
+
+            entity.ToTable("Job", "HangFire");
+
+            entity.HasIndex(e => e.ExpireAt, "IX_HangFire_Job_ExpireAt").HasFilter("([ExpireAt] IS NOT NULL)");
+
+            entity.HasIndex(e => e.StateName, "IX_HangFire_Job_StateName").HasFilter("([StateName] IS NOT NULL)");
+
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
+            entity.Property(e => e.StateName).HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<JobParameter>(entity =>
+        {
+            entity.HasKey(e => new { e.JobId, e.Name }).HasName("PK_HangFire_JobParameter");
+
+            entity.ToTable("JobParameter", "HangFire");
+
+            entity.Property(e => e.Name).HasMaxLength(40);
+
+            entity.HasOne(d => d.Job).WithMany(p => p.JobParameters)
+                .HasForeignKey(d => d.JobId)
+                .HasConstraintName("FK_HangFire_JobParameter_Job");
+        });
+
+        modelBuilder.Entity<JobQueue>(entity =>
+        {
+            entity.HasKey(e => new { e.Queue, e.Id }).HasName("PK_HangFire_JobQueue");
+
+            entity.ToTable("JobQueue", "HangFire");
+
+            entity.Property(e => e.Queue).HasMaxLength(50);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.FetchedAt).HasColumnType("datetime");
+        });
+
+        modelBuilder.Entity<List>(entity =>
+        {
+            entity.HasKey(e => new { e.Key, e.Id }).HasName("PK_HangFire_List");
+
+            entity.ToTable("List", "HangFire");
+
+            entity.HasIndex(e => e.ExpireAt, "IX_HangFire_List_ExpireAt").HasFilter("([ExpireAt] IS NOT NULL)");
+
+            entity.Property(e => e.Key).HasMaxLength(100);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<MedicalNotebook>(entity =>
         {
             entity.ToTable("Medical_notebook");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.DateCreate)
+                .HasColumnType("date")
+                .HasColumnName("date_create");
             entity.Property(e => e.Diagnostic).HasColumnName("diagnostic");
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
             entity.Property(e => e.Prescription).HasColumnName("prescription");
-            entity.Property(e => e.TestResult)
-                .IsUnicode(false)
-                .HasColumnName("test_result");
 
             entity.HasOne(d => d.Doctor).WithMany(p => p.MedicalNotebooks)
                 .HasForeignKey(d => d.DoctorId)
@@ -425,6 +554,27 @@ public partial class MedPalContext : DbContext
                 .HasConstraintName("FK_Schedule_Doctor");
         });
 
+        modelBuilder.Entity<Schema>(entity =>
+        {
+            entity.HasKey(e => e.Version).HasName("PK_HangFire_Schema");
+
+            entity.ToTable("Schema", "HangFire");
+
+            entity.Property(e => e.Version).ValueGeneratedNever();
+        });
+
+        modelBuilder.Entity<Server>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK_HangFire_Server");
+
+            entity.ToTable("Server", "HangFire");
+
+            entity.HasIndex(e => e.LastHeartbeat, "IX_HangFire_Server_LastHeartbeat");
+
+            entity.Property(e => e.Id).HasMaxLength(200);
+            entity.Property(e => e.LastHeartbeat).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Service>(entity =>
         {
             entity.ToTable("Service");
@@ -443,6 +593,21 @@ public partial class MedPalContext : DbContext
                 .HasConstraintName("FK_Service_Department");
         });
 
+        modelBuilder.Entity<Set>(entity =>
+        {
+            entity.HasKey(e => new { e.Key, e.Value }).HasName("PK_HangFire_Set");
+
+            entity.ToTable("Set", "HangFire");
+
+            entity.HasIndex(e => e.ExpireAt, "IX_HangFire_Set_ExpireAt").HasFilter("([ExpireAt] IS NOT NULL)");
+
+            entity.HasIndex(e => new { e.Key, e.Score }, "IX_HangFire_Set_Score");
+
+            entity.Property(e => e.Key).HasMaxLength(100);
+            entity.Property(e => e.Value).HasMaxLength(256);
+            entity.Property(e => e.ExpireAt).HasColumnType("datetime");
+        });
+
         modelBuilder.Entity<Slot>(entity =>
         {
             entity.ToTable("Slot");
@@ -451,6 +616,42 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.Time)
                 .IsUnicode(false)
                 .HasColumnName("time");
+        });
+
+        modelBuilder.Entity<State>(entity =>
+        {
+            entity.HasKey(e => new { e.JobId, e.Id }).HasName("PK_HangFire_State");
+
+            entity.ToTable("State", "HangFire");
+
+            entity.HasIndex(e => e.CreatedAt, "IX_HangFire_State_CreatedAt");
+
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.Property(e => e.CreatedAt).HasColumnType("datetime");
+            entity.Property(e => e.Name).HasMaxLength(20);
+            entity.Property(e => e.Reason).HasMaxLength(100);
+
+            entity.HasOne(d => d.Job).WithMany(p => p.States)
+                .HasForeignKey(d => d.JobId)
+                .HasConstraintName("FK_HangFire_State_Job");
+        });
+
+        modelBuilder.Entity<TestResult>(entity =>
+        {
+            entity.HasKey(e => e.ImgId);
+
+            entity.ToTable("Test_result");
+
+            entity.Property(e => e.ImgId).HasColumnName("img_id");
+            entity.Property(e => e.ImgUrl)
+                .IsUnicode(false)
+                .HasColumnName("img_url");
+            entity.Property(e => e.MId).HasColumnName("m_id");
+
+            entity.HasOne(d => d.MIdNavigation).WithMany(p => p.TestResults)
+                .HasForeignKey(d => d.MId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Test_result_Medical_notebook");
         });
 
         OnModelCreatingPartial(modelBuilder);

@@ -17,13 +17,13 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             _mapper = mapper;
         }
 
-        [HttpPut]
-        public async Task<IActionResult> CreateMedicalNoteBook(int mid, string rs)
-        {
-            var m = _context.MedicalNotebooks.FirstOrDefault(x => x.Id == mid);
-            m.TestResult = rs;
-            await _context.SaveChangesAsync();
-            return Ok(m);
-        }
+        //[HttpPut]
+        //public async Task<IActionResult> CreateMedicalNoteBook(int mid, string rs)
+        //{
+        //    var m = _context.MedicalNotebooks.FirstOrDefault(x => x.Id == mid);
+        //    m.TestResult = rs;
+        //    await _context.SaveChangesAsync();
+        //    return Ok(m);
+        //}
     }
 }

@@ -13,9 +13,11 @@ public partial class Doctor
 
     public int Age { get; set; }
 
-    public int ServiceId { get; set; }
-
     public bool? IsActive { get; set; }
+
+    public string? Img { get; set; }
+
+    public string? Description { get; set; }
 
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
@@ -29,5 +31,5 @@ public partial class Doctor
 
     public virtual ICollection<Schedule> Schedules { get; set; } = new List<Schedule>();
 
-    public virtual Service Service { get; set; } = null!;
+    public virtual ICollection<Service> Services { get; set; } = new List<Service>();
 }

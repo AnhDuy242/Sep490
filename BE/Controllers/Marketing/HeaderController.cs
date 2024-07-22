@@ -23,7 +23,7 @@ namespace BE.Controllers.Marketing
         [HttpGet]
         public async Task<IActionResult> GetAllDoctor()
         {
-            var listDoc = _context.Doctors.Include(x => x.Service).ThenInclude(x => x.Dep).Where(x => x.IsActive == true).ToList();
+            var listDoc = _context.Doctors.Include(x => x.Services).ThenInclude(x => x.Dep).Where(x => x.IsActive == true).ToList();
             var result = _mapper.Map<List<DoctorMarketing>>(listDoc);
             return Ok(result);
         }
@@ -31,7 +31,7 @@ namespace BE.Controllers.Marketing
         [HttpGet]
         public async Task<IActionResult> GetDoctorDetailById(int id)
         {
-            var listDoc = _context.Doctors.Include(x => x.Service).ThenInclude(x => x.Dep).Where(x => x.IsActive == true).Where(x => x.DocId == id).ToList();
+            var listDoc = _context.Doctors.Include(x => x.Services).ThenInclude(x => x.Dep).Where(x => x.IsActive == true).Where(x => x.DocId == id).ToList();
             var result = _mapper.Map<List<DoctorMarketing>>(listDoc);
             return Ok(result);
         }
@@ -39,7 +39,7 @@ namespace BE.Controllers.Marketing
         [HttpGet]
         public async Task<IActionResult> GetService()
         {
-            var list = _context.Doctors.Where(x => x.IsActive == true).ToList();
+            var list = _context.Services.Where(x => x.IsActive == true).ToList();
             var result = _mapper.Map<List<DoctorAppointment>>(list);
             return Ok(result);
         }

@@ -39,9 +39,8 @@ public class MappingProfile : Profile
         //doctor
         CreateMap<Doctor, DoctorAppointment>().ReverseMap();
         CreateMap<Doctor, DoctorMarketing>()
-            .ForMember(dest => dest.ServiceName, otp => otp.MapFrom(src => src.Service.Name))
-            .ForMember(dest => dest.DepartmentName, otp => otp.MapFrom(src => src.Service.Dep.Name))
-            .ReverseMap();
+                    .ForMember(dest => dest.AllServiceName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Name))))
+                    .ForMember(dest => dest.AllDepartmentName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Dep.Name))));
 
 
         CreateMap<Service, ServiceAppointment>().ReverseMap();

@@ -142,7 +142,9 @@ namespace BE.Controllers.Appointment_Management
             }
             else
             {
-                var listDoc = _alo2Context.Doctors.Where(x => x.IsActive == true).Where(x => x.ServiceId == seId).ToList();
+                var listDoc =  _alo2Context.Doctors
+             .Where(d => d.Services.Any(s => s.ServiceId == seId))
+             .ToList();
                 var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
 
                 return Ok(list);
@@ -184,13 +186,13 @@ namespace BE.Controllers.Appointment_Management
         [HttpPut]
         public async Task<IActionResult> CancelAppointment(int aid)
         {
-            Models.Appointment app = _alo2Context.Appointments.FirstOrDefault(x => x.Id == aid);   
-            if(app.Status == "Đang chờ phê duyệt")
+            Models.Appointment app = _alo2Context.Appointments.FirstOrDefault(x => x.Id == aid);
+            if (app.Status == "Đang chờ phê duyệt")
             {
                 _alo2Context.Appointments.Remove(app);
                 await _alo2Context.SaveChangesAsync();
             }
-            else if(app.Status == "Đã phê duyệt")
+            else if (app.Status == "Đã phê duyệt")
             {
                 app.Status = "Đã hủy";
                 await _alo2Context.SaveChangesAsync();
@@ -198,6 +200,6 @@ namespace BE.Controllers.Appointment_Management
             return Ok(app);
         }
 
-   
+
     }
 }
