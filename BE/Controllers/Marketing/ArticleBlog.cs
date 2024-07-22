@@ -18,7 +18,7 @@ namespace BE.Controllers.Article_Manager
 
         private readonly Cloudinary _cloudinary;
         private readonly MedPalContext _context;
-        public BlogController(Cloudinary cloudinary, MedPalContext context)
+        public ArticleBlog(Cloudinary cloudinary, MedPalContext context)
         {
             _cloudinary = cloudinary;
             _context = context;
