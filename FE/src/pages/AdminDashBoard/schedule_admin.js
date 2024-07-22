@@ -507,7 +507,7 @@ const DeleteSchedule = ({ doctors, setSnackbar }) => {
       }
 
       const response = await fetch(
-        `https://localhost:7240/api/ManageSchedule/Deletev/${selectedSchedule.id}`,
+        `https://localhost:7240/api/ManageSchedule/Delete/${selectedSchedule.id}`,
         {
           method: 'DELETE',
         }
