@@ -8,14 +8,23 @@ namespace BE.Controllers.Feedback.Role_Patient
 {
     [Route("api/[controller]/[action]")]
     [ApiController]
-    public class FeedBackController : ControllerBase
+    public class PatientFeedbackController : ControllerBase
     {
         private readonly MedPalContext _context;
         private readonly IMapper _mapper; 
-        public FeedBackController(MedPalContext context, IMapper mapper)
+        public PatientFeedbackController(MedPalContext context, IMapper mapper)
         {
             _context = context;
             _mapper = mapper;
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllFeedback()
+        {
+            var list = _context.Feedbacks.ToList();
+            var l = _mapper.Map<List<FeedbackView>>(list);
+            return Ok(l);
+
         }
 
         [HttpPost]
@@ -29,6 +38,17 @@ namespace BE.Controllers.Feedback.Role_Patient
                 Star = feedbackCreate.Star,
             };
             _context.Feedbacks.Add(f);
+            _context.SaveChanges();
+            return Ok(f);
+
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateFeedback(int fid, string content)
+        {
+            var f = _context.Feedbacks.FirstOrDefault(x => x.FeedId == fid);
+            f.Content = content;
+            _context.Feedbacks.Update(f);
             _context.SaveChanges();
             return Ok(f);
 

@@ -38,8 +38,4 @@
     <PackageReference Include="Twilio" Version="7.1.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Controllers\Feedback\Role_Receptionist\" />
-  </ItemGroup>
-
 </Project>

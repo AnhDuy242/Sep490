@@ -44,6 +44,9 @@ public class MappingProfile : Profile
                     .ForMember(dest => dest.AllDepartmentName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Dep.Name))));
         //feedback
         CreateMap<Feedback, FeedbackCreate>().ReverseMap();
+        CreateMap<Feedback, FeedbackView>()
+            .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
+            .ReverseMap();
 
         CreateMap<Service, ServiceAppointment>().ReverseMap();
         CreateMap<Department, DepartmentAppointment>().ReverseMap();
