@@ -23,7 +23,7 @@ public class MappingProfile : Profile
         CreateMap<Appointment, AppointmentPatient>()
             .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
             .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doctor.Name))
-            .ForMember(dest => dest.ServiceName, otp => otp.MapFrom(src => src.Service.ServiceId))
+            .ForMember(dest => dest.ServiceName, otp => otp.MapFrom(src => src.Service.Name))
             .ForMember(dest => dest.Time, otp => otp.MapFrom(src => src.Slot.Time))
             .ForMember(dest => dest.Date, otp => otp.MapFrom(src => src.Date.Date))
             .ReverseMap();
