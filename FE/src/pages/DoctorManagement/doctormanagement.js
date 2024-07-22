@@ -3,10 +3,11 @@ import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import axios from 'axios';
 
 const MedicalNotebookForm = () => {
+  const doctorID = localStorage.getItem('accountId');
   const [formData, setFormData] = useState({
     prescription: '',
     diagnostic: '',
-    doctorId: '',
+    doctorId: doctorID,
     patientId: ''
   });
 
@@ -64,6 +65,7 @@ const MedicalNotebookForm = () => {
           name="doctorId"
           value={formData.doctorId}
           onChange={handleChange}
+          style={{ display: 'none' }}
         />
         <TextField
           margin="normal"

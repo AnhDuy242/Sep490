@@ -1,19 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Paper,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Button,
-    IconButton,
-    TextField
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
@@ -28,10 +15,11 @@ const ViewAllNoteBooks = () => {
     useEffect(() => {
         getMedicalNotebooks()
             .then(data => {
-                setNotebooks(data); // Sửa để truy cập đúng dữ liệu
+                console.log('Dữ liệu đã lấy:', data);
+                setNotebooks(data);
             })
             .catch(error => {
-                console.error('Failed to fetch medical notebooks:', error);
+                console.error('Lỗi khi lấy dữ liệu sổ tay y tế:', error);
             });
     }, []);
 
@@ -42,17 +30,67 @@ const ViewAllNoteBooks = () => {
 
     const handleClose = () => {
         setOpen(false);
-        setFile(null); // Reset file input when dialog closes
+        setFile(null);
     };
 
-    const handleSave = () => {
-        // Hàm xử lý lưu file đã chọn
-        console.log('Saving file:', file);
+    const handleSave = async () => {
+        if (file && selectedNotebook) {
+            try {
+                await uploadFile(selectedNotebook.$id, file);
+                // Lấy lại dữ liệu sổ tay y tế sau khi tải lên
+                getMedicalNotebooks()
+                    .then(data => {
+                        setNotebooks(data);
+                    })
+                    .catch(error => {
+                        console.error('Lỗi khi lấy dữ liệu sổ tay y tế:', error);
+                    });
+            } catch (error) {
+                console.error('Lỗi khi tải lên file:', error);
+            }
+        }
         handleClose();
     };
 
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
+    };
+
+    const uploadFile = async (mid, file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const url = `https://localhost:7240/api/ReceptionistMedicalNotebook/CreateMedicalNoteBook?mid=${mid}`;
+            console.log('Gửi yêu cầu đến URL:', url);
+
+            const response = await fetch(url, {
+                method: 'PUT',
+                body: formData,
+                // Không thêm header Content-Type, vì fetch sẽ tự động xử lý với FormData
+            });
+
+            console.log('Mã trạng thái phản hồi:', response.status);
+
+            // Kiểm tra nếu phản hồi có kiểu là JSON
+            const contentType = response.headers.get('Content-Type');
+            if (contentType && contentType.includes('application/json')) {
+                // Xử lý phản hồi JSON nếu có
+                const result = await response.json();
+                console.log('Tải lên file thành công:', result);
+            } else {
+                // Nếu phản hồi không phải JSON, đọc dưới dạng văn bản
+                const text = await response.text();
+                console.log('Phản hồi không phải JSON:', text);
+            }
+
+            if (!response.ok) {
+                throw new Error(`Lỗi khi tải lên file: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.error('Lỗi khi tải lên file:', error);
+            throw error;
+        }
     };
 
     return (
@@ -70,11 +108,11 @@ const ViewAllNoteBooks = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {notebooks.map((notebook) => (
-                            <TableRow key={notebook.$id}>
+                        {notebooks.map((notebook, index) => (
+                            <TableRow key={index}>
                                 <TableCell>{notebook.prescription}</TableCell>
                                 <TableCell>{notebook.diagnostic}</TableCell>
-                                <TableCell>{notebook.testResult}</TableCell>
+                                <TableCell>{notebook.testResult ? <img src={notebook.testResult} alt="Kết quả xét nghiệm" style={{ width: '100px' }} /> : 'Không có kết quả'}</TableCell>
                                 <TableCell>{notebook.patientName}</TableCell>
                                 <TableCell>{notebook.doctorName}</TableCell>
                                 <TableCell>

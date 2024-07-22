@@ -51,7 +51,7 @@ export const getAllPatients = async () => {
 };
 //hàm get notebooks bệnh nhân
 export const getMedicalNotebooks = async () => {
-    const url = 'https://localhost:7240/api/ReceptionistMedicalNotebook/GetAllMedicalNotBook';
+    const url = 'https://localhost:7240/api/ReceptionistMedicalNotebook/GetAllMedicalNoteBook';
 
     try {
         const response = await fetch(url, {
@@ -75,3 +75,11 @@ export const getMedicalNotebooks = async () => {
         return [];
     }
 };
+// export const getMedicalNotebooks = async () => {
+//     const response = await fetch('https://your-api-endpoint.com/api/medicalNotebooks');
+//     if (!response.ok) {
+//         throw new Error('Failed to fetch medical notebooks');
+//     }
+//     const data = await response.json();
+//     return data.$values; // Trả về mảng $values
+// };
