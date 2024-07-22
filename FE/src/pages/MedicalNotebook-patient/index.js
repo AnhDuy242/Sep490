@@ -34,6 +34,13 @@ const useStyles = makeStyles({
         fontWeight: 700,
         textAlign: 'center',
     },
+    image: {
+        width: '100%',
+        height: 'auto',
+        maxWidth: '500px',
+        maxHeight: '500px',
+        marginTop: '10px',
+    },
 });
 
 const MedicalNotebook = () => {
@@ -81,7 +88,9 @@ const MedicalNotebook = () => {
             setLoading(false); // Dừng loading
         }
     };
-
+    const handleSelectedNotebook = () =>{
+        setSelectedNotebook(notebook);
+    }
     const handleSearch = () => {
         const foundNotebook = notebooks.find(notebook => notebook.$id === searchNotebookId);
         if (foundNotebook) {
@@ -157,7 +166,7 @@ const MedicalNotebook = () => {
                                         <Typography variant="body2">Chỉ định: {notebook.prescription}</Typography>
                                         <Typography variant="body2">Chẩn đoán: {notebook.diagnostic}</Typography>
                                         {notebook.testResult && <Typography variant="body2">Kết quả: {notebook.testResult}</Typography>}
-                                        <Button variant="outlined" color="primary" onClick={() => setSelectedNotebook(notebook)} className={classes.button}>
+                                        <Button variant="outlined" color="primary" onClick={handleSelectedNotebook} className={classes.button}>
                                             Xem chi tiết
                                         </Button>
                                     </CardContent>
@@ -186,9 +195,16 @@ const MedicalNotebook = () => {
                                     <strong>Chẩn đoán:</strong> {selectedNotebook.diagnostic}
                                 </Typography>
                                 {selectedNotebook.testResult && (
-                                    <Typography variant="body1" style={{ marginBottom: '20px' }}>
-                                        <strong>Kết quả:</strong> {selectedNotebook.testResult}
-                                    </Typography>
+                                    <div>
+                                        <Typography variant="body1" style={{ marginBottom: '10px' }}>
+                                            <strong>Kết quả:</strong>
+                                        </Typography>
+                                        <img 
+                                            src={selectedNotebook.testResult} 
+                                            alt="Kết quả xét nghiệm" 
+                                            className={classes.image} 
+                                        />
+                                    </div>
                                 )}
                             </DialogContentText>
                         </DialogContent>

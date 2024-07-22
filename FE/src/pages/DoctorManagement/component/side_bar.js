@@ -102,6 +102,12 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Tạo sổ tay khám bệnh" />
           </ListItem>
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> {/**sua o cho nay */}
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Xem lịch làm việc hàng tuần" />
+          </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
           <Button variant="contained" className={classes.logoutButton} onClick={handleLogoutClick}>
