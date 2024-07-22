@@ -17,7 +17,7 @@
             _emailService = emailService;
         }
 
-        public async Task CheckAppointments()
+        public void CheckAppointments()
         {
             var appointments = _context.Appointments
                 .Where(a => a.Status == "Tái khám" && a.Date.Date == DateTime.Today.AddDays(3).Date)

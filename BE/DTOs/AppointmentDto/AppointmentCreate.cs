@@ -18,8 +18,7 @@ namespace BE.DTOs.AppointmentDto
         public int ServiceId { get; set; }
 
 
-        public int DepartmentId { get; set; }
-        public int ServiceId { get; set; }
+     
 
     }
 }
