@@ -32,9 +32,8 @@ namespace BE.Controllers.Question_Management.Role_Doctor
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllQuestion(int docid)
+        public async Task<IActionResult> GetAllQuestion(int depid)
         {
-            int depid = _service.GetDepIdByDocId(docid);
             var q = _context.Questions.Where(x => x.DepId == depid).ToList();
             return Ok(q);
         }
