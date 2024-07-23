@@ -19,9 +19,13 @@ public partial class Doctor
 
     public string? Description { get; set; }
 
+    public int DepId { get; set; }
+
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 
     public virtual ICollection<Blog> Blogs { get; set; } = new List<Blog>();
+
+    public virtual Department Dep { get; set; } = null!;
 
     public virtual Account Doc { get; set; } = null!;
 

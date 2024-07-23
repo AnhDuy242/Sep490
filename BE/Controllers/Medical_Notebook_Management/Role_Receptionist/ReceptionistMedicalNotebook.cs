@@ -69,5 +69,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
             return Ok(lists);
         }
+
+
     }
 }

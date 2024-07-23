@@ -28,6 +28,19 @@ namespace BE.Controllers.Question_Management.Role_Patient
                DepId = depId,
                Question1 = question
            };
+            _context.Questions.Add(q);
+            _context.SaveChanges();
+            return Ok(q);
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdateQuestion(int pid, string question)
+        {
+            var q = _context.Questions.FirstOrDefault(q => q.QuesId == pid);
+            q.Question1 = question;
+            _context.Questions.Update(q);
+            _context.SaveChanges();
+            return Ok(q);
         }
     }
 }

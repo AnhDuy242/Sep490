@@ -33,7 +33,6 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 // Thêm dịch vụ vào container
 builder.Services.AddControllers();
-builder.Services.AddScoped<IAccountService, AccountService>();
 
 // Thêm Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -54,6 +53,7 @@ builder.Services.AddSingleton<ISMSService>(provider =>
 });
 //Validate Service Configure
 builder.Services.AddTransient<IValidateService, ValidateService>();
+builder.Services.AddTransient<IDoctorService, DoctorService>();
 //mail
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();

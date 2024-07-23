@@ -76,9 +76,13 @@ public partial class MedPalContext : DbContext
     public virtual DbSet<TestResult> TestResults { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("server=DUCANH\\SQLEXPRESS; database=MedPal;uid=sa;pwd=123456;Trusted_Connection=True;Encrypt=False");
-
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
+            optionsBuilder.UseSqlServer(ConnectionString);
+        }
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Account>(entity =>
@@ -257,6 +261,7 @@ public partial class MedPalContext : DbContext
                 .ValueGeneratedNever()
                 .HasColumnName("doc_id");
             entity.Property(e => e.Age).HasColumnName("age");
+            entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.Description)
                 .IsUnicode(false)
                 .HasColumnName("description");
@@ -268,6 +273,11 @@ public partial class MedPalContext : DbContext
                 .HasColumnName("img");
             entity.Property(e => e.IsActive).HasColumnName("isActive");
             entity.Property(e => e.Name).HasColumnName("name");
+
+            entity.HasOne(d => d.Dep).WithMany(p => p.Doctors)
+                .HasForeignKey(d => d.DepId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_Doctor_Department");
 
             entity.HasOne(d => d.Doc).WithOne(p => p.Doctor)
                 .HasForeignKey<Doctor>(d => d.DocId)
