@@ -1,13 +1,11 @@
 import React, { useState, useContext } from 'react';
-import { Modal, Box, Button, TextField, Typography, Alert, IconButton, Checkbox, FormControlLabel } from '@mui/material';
+import { Modal, Box, Button, TextField, Typography, Alert, IconButton, Checkbox, FormControlLabel, Snackbar } from '@mui/material';
 import { Visibility, VisibilityOff, Close } from '@mui/icons-material';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import google_icon from '../../assets/images/google.png';
 import '../LoginForm/LoginForm.css';
 import { useNavigate } from 'react-router-dom';
-import { Navigate } from 'react-router-dom';
-import { Snackbar } from '@mui/material';
 import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
 
 const validationSchema = yup.object({
@@ -26,7 +24,6 @@ const validationSchema = yup.object({
 });
 
 const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
-  const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -54,36 +51,37 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
     onSubmit: async (values) => {
       setLoading(true);
       try {
-        await handleLogin({ username: values.identifier, password: values.password });
-        formik.resetForm();
-        setError(null);
-        handleClose(); // Close modal after successful login
-        setSnackbar({ open: true, message: 'Đăng nhập thành công', severity: 'success' });
-       
-        // Perform role-based navigation
-        const role = localStorage.getItem('role');
-        if (role === 'Admin') {
-          navigate('/admin/dashboard/doctor-account', { replace: true });
-        } else if (role === 'ArticleManager') {
-          navigate('/article/dashboard', { replace: true });
-        } else if (role === 'Receptionist') {
-          navigate('/receptionist/dashboard/', { replace: true });
-        }
-        else if (role === 'Doctor') {
-          navigate('/doctor/dasboard/', { replace: true });
-        }
-        else {
-          navigate('/', { replace: true });
+        const result = await handleLogin({ username: values.identifier, password: values.password });
+        if (result.success) {
+          formik.resetForm();
+          setSnackbar({ open: true, message: 'Đăng nhập thành công', severity: 'success' });
+          handleClose(); // Close modal after successful login
+
+          // Perform role-based navigation
+          const role = localStorage.getItem('role');
+          if (role === 'Admin') {
+            navigate('/admin/dashboard/doctor-account', { replace: true });
+          } else if (role === 'ArticleManager') {
+            navigate('/article/dashboard', { replace: true });
+          } else if (role === 'Receptionist') {
+            navigate('/receptionist/dashboard/', { replace: true });
+          } else if (role === 'Doctor') {
+            navigate('/doctor/dashboard/', { replace: true });
+          } else {
+            navigate('/', { replace: true });
+          }
+        } else {
+          setSnackbar({ open: true, message: result.message, severity: 'error' });
         }
       } catch (error) {
         console.error('Login error:', error);
-        setError(error.message || 'Đã xảy ra lỗi khi đăng nhập');
-        setSnackbar({ open: true, message: 'Đăng nhập thất bại', severity: 'error' });
+        setSnackbar({ open: true, message: 'Đăng nhập thất bại: Đã xảy ra lỗi khi đăng nhập', severity: 'error' });
       } finally {
         setLoading(false);
       }
     }
   });
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -107,9 +105,6 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
             <IconButton onClick={handleClose}>
               <Close />
             </IconButton>
-          </Box>
-          <Box className={`error-container ${error ? 'show' : ''}`}>
-            {error && <Alert severity="error">{error}</Alert>}
           </Box>
           <Typography variant="body2" gutterBottom>
             Bạn chưa có tài khoản? <a href="/register">Đăng ký ngay</a>

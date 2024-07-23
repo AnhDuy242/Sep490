@@ -46,9 +46,12 @@ const Header = () => {
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
       localStorage.setItem('accountId', accountId);
-  
+      return { success: true, message: 'Đăng nhập thành công' };
+
     } catch (error) {
       console.error('Login failed:', error);
+      return { success: false, message: 'Đăng nhập thất bại: Tài khoản hoặc mật khẩu không đúng' };
+
     }
   };
 
