@@ -42,5 +42,11 @@ namespace BE.Controllers.Question_Management.Role_Patient
             _context.SaveChanges();
             return Ok(q);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetQuestionByDepId(int depip)
+        {
+            var q = _context.Questions.Where(x =>  x.DepId == depip);
+            return Ok(q);
+        }
     }
 }
