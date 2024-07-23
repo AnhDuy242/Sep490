@@ -1,13 +1,11 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, InputBase, Button, Menu, MenuItem, Box } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
-import '../Navbar/navbar.css';
 import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
-import getAppointment from './../../pages/Appointment-patient/ViewInforAppoint';
-import { Link, useNavigate } from 'react-router-dom';
+import { fetchServices } from '../../services/department_service'; // Adjust this path as needed
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -48,9 +46,23 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const Navbar = () => {
-  const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
+  const { isLoggedIn } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [services, setServices] = useState([]);
   const [searchValue, setSearchValue] = useState('');
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const data = await fetchServices();
+        setServices(data.$values || []); // Adjust based on actual response structure
+      } catch (error) {
+        console.error('Error loading services:', error);
+      }
+    };
+
+    loadServices();
+  }, []);
 
   const handleDropdownToggle = (event) => {
     setAnchorEl(event.currentTarget);
@@ -90,19 +102,42 @@ const Navbar = () => {
             keepMounted
             open={Boolean(anchorEl)}
             onClose={handleDropdownClose}
+            sx={{
+              '& .MuiMenu-paper': {
+                borderRadius: '8px', /* Rounded corners */
+                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', /* Shadow for depth */
+                backgroundColor: '#fff', /* Background color */
+                padding: '10px', /* Padding inside the menu */
+                width: '400px', /* Wider dropdown */
+                maxHeight: '600px', /* Longer dropdown */
+                overflowY: 'auto', /* Add scrollbar if content exceeds maxHeight */
+              },
+              '& .MuiMenuItem-root': {
+                fontSize: '16px', /* Font size */
+                color: '#333', /* Text color */
+                padding: '10px 15px', /* Padding for items */
+                borderRadius: '4px', /* Rounded corners for items */
+                transition: 'background-color 0.3s ease', /* Smooth background color transition */
+              },
+              '& .MuiMenuItem-root:hover': {
+                backgroundColor: '#f5f5f5', /* Hover background color */
+              },
+            }}
           >
-            <MenuItem onClick={handleDropdownClose} component={NavLink} to="/category1">Category 1</MenuItem>
-            <MenuItem onClick={handleDropdownClose} component={NavLink} to="/category2">Category 2</MenuItem>
+            {services.map((service, index) => (
+              <MenuItem key={index} onClick={handleDropdownClose} component={NavLink} to={`/service/${service.serviceId}`}>
+                {service.name}
+              </MenuItem>
+            ))}
           </Menu>
           <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
           <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
           <Button color="inherit" component={NavLink} to="/contact">Liên hệ</Button>
-          <Button color="inherit" component={NavLink} to="/get-started" >Bạn có biết?</Button>
+          <Button color="inherit" component={NavLink} to="/get-started">Bạn có biết?</Button>
           {isLoggedIn && (
             <>
-              <Button color="inherit" component={Link} to="/getAppointment">Xem lịch khám</Button>
-
-              <Button color="inherit" component={Link} to="/getMedicalNotebook">Tra cứu kết quả</Button>
+              <Button color="inherit" component={NavLink} to="/getAppointment">Xem lịch khám</Button>
+              <Button color="inherit" component={NavLink} to="/getMedicalNotebook">Tra cứu kết quả</Button>
             </>
           )}
         </Box>

@@ -10,6 +10,7 @@ import View_schedule from './pages/AdminDashBoard/schedule_admin';
 import ChatPopup from './layouts/ChatNotification';
 import ConsultantChat from './layouts/ChatNotification/ConsultantChat';
 import { AuthProvider } from './utils/AuthContext'
+import Create_CustomerFeedack from '../src/pages/Feedback/Create_CustomerFeedback';
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
@@ -26,8 +27,10 @@ root.render(
 
     <Router>
       <AuthProvider>
-      <App />
-      </AuthProvider>
+      {/* <App /> */}
+      <Create_CustomerFeedack/>
+        
+              </AuthProvider>
     </Router>
 
   </React.StrictMode>
