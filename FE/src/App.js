@@ -23,6 +23,7 @@ import ViewAllNotebooks from './pages/ReceptionistManagement/view_notebooks'
 import DoctorDash from '../src/pages/DoctorManagement';
 import CreateNoteBook from '../src/pages/DoctorManagement/doctormanagement'
 import PatientViewQuestion from './pages/PatientAskQuestion/index'
+import Create_CustomerFeedback from './pages/Feedback/Create_CustomerFeedback'
 import DoctorAnswerQuestion from './pages/DoctorManagement/AnswerQuestion/doctor_answer_question'
 function App() {
   return (
@@ -63,7 +64,8 @@ function App() {
       <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment /></ProtectedRoute>}>
       </Route>
       <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment /></ProtectedRoute>}>
-
+      </Route>
+      <Route path="/Create_CustomerFeedback" element={<ProtectedRoute requiredRole="Patient"><Create_CustomerFeedback /></ProtectedRoute>}>
       </Route>
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
@@ -78,7 +80,7 @@ function App() {
       </Route>
       {/**Hỏi đáp và các service khác */}
       <Route path="/GetListQuestion" element={<ProtectedRoute requiredRole="Patient"><PatientViewQuestion /></ProtectedRoute>}>
-
+    
       </Route>
     </Routes>
   );

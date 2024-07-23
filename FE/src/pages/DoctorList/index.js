@@ -1,10 +1,10 @@
-// src/components/ListDoctorView.js
 import React, { useState, useEffect } from 'react';
 import Header from '../../layouts/Header';
 import NavBar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
 import { fetchDoctors } from '../../services/doctorListHomePage';
-import '../../assets/css/doctorListHomePage.css';
+import { Container, Grid, Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
+import img from '../../assets/images/images (1).jpg'; // Import image
 
 const ListDoctorView = () => {
     const [doctors, setDoctors] = useState([]);
@@ -18,20 +18,44 @@ const ListDoctorView = () => {
     }, []);
 
     return (
-        <>
+        <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '150vh' }}>
             <Header />
             <NavBar />
-            <div className="doctor-list-container">
-                {doctors.map((doctor) => (
-                    <div key={doctor.$id} className="doctor-card">
-                        <h3 className="doctor-name">{doctor.name}</h3>
-                        <p className="doctor-info"><span></span> {doctor.serviceName}</p>
-                        <p className="doctor-info"><span></span> {doctor.departmentName}</p>
-                    </div>
-                ))}
-            </div>
+            <Box sx={{ flex: 1 }}>
+                <Container sx={{ mt:10, maxWidth: 'lg' }}> {/* Adjust maxWidth */}
+                    <Grid container spacing={50}>
+                        {doctors.map((doctor) => (
+                            <Grid item key={doctor.$id} xs={12} sm={6} md={4} lg={3}> {/* Adjust Grid sizes */}
+                                <Card sx={{ width: '100%', maxWidth: 600, minWidth: 300 }}> {/* Set Card width */}
+                                    <CardMedia
+                                        component="img"
+                                        height="150"
+                                        image={img}
+                                        alt={doctor.name}
+                                        sx={{
+                                            borderRadius: '50%',
+                                            width: '150px',
+                                            height: '150px',
+                                            objectFit: 'cover',
+                                            margin: 'auto',
+                                        }}
+                                    />
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h6" component="div">
+                                            Bác sĩ : {doctor.name}
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                            Chuyên khoa: {doctor.allDepartmentName}
+                                        </Typography>
+                                    </CardContent>
+                                </Card>
+                            </Grid>
+                        ))}
+                    </Grid>
+                </Container>
+            </Box>
             <Footer />
-        </>
+        </Box>
     );
 }
 
