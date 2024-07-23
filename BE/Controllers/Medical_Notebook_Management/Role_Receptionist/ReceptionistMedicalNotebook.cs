@@ -58,7 +58,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
         [HttpGet]
         public async Task<IActionResult> GetAllMedicalNoteBook()
         {
-            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).ToList();
+            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Include(x => x.TestResults).ToList();
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
             return Ok(lists);
         }
@@ -66,10 +66,18 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
         [HttpGet]
         public async Task<IActionResult> GetMedicalNoteBookByPatientId(int pid)
         {
-            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Where(x => x.PatientId == pid).ToList();
+            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Include(x => x.TestResults).Where(x => x.PatientId == pid).ToList();
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
             return Ok(lists);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetTestResult(int mid)
+        {
+            var t = _context.TestResults.Where(x => x.MId == mid).ToList();
+            return Ok(t);
+
+        }
+
         //[HttpGet]
         //public async Task<IActionResult> GetAllMedicalNoteBook()
         //{

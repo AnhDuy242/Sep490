@@ -6,7 +6,6 @@
 
         public string Diagnostic { get; set; } = null!;
 
-        public string? TestResult { get; set; }
 
         public int PatientId { get; set; }
         public string PatientName { get; set; }
