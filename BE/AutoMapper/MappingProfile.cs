@@ -36,6 +36,11 @@ public class MappingProfile : Profile
            .ReverseMap();
         CreateMap<Slot, SlotAppointment>().ReverseMap();
 
+        //service
+        CreateMap<Service, ServiceMarketing>()
+                        .ForMember(dest => dest.DepartmentName, otp => otp.MapFrom(src => src.Dep.Name))
+
+            .ReverseMap();
 
         //doctor
         CreateMap<Doctor, DoctorAppointment>().ReverseMap();

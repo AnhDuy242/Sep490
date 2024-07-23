@@ -40,7 +40,7 @@ namespace BE.Controllers.Marketing
         [HttpGet]
         public async Task<IActionResult> GetService()
         {
-            var list = _context.Services.Where(x => x.IsActive == true).ToList();
+            var list = _context.Services.Include(x => x.Dep).Where(x => x.IsActive == true).ToList();
             var result = _mapper.Map<List<ServiceMarketing>>(list);
             return Ok(result);
         }
