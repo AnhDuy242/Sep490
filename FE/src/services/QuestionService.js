@@ -47,16 +47,42 @@ export const getListDepartment = async () => {
 };
 
 // lấy danh sách câu hỏi theo department
-export const fetchQuestionsByDepId = async (depId) => {
-    const API_URL = `https://localhost:7240/api/PatientQuestion/GetQuestionByDepId?depId=${depId}`;
+// export const fetchQuestionsByDepId = async (depId) => {
+//     const API_URL = `https://localhost:7240/api/PatientQuestion/GetQuestionByDepId?depId=${depId}`;
+//     try {
+//         const response = await fetch(API_URL);
+//         if (!response.ok) {
+//             throw new Error('Network response was not ok');
+//         }
+//         const data = await response.json();
+//         return data;
+//     } catch (error) {
+//         throw error;
+//     }
+// };
+
+
+export const fetchQuestionsByDepId = async (depip) => {
     try {
-        const response = await fetch(API_URL);
+        const url = `https://localhost:7240/api/PatientQuestionGetQuestionByDepId?depip=${depip}`;
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            const errorText = await response.text(); // Đọc lỗi từ phản hồi
+            console.error('Response error:', errorText);
+            throw new Error('Network response was not ok: ' + errorText);
         }
+
         const data = await response.json();
+        console.log('Data received:', data);
         return data;
     } catch (error) {
+        console.error('There was a problem with the fetch operation:', error);
         throw error;
     }
 };
