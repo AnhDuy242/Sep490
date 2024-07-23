@@ -88,9 +88,9 @@ const MedicalNotebook = () => {
             setLoading(false); // Dừng loading
         }
     };
-    const handleSelectedNotebook = () =>{
-        setSelectedNotebook(notebook);
-    }
+    // const handleSelectedNotebook = () =>{
+    //     setSelectedNotebook(notebook);
+    // }
     const handleSearch = () => {
         const foundNotebook = notebooks.find(notebook => notebook.$id === searchNotebookId);
         if (foundNotebook) {
@@ -166,9 +166,9 @@ const MedicalNotebook = () => {
                                         <Typography variant="body2">Chỉ định: {notebook.prescription}</Typography>
                                         <Typography variant="body2">Chẩn đoán: {notebook.diagnostic}</Typography>
                                         {notebook.testResult && <Typography variant="body2">Kết quả: {notebook.testResult}</Typography>}
-                                        <Button variant="outlined" color="primary" onClick={handleSelectedNotebook} className={classes.button}>
+                                        {/* <Button variant="outlined" color="primary" onClick={handleSelectedNotebook} className={classes.button}> */}
                                             Xem chi tiết
-                                        </Button>
+                                        {/* </Button> */}
                                     </CardContent>
                                 </Card>
                             </Grid>
