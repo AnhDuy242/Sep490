@@ -9,6 +9,7 @@ using BE.DTOs.ScheduleDto;
 using BE.DTOs.SlotDto;
 using BE.Models;
 using BE.DTOs.FeedbackDto;
+using BE.DTOs.QuestionDto;
 
 public class MappingProfile : Profile
 {
@@ -40,6 +41,12 @@ public class MappingProfile : Profile
         CreateMap<Service, ServiceMarketing>()
                         .ForMember(dest => dest.DepartmentName, otp => otp.MapFrom(src => src.Dep.Name))
 
+            .ReverseMap();
+        //question
+        CreateMap<Question, QuestionView>()
+            .ForMember(dest => dest.DepartmentName, otp => otp.MapFrom(src => src.Dep.Name))
+            .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doc.Name))
+            .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
             .ReverseMap();
 
         //doctor

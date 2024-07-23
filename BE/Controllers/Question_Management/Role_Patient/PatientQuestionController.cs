@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using BE.DTOs.QuestionDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BE.Controllers.Question_Management.Role_Patient
 {
@@ -45,8 +47,9 @@ namespace BE.Controllers.Question_Management.Role_Patient
         [HttpGet]
         public async Task<IActionResult> GetQuestionByDepId(int depip)
         {
-            var q = _context.Questions.Where(x =>  x.DepId == depip);
-            return Ok(q);
+            var q = _context.Questions.Include(x => x.Doc).Include(x => x.Patient).Include(x => x.Dep).Where(x =>  x.DepId == depip).ToList();
+            var qu = _mapper.Map<List<QuestionView>>(q);
+            return Ok(qu);
         }
     }
 }
