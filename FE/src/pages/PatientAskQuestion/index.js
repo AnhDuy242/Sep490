@@ -4,34 +4,17 @@ import NavBar from '../../layouts/Navbar';
 import CarouselSlider from '../../layouts/CarouselSlider';
 import Footer from '../../layouts/Footer';
 import { fetchQuestionsByDepId } from './../../services/QuestionService'; // Cập nhật đường dẫn đúng với vị trí của hàm
-
-const listDepart = 'https://localhost:7240/api/PatientAppointment/GetListDepartment';
-
-export const getListDepartment = async () => {
-    try {
-        const response = await fetch(listDepart, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-
-        return response.json();
-    } catch (error) {
-        console.error('There was a problem with the fetch operation:', error);
-        throw error;
-    }
-};
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem } from '@mui/material';
+import { getListDepartment, createPatientQuestion } from './../../services/QuestionService'; // Thay đổi đường dẫn nếu cần
 
 const PatientViewQuestion = () => {
     const [departments, setDepartments] = useState([]);
     const [selectedDepartment, setSelectedDepartment] = useState(null);
     const [questions, setQuestions] = useState([]);
-
+    const [openDialog, setOpenDialog] = useState(false);
+    const [newQuestion, setNewQuestion] = useState('');
+    const [departmentForQuestion, setDepartmentForQuestion] = useState('');
+    
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
@@ -47,16 +30,14 @@ const PatientViewQuestion = () => {
 
     const handleDepartmentClick = (depId) => {
         setSelectedDepartment(depId);
-        console.log('dep', depId)
     };
+
     useEffect(() => {
         const fetchQuestions = async () => {
             if (selectedDepartment) {
-                console.log('đây là data1 ạ', selectedDepartment)
                 try {
                     const data = await fetchQuestionsByDepId(selectedDepartment);
-                    console.log('đây là data ạ', data)
-                    setQuestions(data); // Đảm bảo cấu trúc dữ liệu đúng
+                    setQuestions(data.$values); // Đảm bảo cấu trúc dữ liệu đúng
                 } catch (error) {
                     console.error('Error fetching questions:', error);
                 }
@@ -66,7 +47,36 @@ const PatientViewQuestion = () => {
         fetchQuestions();
     }, [selectedDepartment]);
 
+    const handleOpenDialog = () => {
+        setOpenDialog(true);
+    };
 
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+    };
+
+    const handleSubmitQuestion = async () => {
+        const patientId = localStorage.getItem('accountId');
+        if (!patientId || !newQuestion || !departmentForQuestion) {
+            console.error('Missing required fields');
+            return;
+        }
+
+        try {
+            await createPatientQuestion(patientId, newQuestion, departmentForQuestion);
+            setNewQuestion('');
+            setDepartmentForQuestion('');
+            setOpenDialog(false);
+            // Optionally, refresh the questions list here
+            if (selectedDepartment) {
+                const data = await fetchQuestionsByDepId(selectedDepartment);
+                setQuestions(data.$values); // Đảm bảo cấu trúc dữ liệu đúng
+            }
+    
+        } catch (error) {
+            console.error('Error creating question:', error);
+        }
+    };
 
     return (
         <>
@@ -78,7 +88,7 @@ const PatientViewQuestion = () => {
                 padding: '20px',
                 margin: '20px'
             }}>
-                <div style={{ width: '25%', paddingRight: '20px' }}>
+                <div style={{ width: '20%', paddingRight: '20px' }}>
                     <div style={{ backgroundColor: '#f0f0f0', padding: '15px' }}>
                         <h3 style={{ color: '#fff', backgroundColor: '#3498db', padding: '10px', margin: '-15px -15px 15px -15px' }}>Chuyên mục tư vấn online</h3>
                         {departments.map((department) => (
@@ -105,7 +115,7 @@ const PatientViewQuestion = () => {
                         ))}
                     </div>
                 </div>
-                <div style={{ width: '75%', paddingLeft: '20px' }}>
+                <div style={{ width: '70%', paddingLeft: '20px' }}>
                     <h1 style={{ color: '#3498db' }}>HỎI ĐÁP CHUYÊN GIA</h1>
                     <div>
                         {questions.length === 0 ? (
@@ -113,18 +123,82 @@ const PatientViewQuestion = () => {
                         ) : (
                             questions.map((question) => (
                                 <div key={question.$id} style={{ borderBottom: '1px solid #eee', paddingBottom: '10px', marginBottom: '10px' }}>
-                                    <h4>{question.question1}</h4>
-                                    <p>Ngày hỏi: {new Date(question.quesDate).toLocaleDateString()}</p>
-                                    {/* <p>Ngày trả lời: {question.ansDate ? new Date(question.ansDate).toLocaleDateString() : 'Chưa trả lời'}</p> */}
-                                    <p>{question.answer ? question.answer : 'Chưa có câu trả lời'}</p>
-                                    <button style={{ backgroundColor: '#3498db', color: 'white', border: 'none', padding: '5px 10px' }}>Xem câu trả lời</button>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <h2 style={{ margin: 0 }}>{question.question1}</h2>
+                                        <p style={{ fontSize: '12px', color: 'blue', margin: 0, fontWeight: 'bold' }}>
+                                            Ngày hỏi: {new Date(question.quesDate).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <p style={{ fontSize: '13px', color: 'blue', margin: 0 }}>{question.patientName}</p>
+                                        <p style={{ fontSize: '12px', color: 'blue', textAlign: 'right' }}>
+                                            Ngày trả lời: {question.ansDate ? new Date(question.ansDate).toLocaleDateString() : 'Chưa trả lời'}
+                                        </p>
+                                    </div>
+
+                                    <p>
+                                        <span style={{ color: 'blue' }}>Trả lời:</span> {question.answer ? question.answer : 'Chưa có câu trả lời'}
+                                    </p>
+                                    <p>
+                                        <span style={{ color: 'blue' }}>Người trả lời:</span> {question.doctorName ? question.doctorName : 'Chưa có người trả lời'}
+                                    </p>
                                 </div>
                             ))
                         )}
                     </div>
                 </div>
+                <div style={{ justifyContent: 'flex-end', alignItems: 'center', width: '10%', paddingLeft: '20px' }}>
+                    <Button
+                        style={{ backgroundColor: '#3498db', color: 'white' }}
+                        onClick={handleOpenDialog}
+                    >
+                        Đặt câu hỏi
+                    </Button>
+                </div>
             </div>
             <Footer />
+            <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+                <DialogTitle>Đặt câu hỏi</DialogTitle>
+                <DialogContent>
+                    <TextField
+                        label="Chọn chuyên mục"
+                        select
+                        fullWidth
+                        value={departmentForQuestion}
+                        onChange={(e) => setDepartmentForQuestion(e.target.value)}
+                        variant="outlined"
+                        margin="normal"
+                    >
+                        {departments.map((department) => (
+                            <MenuItem key={department.depId} value={department.depId}>
+                                {department.name}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                    <TextField
+                        label="Nhập câu hỏi"
+                        multiline
+                        rows={4}
+                        fullWidth
+                        value={newQuestion}
+                        onChange={(e) => setNewQuestion(e.target.value)}
+                        variant="outlined"
+                        margin="normal"
+                        InputProps={{
+                            style: { resize: 'both' }, // Cho phép kéo to nhỏ
+                        }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDialog}>Hủy</Button>
+                    <Button
+                        onClick={handleSubmitQuestion}
+                        style={{ backgroundColor: '#3498db', color: 'white' }}
+                    >
+                        Gửi câu hỏi
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </>
     );
 };

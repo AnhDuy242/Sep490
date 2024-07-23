@@ -47,21 +47,6 @@ export const getListDepartment = async () => {
 };
 
 // lấy danh sách câu hỏi theo department
-// export const fetchQuestionsByDepId = async (depId) => {
-//     const API_URL = `https://localhost:7240/api/PatientQuestion/GetQuestionByDepId?depId=${depId}`;
-//     try {
-//         const response = await fetch(API_URL);
-//         if (!response.ok) {
-//             throw new Error('Network response was not ok');
-//         }
-//         const data = await response.json();
-//         return data;
-//     } catch (error) {
-//         throw error;
-//     }
-// };
-
-
 export const fetchQuestionsByDepId = async (depip) => {
     try {
         const url = `https://localhost:7240/api/PatientQuestionGetQuestionByDepId?depip=${depip}`;
