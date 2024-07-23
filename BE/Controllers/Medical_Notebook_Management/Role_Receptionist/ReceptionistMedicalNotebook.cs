@@ -44,10 +44,16 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             {
                 return StatusCode(500, "Error uploading file to Cloudinary.");
             }
+
             var m = _context.MedicalNotebooks.FirstOrDefault(x => x.Id == mid);
-            m.TestResult = uploadResult.Url.ToString();
+            var testResult = new TestResult
+            {
+                ImgUrl = uploadResult.Url.ToString()
+                // Set other properties of TestResult as necessary
+            };
+            m.TestResults.Add(testResult);
             await _context.SaveChangesAsync();
-            return Ok(m.TestResult);
+            return Ok(testResult);
         }
         [HttpGet]
         public async Task<IActionResult> GetAllMedicalNoteBook()

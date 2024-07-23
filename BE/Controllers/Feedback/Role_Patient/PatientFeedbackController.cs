@@ -3,6 +3,7 @@ using BE.DTOs.FeedbackDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace BE.Controllers.Feedback.Role_Patient
 {
@@ -21,7 +22,7 @@ namespace BE.Controllers.Feedback.Role_Patient
         [HttpGet]
         public async Task<IActionResult> GetAllFeedback()
         {
-            var list = _context.Feedbacks.ToList();
+            var list = _context.Feedbacks.Include(x => x.Patient).ToList();
             var l = _mapper.Map<List<FeedbackView>>(list);
             return Ok(l);
 
