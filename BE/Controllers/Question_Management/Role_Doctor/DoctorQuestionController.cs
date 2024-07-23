@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BE.DTOs.DepartmentDto;
 using BE.Models;
 using BE.Service.IService;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +43,9 @@ namespace BE.Controllers.Question_Management.Role_Doctor
         public async Task<IActionResult> GetDepartment(int docid)
         {
             var q = _context.Doctors.FirstOrDefault(x => x.DocId == docid);
-            return Ok(q.DepId);
+            var de = _context.Departments.FirstOrDefault(x => x.DepId == q.DepId);
+            var d = _mapper.Map<DepartmentAppointment>(de);
+            return Ok(d);
         }
     }
 }
