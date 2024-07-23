@@ -1,8 +1,10 @@
 ﻿using AutoMapper;
+using BE.DTOs.DepartmentDto;
 using BE.Models;
 using BE.Service.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Org.BouncyCastle.Ocsp;
 
 namespace BE.Controllers.Question_Management.Role_Doctor
 {
@@ -32,11 +34,18 @@ namespace BE.Controllers.Question_Management.Role_Doctor
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllQuestion(int docid)
+        public async Task<IActionResult> GetAllQuestion(int depid)
         {
-            int depid = _service.GetDepIdByDocId(docid);
             var q = _context.Questions.Where(x => x.DepId == depid).ToList();
             return Ok(q);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetDepartment(int docid)
+        {
+            var q = _context.Doctors.FirstOrDefault(x => x.DocId == docid);
+            var de = _context.Departments.FirstOrDefault(x => x.DepId == q.DepId);
+            var d = _mapper.Map<DepartmentAppointment>(de);
+            return Ok(d);
         }
     }
 }

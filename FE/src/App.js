@@ -24,6 +24,7 @@ import DoctorDash from '../src/pages/DoctorManagement';
 import CreateNoteBook from '../src/pages/DoctorManagement/doctormanagement'
 import PatientViewQuestion from './pages/PatientAskQuestion/index'
 import Create_CustomerFeedback from './pages/Feedback/Create_CustomerFeedback'
+import DoctorAnswerQuestion from './pages/DoctorManagement/AnswerQuestion/doctor_answer_question'
 function App() {
   return (
     <Routes>
@@ -74,6 +75,7 @@ function App() {
       {/*Doctor*/}
       <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
         <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />
+        <Route path="doctor-answer-question" element={<DoctorAnswerQuestion />} />
 
       </Route>
       {/**Hỏi đáp và các service khác */}
