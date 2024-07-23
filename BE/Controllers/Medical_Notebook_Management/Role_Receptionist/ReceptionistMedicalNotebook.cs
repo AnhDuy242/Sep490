@@ -1,4 +1,4 @@
-﻿using AutoMapper;
+﻿    using AutoMapper;
 using BE.DTOs.MedicalNoteBookDro;
 using BE.Models;
 using BE.Service.ImplService;
@@ -44,15 +44,25 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             {
                 return StatusCode(500, "Error uploading file to Cloudinary.");
             }
-            var testResult = new TestResult
-            {
-                ImgUrl = uploadResult.Url.ToString()
-                // Set other properties of TestResult as necessary
-            };
             var m = _context.MedicalNotebooks.FirstOrDefault(x => x.Id == mid);
-            m.TestResults.Add(testResult);
+            m.TestResult = uploadResult.Url.ToString();
             await _context.SaveChangesAsync();
-            return Ok(testResult);
+            return Ok(m.TestResult);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllMedicalNoteBook()
+        {
+            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).ToList();
+            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMedicalNoteBookByPatientId(int pid)
+        {
+            var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Where(x => x.PatientId == pid).ToList();
+            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
         }
         [HttpGet]
         public async Task<IActionResult> GetAllMedicalNoteBook()

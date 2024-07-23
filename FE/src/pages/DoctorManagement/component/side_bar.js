@@ -96,25 +96,17 @@ const Sidebar = () => {
           <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
-          <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/create_patient_account">
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> {/**sua o cho nay */}
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Tạo tài khoản bệnh nhân" />
+            <ListItemText primary="Tạo sổ tay khám bệnh" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/approve_appointment">
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> {/**sua o cho nay */}
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Phê Duyệt lịch khám" />
-          </ListItem>
-        </List>
-        <List className={classes.list}>
-          <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/ViewAllPatientMedicalNotebooks">
-            <ListItemIcon>
-              <InboxIcon style={{ color: 'white' }} />
-            </ListItemIcon>
-            <ListItemText primary="Sổ tay khám bệnh" />
+            <ListItemText primary="Xem lịch làm việc hàng tuần" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">

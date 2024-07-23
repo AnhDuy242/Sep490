@@ -19,6 +19,7 @@ using BE.Service.ImplService;
 //using BE.Hub;
 using BE;
 using Hangfire;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +52,10 @@ builder.Services.AddSingleton<ISMSService>(provider =>
         configuration["Twilio:AuthToken"],
         configuration["Twilio:PhoneNumber"]);
 });
+
+builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
+builder.Services.AddSingleton<CloudinaryService>();
+
 //Validate Service Configure
 builder.Services.AddTransient<IValidateService, ValidateService>();
 builder.Services.AddTransient<IDoctorService, DoctorService>();
