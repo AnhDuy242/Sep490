@@ -22,6 +22,7 @@ import MedicalNotebook from '../src/pages/MedicalNotebook-patient';
 import ViewAllNotebooks from './pages/ReceptionistManagement/view_notebooks'
 import DoctorDash from '../src/pages/DoctorManagement';
 import CreateNoteBook from '../src/pages/DoctorManagement/doctormanagement'
+import PatientViewQuestion from './pages/PatientAskQuestion/index'
 function App() {
   return (
     <Routes>
@@ -60,19 +61,23 @@ function App() {
       {/**Route patient view update delete appointment*/}
       <Route path="/getAppointment" element={<ProtectedRoute requiredRole="Patient"><GetAppointment /></ProtectedRoute>}>
       </Route>
-      <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment/></ProtectedRoute>}>
-        
-        </Route>
+      <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment /></ProtectedRoute>}>
+
+      </Route>
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
 
 
-     
-         {/*Doctor*/}
-        <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
+
+      {/*Doctor*/}
+      <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
         <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />
 
-        </Route>
+      </Route>
+      {/**Hỏi đáp và các service khác */}
+      <Route path="/GetListQuestion" element={<ProtectedRoute requiredRole="Patient"><PatientViewQuestion /></ProtectedRoute>}>
+
+      </Route>
     </Routes>
   );
 }

@@ -12,6 +12,7 @@ import FeedBack from '../Home/component/Feedback'
 import ChatPopup from '../../layouts/ChatNotification';
 import ChatPopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForRecepptionist';
 import { AuthContext } from '../../utils/AuthContext';
+import CustomerServiec from './component/CustomerService'
 function Home() {
   const { user } = useContext(AuthContext);
   const role=localStorage.getItem('role');
@@ -21,6 +22,7 @@ function Home() {
       <Header />
       <NavBar />
       <CarouselSlider></CarouselSlider>
+      <CustomerServiec></CustomerServiec>
       <DoctorList/>
       <Blog/>
       <Article/>

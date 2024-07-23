@@ -4,6 +4,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
+import InfoIcon from '@mui/icons-material/Info';
 import { getMedicalNotebooks } from '../../services/receptionist_management';
 
 const ViewAllNoteBooks = () => {
@@ -101,10 +102,10 @@ const ViewAllNoteBooks = () => {
                         <TableRow>
                             <TableCell>Kê đơn</TableCell>
                             <TableCell>Chẩn đoán</TableCell>
-                            <TableCell>Kết quả xét nghiệm</TableCell>
                             <TableCell>Tên bệnh nhân</TableCell>
                             <TableCell>Bác sĩ khám</TableCell>
                             <TableCell>Thêm ảnh</TableCell>
+                            <TableCell>Chi tiết</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -112,12 +113,17 @@ const ViewAllNoteBooks = () => {
                             <TableRow key={index}>
                                 <TableCell>{notebook.prescription}</TableCell>
                                 <TableCell>{notebook.diagnostic}</TableCell>
-                                <TableCell>{notebook.testResult ? <img src={notebook.testResult} alt="Kết quả xét nghiệm" style={{ width: '100px' }} /> : 'Không có kết quả'}</TableCell>
+                                {/* <TableCell>{notebook.testResult ? <img src={notebook.testResult} alt="Kết quả xét nghiệm" style={{ width: '100px' }} /> : 'Không có kết quả'}</TableCell> */}
                                 <TableCell>{notebook.patientName}</TableCell>
                                 <TableCell>{notebook.doctorName}</TableCell>
                                 <TableCell>
-                                    <IconButton onClick={() => handleClickOpen(notebook)}>
+                                    <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
                                         <AddIcon />
+                                    </IconButton>
+                                </TableCell>
+                                <TableCell>
+                                    <IconButton title="Xem chi tiết">
+                                        <InfoIcon />
                                     </IconButton>
                                 </TableCell>
                             </TableRow>
