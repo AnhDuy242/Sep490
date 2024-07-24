@@ -145,7 +145,7 @@ const PatientManagement = () => {
                             <TableCell>Ngày sinh</TableCell>
                             <TableCell>Giới tính</TableCell>
                             <TableCell>Trạng thái </TableCell>
-                            <TableCell>Tạo</TableCell>
+                            <TableCell>Tạo bệnh án</TableCell>
                             <TableCell>Xem hồ sơ</TableCell>
                         </TableRow>
                     </TableHead>
@@ -175,7 +175,7 @@ const PatientManagement = () => {
                                         color="primary"
                                         onClick={() => handleOpenForm(patient)}
                                     >
-                                        Create
+                                       Thêm mới
                                     </Button>
                                 </TableCell>
                                 <TableCell>
@@ -184,7 +184,7 @@ const PatientManagement = () => {
                                         color="secondary"
                                         onClick={() => handleOpenViewDialog(patient.patientId)}
                                     >
-                                        View
+                                        Xem 
                                     </Button>
                                 </TableCell>
                             </TableRow>

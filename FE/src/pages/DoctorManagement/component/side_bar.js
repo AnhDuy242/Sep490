@@ -102,7 +102,7 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Tạo sổ tay khám bệnh" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> {/**sua o cho nay */}
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/viewweeklyschedule"> {/**sua o cho nay */}
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>

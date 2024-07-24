@@ -10,7 +10,7 @@ import ListBlog from './pages/ArticleManagement/list_blog';
 import ArticleDash from './pages/ArticleManagement';
 import Receptionist from '../src/pages/Receptionist'
 // import ViewInforAppoint from './pages/Appointment-patient/ViewInforAppoint';
-import ScheduleAdmin from './pages/AdminDashBoard/schedule_admin'
+import ScheduleAdmin from './pages/AdminDashBoard/schedule_doctor_admin'
 import Add_blog from './pages/ArticleManagement/add_blog';
 import CreateAppointment from './pages/Appointment-patient/CreateAppointment';
 import GetAppointment from '../src/pages/Appointment-patient/ViewInforAppoint';
@@ -26,6 +26,7 @@ import PatientViewQuestion from './pages/PatientAskQuestion/index'
 import Create_CustomerFeedback from './pages/Feedback/Create_CustomerFeedback'
 import DoctorAnswerQuestion from './pages/DoctorManagement/AnswerQuestion/doctor_answer_question'
 import ViewOnlinePatient_forDoctor from './pages/DoctorManagement/ViewOnlinePatient_Doctor/ViewOnlinePatient_Doctor';
+import ViewWeeklySchedule_Doctor from './pages/DoctorManagement/ViewWeeklySchedule_Doctor/ViewWeeklySchedule_Doctor'
 function App() {
   return (
     <Routes>
@@ -78,6 +79,7 @@ function App() {
         <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />
         <Route path="doctor-answer-question" element={<DoctorAnswerQuestion />} />
         <Route path="view-online-patient" element={<ViewOnlinePatient_forDoctor />} />
+        <Route path="viewweeklyschedule" element={<ViewWeeklySchedule_Doctor />} />
 
       </Route>
       {/**Hỏi đáp và các service khác */}

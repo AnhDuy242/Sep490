@@ -67,6 +67,17 @@ export const updateDoctor = async (id, data) => {
 };
 
 
+export const fetchSchedulesByDoctorId = async (doctorId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/ManageSchedule/GetAllSchedulesByDoctorId?doctorId=${doctorId}`);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return await response.json();
+  } catch (error) {
+    throw new Error(`Failed to fetch schedules: ${error.message}`);
+  }
+};
 // services/apiService.js
 
 
