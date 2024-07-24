@@ -13,7 +13,7 @@ const CreatePatientAccount = () => {
         name: '',
         gender: '',
         address: '',
-        birthDate: '',
+        dob: '',
         activeStatus: true // Mặc định là true
     });
     const [patients, setPatients] = useState([]);
@@ -44,7 +44,7 @@ const CreatePatientAccount = () => {
             name: '',
             gender: '',
             address: '',
-            birthDate: '',
+            dob: '',
             activeStatus: true // Mặc định là true
         });
         setOpen(true);
@@ -59,7 +59,7 @@ const CreatePatientAccount = () => {
             name: '',
             gender: '',
             address: '',
-            birthDate: '',
+            dob: '',
             activeStatus: true // Mặc định là true
         });
         setOpen(false);
@@ -170,8 +170,8 @@ const CreatePatientAccount = () => {
                         label="Ngày sinh"
                         type="date"
                         fullWidth
-                        name="birthDate"
-                        value={patientData.birthDate}
+                        name="dob"
+                        value={patientData.dob}
                         onChange={handleChange}
                         InputLabelProps={{
                             shrink: true,
