@@ -18,13 +18,14 @@ import ReceptionistDash from '../src/pages/ReceptionistManagement';
 import CreatePatientAccount from '../src/pages/ReceptionistManagement/create_patient_account';
 import ApproveAppointment from '../src/pages/ReceptionistManagement/approve_appointment';
 import ListDoctorView from './pages/DoctorList'
-import MedicalNotebook from '../src/pages/MedicalNotebook-patient';
+import MedicalNotebook_ForPatient from '../src/pages/MedicalNotebook-patient';
 import ViewAllNotebooks from './pages/ReceptionistManagement/view_notebooks'
 import DoctorDash from '../src/pages/DoctorManagement';
 import CreateNoteBook from '../src/pages/DoctorManagement/doctormanagement'
 import PatientViewQuestion from './pages/PatientAskQuestion/index'
 import Create_CustomerFeedback from './pages/Feedback/Create_CustomerFeedback'
 import DoctorAnswerQuestion from './pages/DoctorManagement/AnswerQuestion/doctor_answer_question'
+import ViewOnlinePatient_forDoctor from './pages/DoctorManagement/ViewOnlinePatient_Doctor/ViewOnlinePatient_Doctor';
 function App() {
   return (
     <Routes>
@@ -76,11 +77,13 @@ function App() {
       <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
         <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />
         <Route path="doctor-answer-question" element={<DoctorAnswerQuestion />} />
+        <Route path="view-online-patient" element={<ViewOnlinePatient_forDoctor />} />
 
       </Route>
       {/**Hỏi đáp và các service khác */}
       <Route path="/GetListQuestion" element={<ProtectedRoute requiredRole="Patient"><PatientViewQuestion /></ProtectedRoute>}>
-    
+      </Route>
+      <Route path="/getMedicalNotebook" element={<ProtectedRoute requiredRole="Patient"><MedicalNotebook_ForPatient /></ProtectedRoute>}>
       </Route>
     </Routes>
   );
