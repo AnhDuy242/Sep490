@@ -1,5 +1,6 @@
-﻿    using AutoMapper;
+﻿using AutoMapper;
 using BE.DTOs.MedicalNoteBookDro;
+using BE.DTOs.PatientDto;
 using BE.Models;
 using BE.Service.ImplService;
 using Microsoft.AspNetCore.Http;
@@ -77,6 +78,52 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             return Ok(t);
 
         }
+
+
+        [HttpPut]
+        public async Task<IActionResult> SetOfflinePatientByMid(int mid)
+        {
+            try
+            {
+                var m = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Include(x => x.TestResults).FirstOrDefault(x => x.Id == mid);
+                var p = _context.Patients.FirstOrDefault(x => x.PatientId == m.PatientId);
+                p.Check = null;
+                _context.Patients.Update(p);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex); }
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> SetOnlinePatientByPid(int pid)
+        {
+            try
+            {
+                var p = _context.Patients.FirstOrDefault(x => x.PatientId == pid);
+                p.Check = 1;
+                _context.Patients.Update(p);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex); }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllPatient()
+        {
+            try
+            {
+                var list = _context.Patients.Include(x => x.PatientNavigation).ToList();
+                var l = _mapper.Map<List<PatientReceptionist>>(list);
+                return Ok(l);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(
+                ex.Message);
+            }
+        }
+
 
         //[HttpGet]
         //public async Task<IActionResult> GetAllMedicalNoteBook()

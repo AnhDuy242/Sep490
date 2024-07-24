@@ -100,7 +100,7 @@ const Sidebar = () => {
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Tạo tài khoản bệnh nhân" />
+            <ListItemText primary="Tài khoản bệnh nhân" />
           </ListItem>
           <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/approve_appointment">
             <ListItemIcon>

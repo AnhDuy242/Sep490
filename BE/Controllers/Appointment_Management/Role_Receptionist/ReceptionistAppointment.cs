@@ -38,5 +38,28 @@ namespace BE.Controllers.Appointment
              _context.Appointments.Remove(appointment);
             return Ok("Appointment cancel successfully.");
         }
+        [HttpPost]
+        public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreate appointmentDto)
+        {
+            try
+            {
+                Models.Appointment appointment = new Models.Appointment()
+                {
+                    Date = appointmentDto.Date.Date,
+                    PatientId = appointmentDto.PatientId,
+                    DoctorId = appointmentDto.DoctorId,
+                    SlotId = appointmentDto.SlotId,
+                    Status = "Tái khám",
+                    ServiceId = appointmentDto.ServiceId,
+                };
+                _context.Appointments.Add(appointment);
+                _context.SaveChanges();
+                return Ok(appointment);
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
     }
 }
