@@ -48,6 +48,21 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
             return Ok(lists);
 
         }
+        [HttpGet]
+        public async Task<IActionResult> ViewPatientActive()
+        {
+            try
+            {
+                var list = _context.Patients.Where(x => x.Check!=null).ToList();
+                return Ok(list);
+            } catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+      
+
 
     }
 }
