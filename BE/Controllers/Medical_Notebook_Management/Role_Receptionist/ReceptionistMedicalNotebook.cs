@@ -77,6 +77,21 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             return Ok(t);
 
         }
+      
+
+        [HttpPut]
+        public async Task<IActionResult> SetStatePatient(int mid)
+        {
+            try
+            {
+                var m = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Include(x => x.TestResults).FirstOrDefault(x => x.Id == mid);
+                var p = _context.Patients.FirstOrDefault(x => x.PatientId == m.PatientId);
+                p.Check = null;
+                _context.Patients.Update(p);
+                _context.SaveChanges();
+                return Ok();
+            } catch (Exception ex) { return BadRequest(ex); }
+        }
 
         //[HttpGet]
         //public async Task<IActionResult> GetAllMedicalNoteBook()
