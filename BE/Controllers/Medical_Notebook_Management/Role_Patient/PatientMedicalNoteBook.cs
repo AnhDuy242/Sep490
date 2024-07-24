@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BE.DTOs.MedicalNoteBookDro;
+using BE.DTOs.TestResultDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -24,6 +25,13 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Patient
         {
             var list = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Where(x => x.PatientId == pid).ToList();
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetTestResult(int mid)
+        {
+            var list = _context.TestResults.Where(x => x.MId == mid).ToList();
+            var lists = _mapper.Map<List<TestResultPatient>>(list);
             return Ok(lists);
         }
     }

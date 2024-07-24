@@ -10,6 +10,7 @@ using BE.DTOs.SlotDto;
 using BE.Models;
 using BE.DTOs.FeedbackDto;
 using BE.DTOs.QuestionDto;
+using BE.DTOs.TestResultDto;
 
 public class MappingProfile : Profile
 {
@@ -54,6 +55,10 @@ public class MappingProfile : Profile
         CreateMap<Doctor, DoctorMarketing>()
                     .ForMember(dest => dest.AllServiceName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Name))))
                     .ForMember(dest => dest.AllDepartmentName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Dep.Name))));
+
+        //test rs
+        CreateMap<TestResult, TestResultPatient>().ReverseMap();
+
         //feedback
         CreateMap<Feedback, FeedbackCreate>().ReverseMap();
         CreateMap<Feedback, FeedbackView>()
