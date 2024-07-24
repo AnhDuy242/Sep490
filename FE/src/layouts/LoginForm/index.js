@@ -66,7 +66,7 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           } else if (role === 'Receptionist') {
             navigate('/receptionist/dashboard/', { replace: true });
           } else if (role === 'Doctor') {
-            navigate('/doctor/dashboard/', { replace: true });
+            navigate('/doctor/dasboard/', { replace: true });
           } else {
             navigate('/', { replace: true });
           }

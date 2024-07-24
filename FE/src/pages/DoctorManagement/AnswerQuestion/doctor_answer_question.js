@@ -201,6 +201,7 @@ const DoctorAnswerQuestion = () => {
                             <TableCell>Câu hỏi</TableCell>
                             <TableCell>Ngày tạo</TableCell>
                             <TableCell>Trả lời câu hỏi</TableCell>
+                            <TableCell>Câu trả lời</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -209,6 +210,7 @@ const DoctorAnswerQuestion = () => {
                                 <TableCell>{question.quesId}</TableCell>
                                 <TableCell>{question.question1}</TableCell>
                                 <TableCell>{question.quesDate}</TableCell>
+                                <TableCell>{question.answer}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => handleClickOpen(question.quesId)}>
                                         <EditIcon />

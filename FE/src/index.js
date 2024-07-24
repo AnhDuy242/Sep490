@@ -27,8 +27,8 @@ root.render(
 
     <Router>
       <AuthProvider>
-      {/* <App /> */}
-      <Create_CustomerFeedack/>
+      <App />
+      {/* <Create_CustomerFeedack/> */}
         
               </AuthProvider>
     </Router>
