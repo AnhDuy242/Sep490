@@ -80,7 +80,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
       
 
         [HttpPut]
-        public async Task<IActionResult> SetStatePatient(int mid)
+        public async Task<IActionResult> SetStatePatientByMid(int mid)
         {
             try
             {
@@ -92,6 +92,21 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
                 return Ok();
             } catch (Exception ex) { return BadRequest(ex); }
         }
+
+        [HttpPut]
+        public async Task<IActionResult> SetStatePatientByPid(int pid)
+        {
+            try
+            {
+                var p = _context.Patients.FirstOrDefault(x => x.PatientId == pid);
+                p.Check = null;
+                _context.Patients.Update(p);
+                _context.SaveChanges();
+                return Ok();
+            }
+            catch (Exception ex) { return BadRequest(ex); }
+        }
+
 
         //[HttpGet]
         //public async Task<IActionResult> GetAllMedicalNoteBook()
