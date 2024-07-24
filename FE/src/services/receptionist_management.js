@@ -26,9 +26,10 @@ export const createPatient = async (patientData) => {
 //hàm get tài khoản bệnh nhân
 export const getAllPatients = async () => {
     const url = 'https://localhost:7240/api/CreatePatient/TestGetAllPatient';
+    const urll = 'https://localhost:7240/api/ReceptionistMedicalNotebook/GetAllPatient';
 
     try {
-        const response = await fetch(url, {
+        const response = await fetch(urll, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
@@ -151,3 +152,58 @@ export const getMedicalNotebooks = async () => {
 //     const data = await response.json();
 //     return data.$values; // Trả về mảng $values
 // };
+
+//set trạng thái hoạt động của patient
+// export const updatePatientStatus = async (pid) => {
+//   const url = `https://localhost:7240/api/ReceptionistMedicalNotebook/SetOnlinePatientByPid?pid=${pid}`;
+
+//   try {
+//       const response = await fetch(url, {
+//           method: 'PUT',
+//           headers: {
+//               'Content-Type': 'application/json'
+//           }
+//       });
+
+//       if (response.ok) {
+//           const data = await response.json();
+//           console.log('Success:', data);
+//           return data;
+//       } else {
+//           const error = await response.text();
+//           console.error('Error:', error);
+//           throw new Error(`Failed to set online patient: ${error}`);
+//       }
+//   } catch (error) {
+//       console.error('Error:', error);
+//       throw new Error(`An error occurred: ${error.message}`);
+//   }
+// };
+export const updatePatientStatus = async (pid) => {
+  const url = `https://localhost:7240/api/ReceptionistMedicalNotebook/SetOnlinePatientByPid?pid=${pid}`;
+
+  try {
+      const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      });
+
+      if (response.ok) {
+          // Kiểm tra xem phản hồi có nội dung hay không
+          const text = await response.text();
+          const data = text ? JSON.parse(text) : {};
+          console.log('Success:', data);
+          return data;
+      } else {
+          const error = await response.text();
+          console.error('Error:', error);
+          throw new Error(`Failed to set online patient: ${error}`);
+      }
+  } catch (error) {
+      console.error('Error:', error);
+      throw new Error(`An error occurred: ${error.message}`);
+  }
+};
+
