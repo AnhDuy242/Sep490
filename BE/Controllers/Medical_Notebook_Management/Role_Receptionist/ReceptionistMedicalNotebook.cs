@@ -80,7 +80,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
       
 
         [HttpPut]
-        public async Task<IActionResult> SetStatePatientByMid(int mid)
+        public async Task<IActionResult> SetOfflinePatientByMid(int mid)
         {
             try
             {
@@ -94,12 +94,12 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
         }
 
         [HttpPut]
-        public async Task<IActionResult> SetStatePatientByPid(int pid)
+        public async Task<IActionResult> SetOnlinePatientByPid(int pid)
         {
             try
             {
                 var p = _context.Patients.FirstOrDefault(x => x.PatientId == pid);
-                p.Check = null;
+                p.Check = 1;
                 _context.Patients.Update(p);
                 _context.SaveChanges();
                 return Ok();
