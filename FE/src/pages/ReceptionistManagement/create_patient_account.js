@@ -595,6 +595,7 @@ import { bookAppointment, getListDepartment, fetchDoctors, fetchSlots, fetchServ
 import MuiAlert from '@mui/material/Alert';
 import { format } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import './component/rep.css'
 
 const CreatePatientAccount = () => {
     const [open, setOpen] = useState(false);
@@ -988,7 +989,7 @@ const CreatePatientAccount = () => {
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
                         <TableRow>
-                            <TableCell>ID Tài Khoản</TableCell>
+                            <TableCell>ID</TableCell>
                             <TableCell>Số điện thoại</TableCell>
                             <TableCell>Email</TableCell>
                             <TableCell>Password</TableCell>
@@ -1015,21 +1016,23 @@ const CreatePatientAccount = () => {
                                 <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
                                 <TableCell>
                                     <Button
+                                        className="small-button"
                                         variant="contained"
                                         color="secondary"
                                         startIcon={<AddIcon />}
                                         onClick={() => handleAddDialogOpen(patient.patientId)} // Truyền ID bệnh nhân vào hàm
                                     >
-                                        Thêm Lịch Tái Khám
+                                        Tái Khám
                                     </Button>
                                 </TableCell>
                                 <TableCell>
                                     <Button
+                                        className="small-button"
                                         variant="contained"
                                         color="primary"
                                         onClick={() => handleStatusChange(patient.patientId, patient.check)}
                                     >
-                                        {patient.check !== null ? 'Hoạt Động' : 'Không hoạt động'}
+                                        {patient.check !== null ? 'Hoạt động' : 'Không hoạt động'}
                                     </Button>
                                 </TableCell>
                             </TableRow>
