@@ -2,6 +2,8 @@
 {
     public class MedicalNotebookPatient
     {
+        public int Id { get; set; }
+
         public string Prescription { get; set; } = null!;
 
         public string Diagnostic { get; set; } = null!;
