@@ -154,31 +154,6 @@ export const getMedicalNotebooks = async () => {
 // };
 
 //set trạng thái hoạt động của patient
-// export const updatePatientStatus = async (pid) => {
-//   const url = `https://localhost:7240/api/ReceptionistMedicalNotebook/SetOnlinePatientByPid?pid=${pid}`;
-
-//   try {
-//       const response = await fetch(url, {
-//           method: 'PUT',
-//           headers: {
-//               'Content-Type': 'application/json'
-//           }
-//       });
-
-//       if (response.ok) {
-//           const data = await response.json();
-//           console.log('Success:', data);
-//           return data;
-//       } else {
-//           const error = await response.text();
-//           console.error('Error:', error);
-//           throw new Error(`Failed to set online patient: ${error}`);
-//       }
-//   } catch (error) {
-//       console.error('Error:', error);
-//       throw new Error(`An error occurred: ${error.message}`);
-//   }
-// };
 export const updatePatientStatus = async (pid) => {
   const url = `https://localhost:7240/api/ReceptionistMedicalNotebook/SetOnlinePatientByPid?pid=${pid}`;
 
@@ -207,3 +182,31 @@ export const updatePatientStatus = async (pid) => {
   }
 };
 
+// set trạng thái không hoạt động của patient
+export const setOfflinePatientByMid = async (mid) => {
+  const url = `https://localhost:7240/api/ReceptionistMedicalNotebook/SetOfflinePatientByMid?mid=${mid}`;
+
+  try {
+      const response = await fetch(url, {
+          method: 'PUT',
+          headers: {
+              'Content-Type': 'application/json'
+          }
+      });
+
+      if (response.ok) {
+          // Kiểm tra xem phản hồi có nội dung hay không
+          const text = await response.text();
+          const data = text ? JSON.parse(text) : {};
+          console.log('Success:', data);
+          return data;
+      } else {
+          const error = await response.text();
+          console.error('Error:', error);
+          throw new Error(`Failed to set offline patient: ${error}`);
+      }
+  } catch (error) {
+      console.error('Error:', error);
+      throw new Error(`An error occurred: ${error.message}`);
+  }
+};

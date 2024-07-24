@@ -1,12 +1,12 @@
 // import React, { useState, useEffect } from 'react';
-// import {Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
-//     TextField, MenuItem, FormControl, InputLabel, Select, TablePagination} from '@mui/material';
-// import { createPatient, getAllPatients } from './../../services/receptionist_management';
+// import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
+//     TextField, MenuItem, FormControl, InputLabel, Select, TablePagination } from '@mui/material';
+// import { createPatient, getAllPatients, updatePatientStatus } from './../../services/receptionist_management'; // Import hàm updatePatientStatus
 
 // const CreatePatientAccount = () => {
 //     const [open, setOpen] = useState(false);
 //     const [patientData, setPatientData] = useState({
-//         id: '',
+//         patientId: '',
 //         phone: '',
 //         email: '',
 //         password: '',
@@ -37,7 +37,7 @@
 
 //     const handleClickOpen = () => {
 //         setPatientData({
-//             id: '',
+//             patientId: '',
 //             phone: '',
 //             email: '',
 //             password: '',
@@ -52,7 +52,7 @@
 
 //     const handleClose = () => {
 //         setPatientData({
-//             id: '',
+//             patientId: '',
 //             phone: '',
 //             email: '',
 //             password: '',
@@ -79,6 +79,18 @@
 //             setPatients(patientsList);
 //         } catch (error) {
 //             console.error('Error creating patient:', error);
+//         }
+//     };
+
+//     const handleStatusChange = async (patientId, currentStatus) => {
+//         try {
+//             // Cập nhật trạng thái của bệnh nhân
+//             await updatePatientStatus(patientId, currentStatus === null ? 1 : null);
+//             // Cập nhật danh sách bệnh nhân
+//             const patientsList = await getAllPatients();
+//             setPatients(patientsList);
+//         } catch (error) {
+//             console.error('Error updating patient status:', error);
 //         }
 //     };
 
@@ -197,6 +209,7 @@
 //                             <TableCell>Ngày sinh</TableCell>
 //                             <TableCell>Trạng thái hoạt động</TableCell>
 //                             <TableCell>Trạng thái</TableCell>
+//                             {/* <TableCell>Hành động</TableCell> */}
 //                         </TableRow>
 //                     </TableHead>
 //                     <TableBody>
@@ -211,7 +224,15 @@
 //                                 <TableCell>{patient.address}</TableCell>
 //                                 <TableCell>{patient.dob}</TableCell>
 //                                 <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
-//                                 <TableCell>{patient.check ? 'Hoạt động' : 'Không hoạt động'}</TableCell>
+//                                 {/* <TableCell>{patient.check !== null ? 'Hoạt động' : 'Không hoạt động'}</TableCell> */}
+//                                 <TableCell>
+//                                     <Button 
+//                                         variant="contained" 
+//                                         color="primary" 
+//                                         onClick={() => handleStatusChange(patient.patientId, patient.check)}>
+//                                         {patient.check !== null ? 'Hoạt Động' : 'Không hoạt động'}
+//                                     </Button>
+//                                 </TableCell>
 //                             </TableRow>
 //                         ))}
 //                     </TableBody>
@@ -233,9 +254,13 @@
 // export default CreatePatientAccount;
 
 
+
+
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
-    TextField, MenuItem, FormControl, InputLabel, Select, TablePagination } from '@mui/material';
+import {
+    Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle,
+    TextField, MenuItem, FormControl, InputLabel, Select, TablePagination, Autocomplete
+} from '@mui/material';
 import { createPatient, getAllPatients, updatePatientStatus } from './../../services/receptionist_management'; // Import hàm updatePatientStatus
 
 const CreatePatientAccount = () => {
@@ -252,7 +277,6 @@ const CreatePatientAccount = () => {
         activeStatus: true // Mặc định là true
     });
     const [patients, setPatients] = useState([]);
-    const [searchType, setSearchType] = useState('name');
     const [searchTerm, setSearchTerm] = useState('');
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [page, setPage] = useState(0);
@@ -330,12 +354,7 @@ const CreatePatientAccount = () => {
     };
 
     const filteredAccounts = patients.filter((account) => {
-        if (searchType === 'name') {
-            return account.name.toLowerCase().includes(searchTerm.toLowerCase());
-        } else if (searchType === 'phone') {
-            return account.phone.includes(searchTerm);
-        }
-        return true;
+        return account.phone.includes(searchTerm);
     });
 
     const handlePageChange = (event, newPage) => {
@@ -430,6 +449,25 @@ const CreatePatientAccount = () => {
                     <Button onClick={handleSubmit}>Lưu</Button>
                 </DialogActions>
             </Dialog>
+            
+            {/* Thanh tìm kiếm với Autocomplete */}
+            <Autocomplete
+                freeSolo
+                options={patients.map((patient) => patient.phone)}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label="Tìm kiếm theo số điện thoại"
+                        margin="dense"
+                        variant="outlined"
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                )}
+                onInputChange={(event, newInputValue) => {
+                    setSearchTerm(newInputValue);
+                }}
+            />
+
             <TableContainer component={Paper}>
                 <Table sx={{ minWidth: 650 }} aria-label="simple table">
                     <TableHead>
@@ -444,7 +482,6 @@ const CreatePatientAccount = () => {
                             <TableCell>Ngày sinh</TableCell>
                             <TableCell>Trạng thái hoạt động</TableCell>
                             <TableCell>Trạng thái</TableCell>
-                            {/* <TableCell>Hành động</TableCell> */}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -459,12 +496,12 @@ const CreatePatientAccount = () => {
                                 <TableCell>{patient.address}</TableCell>
                                 <TableCell>{patient.dob}</TableCell>
                                 <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
-                                {/* <TableCell>{patient.check !== null ? 'Hoạt động' : 'Không hoạt động'}</TableCell> */}
                                 <TableCell>
-                                    <Button 
-                                        variant="contained" 
-                                        color="primary" 
-                                        onClick={() => handleStatusChange(patient.patientId, patient.check)}>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={() => handleStatusChange(patient.patientId, patient.check)}
+                                    >
                                         {patient.check !== null ? 'Hoạt Động' : 'Không hoạt động'}
                                     </Button>
                                 </TableCell>
