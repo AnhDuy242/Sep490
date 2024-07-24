@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BE.DTOs.MedicalNoteBookDro;
+using BE.DTOs.PatientDto;
 using BE.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -60,8 +61,22 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
                 return BadRequest(ex.Message);
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAllPatient()
+        {
+            try
+            {
+                var list = _context.Patients.Include(x => x.PatientNavigation).Where(x=>x.Check!=null).ToList();
+                var l = _mapper.Map<List<PatientReceptionist>>(list);
+                return Ok(l);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(
+                ex.Message);
+            }
+        }
 
-      
 
 
     }
