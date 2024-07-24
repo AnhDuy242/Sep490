@@ -11,6 +11,7 @@ using BE.Models;
 using BE.DTOs.FeedbackDto;
 using BE.DTOs.QuestionDto;
 using BE.DTOs.TestResultDto;
+using BE.DTOs.PatientDto;
 
 public class MappingProfile : Profile
 {
@@ -58,6 +59,14 @@ public class MappingProfile : Profile
 
         //test rs
         CreateMap<TestResult, TestResultPatient>().ReverseMap();
+        //patient
+        CreateMap<Patient, PatientReceptionist>()
+            .ForMember(dest => dest.Phone, otp => otp.MapFrom(src => src.PatientNavigation.Phone))
+            .ForMember(dest => dest.Email, otp => otp.MapFrom(src => src.PatientNavigation.Email))
+            .ForMember(dest => dest.Password, otp => otp.MapFrom(src => src.PatientNavigation.Password))
+            .ForMember(dest => dest.RoleId, otp => otp.MapFrom(src => src.PatientNavigation.RoleId))
+
+            .ReverseMap();
 
         //feedback
         CreateMap<Feedback, FeedbackCreate>().ReverseMap();

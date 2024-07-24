@@ -1,5 +1,6 @@
-﻿    using AutoMapper;
+﻿using AutoMapper;
 using BE.DTOs.MedicalNoteBookDro;
+using BE.DTOs.PatientDto;
 using BE.Models;
 using BE.Service.ImplService;
 using Microsoft.AspNetCore.Http;
@@ -77,7 +78,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             return Ok(t);
 
         }
-      
+
 
         [HttpPut]
         public async Task<IActionResult> SetOfflinePatientByMid(int mid)
@@ -90,7 +91,8 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
                 _context.Patients.Update(p);
                 _context.SaveChanges();
                 return Ok();
-            } catch (Exception ex) { return BadRequest(ex); }
+            }
+            catch (Exception ex) { return BadRequest(ex); }
         }
 
         [HttpPut]
@@ -105,6 +107,21 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
                 return Ok();
             }
             catch (Exception ex) { return BadRequest(ex); }
+        }
+        [HttpGet]
+        public async Task<IActionResult> GetAllPatient()
+        {
+            try
+            {
+                var list = _context.Patients.Include(x => x.PatientNavigation).ToList();
+                var l = _mapper.Map<List<PatientReceptionist>>(list);
+                return Ok(l);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(
+                ex.Message);
+            }
         }
 
 
