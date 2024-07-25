@@ -33,6 +33,7 @@ const PatientManagement = () => {
         const fetchData = async () => {
             const data = await fetchPatients();
             setPatients(data);
+            console.log(data);
             setFilteredPatients(data);
         };
         fetchData();
@@ -42,7 +43,7 @@ const PatientManagement = () => {
         if (filter === 'All') {
             setFilteredPatients(patients);
         } else {
-            setFilteredPatients(patients.filter(patient => (filter === 'Online') === patient.isActive));
+            setFilteredPatients(patients.filter(patient => (filter === 'Online') === patient.check !== null));
         }
     }, [filter, patients]);
 
@@ -165,7 +166,7 @@ const PatientManagement = () => {
                                             width: 12,
                                             height: 12,
                                             borderRadius: '50%',
-                                            backgroundColor: patient.isActive ? 'green' : 'red'
+                                            backgroundColor: patient.check !==null ? 'green' : 'red'
                                         }}
                                     />
                                 </TableCell>

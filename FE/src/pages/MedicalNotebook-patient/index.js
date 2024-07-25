@@ -224,8 +224,8 @@ const MedicalNotebook = () => {
     return (
         <div className={classes.container}>
             <Header />
-            <Navbar />
-            <Container sx={{ marginBottom: '60px' }}> {/* Thay đổi marginBottom */}
+            <Navbar  />
+            <Container sx={{ marginBottom: '200px',marginTop:'30px' }}> {/* Thay đổi marginBottom */}
                 <Typography variant="h4" className={classes.title}>
                     Tra cứu kết quả bệnh án
                 </Typography>

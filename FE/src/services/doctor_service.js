@@ -81,4 +81,13 @@ export const fetchSchedulesByDoctorId = async (doctorId) => {
 // services/apiService.js
 
 
-
+export const fetchTestResults = async (mid) => {
+  try {
+      const response = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${mid}`);
+      if (!response.ok) throw new Error('Network response was not ok');
+      return await response.json();
+  } catch (error) {
+      console.error('Error fetching test results:', error);
+      throw error;
+  }
+};
