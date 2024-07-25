@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-    Container, Button, Typography, Snackbar, Card, CardContent, Grid, TextField, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions,CardActions
+    Container, Button, Typography, Snackbar, Card, CardContent, Grid, TextField, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CardActions
 } from '@mui/material';
 import { Font } from '@react-pdf/renderer';
 import ArialUnicodeMS from '../../assets/font/arial-unicode-ms.ttf'; // Điều chỉnh đường dẫn nếu cần thiết
@@ -16,13 +16,17 @@ Font.register({
     src: ArialUnicodeMS,
 });
 const useStyles = makeStyles({
+    root: {
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh', // Chiều cao tối thiểu của toàn bộ trang
+    },
     container: {
+        flex: 1,
         paddingBottom: '60px', // Để tránh nội dung bị che bởi Footer
     },
     footer: {
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
+        position: 'relative',
         width: '100%',
         backgroundColor: '#f5f5f5',
         textAlign: 'center',
@@ -58,7 +62,7 @@ const useStyles = makeStyles({
     },
     dialogContent: {
         display: 'flex',
-        justifyContent: 'center',
+        flexDirection: 'column',
         alignItems: 'center',
         padding: '0',
     },
@@ -222,70 +226,52 @@ const MedicalNotebook = () => {
     }, [selectedNotebook, snackbarOpen]);
 
     return (
-        <div className={classes.container}>
+        <div className={classes.root}>
             <Header />
-            <Navbar  />
-            <Container sx={{ marginBottom: '200px',marginTop:'30px' }}> {/* Thay đổi marginBottom */}
+            <Navbar />
+            <Container className={classes.container}>
                 <Typography variant="h4" className={classes.title}>
                     Tra cứu kết quả bệnh án
                 </Typography>
-                <Box my={4}>
-                    <Grid container spacing={2} justifyContent="center">
-                        <Grid item xs={12} sm={6} md={4}>
-                            <TextField
-                                fullWidth
-                                label="Tìm kiếm theo mã bệnh án"
-                                variant="outlined"
-                                value={searchNotebookId}
-                                onChange={(e) => setSearchNotebookId(e.target.value)}
-                            />
-                        </Grid>
-                        <Grid item xs={12} sm={6} md={4}>
-                            <Button variant="contained" color="primary" fullWidth onClick={handleSearch}>
-                                Tìm kiếm
-                            </Button>
-                        </Grid>
-                    </Grid>
-                </Box>
+           
                 <Grid container spacing={2}>
                     {loading ? (
                         <Typography variant="body2">Đang tải dữ liệu...</Typography>
                     ) : notebooks.length > 0 ? (
                         notebooks.map((notebook) => (
                             <Grid item xs={12} sm={6} md={4} key={notebook.$id}>
-                            <Card className={classes.card}>
-                                <CardContent>
-                                    <Typography variant="h6" gutterBottom>
-                                        Tên bệnh nhân: {notebook.patientName}
-                                    </Typography>
-                                    <Typography variant="subtitle1" gutterBottom>
-                                        Bác sĩ chỉ định: {notebook.doctorName}
-                                    </Typography>
-                                    <Typography variant="body2" gutterBottom>
-                                        Chỉ định: {notebook.prescription}
-                                    </Typography>
-                                    <Typography variant="body2" gutterBottom>
-                                        Chẩn đoán: {notebook.diagnostic}
-                                    </Typography>
-                                    {notebook.testResult && (
-                                        <Typography variant="body2" color="textSecondary" gutterBottom>
-                                            Kết quả: {notebook.testResult}
+                                <Card className={classes.card}>
+                                    <CardContent>
+                                        <Typography variant="h6" gutterBottom>
+                                            Tên bệnh nhân: {notebook.patientName}
                                         </Typography>
-                                    )}
-                                </CardContent>
-                                <CardActions>
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => handleSelectedNotebook(notebook)}
-                                        className={classes.button}
-                                    >
-                                        Xem chi tiết
-                                    </Button>
-                                </CardActions>
-                            </Card>
-                        </Grid>
-                        
+                                        <Typography variant="subtitle1" gutterBottom>
+                                            Bác sĩ chỉ định: {notebook.doctorName}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom>
+                                            Chỉ định: {notebook.prescription}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom>
+                                            Chẩn đoán: {notebook.diagnostic}
+                                        </Typography>
+                                        {notebook.testResult && (
+                                            <Typography variant="body2" color="textSecondary" gutterBottom>
+                                                Kết quả: {notebook.testResult}
+                                            </Typography>
+                                        )}
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => handleSelectedNotebook(notebook)}
+                                            className={classes.button}
+                                        >
+                                            Xem chi tiết
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            </Grid>
                         ))
                     ) : (
                         <Typography variant="body2">Không tìm thấy kết quả bệnh án.</Typography>
@@ -304,7 +290,7 @@ const MedicalNotebook = () => {
                         <DialogContent className={classes.dialogContent}>
                             <DialogContentText>
                                 {selectedNotebook.testResults && selectedNotebook.testResults.length > 0 && (
-                                    <div>
+                                    <div className={classes.imagesContainer}>
                                         <Typography variant="body1" style={{ marginBottom: '10px' }}>
                                             <strong>Kết quả xét nghiệm:</strong>
                                         </Typography>
