@@ -132,8 +132,6 @@ const Navbar = () => {
           </Menu>
           <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
           <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
-          <Button color="inherit" component={NavLink} to="/contact">Liên hệ</Button>
-          <Button color="inherit" component={NavLink} to="/get-started">Bạn có biết?</Button>
           {isLoggedIn && (
             <>
               <Button color="inherit" component={NavLink} to="/getAppointment">Xem lịch khám</Button>
