@@ -156,7 +156,7 @@ export const fetchDoctors = async () => {
   }
 };
 //lấy slot list
-export const fetchSlots = async () => {
+export const fetchSlots = async () => {///////////
   try {
       const response = await fetch('https://localhost:7240/api/PatientAppointment/GetListSlot');
       if (!response.ok) {

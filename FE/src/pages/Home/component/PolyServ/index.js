@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, Card, CardContent, CardMedia, CardActions, Button } from '@mui/material';
 import { makeStyles } from '@mui/styles';
 import Images1 from '../../../../assets/images/KhoaNhi_1.jpg'
 import Images2 from '../../../../assets/images/Da_khoa.jpg'
 import Images3 from '../../../../assets/images/dinh_duong.jpg'
-
+import {fetchServices} from '../../../../services/index';
 
 const initialServices = [
   {
@@ -69,11 +69,24 @@ const useStyles = makeStyles({
 
 const Services = () => {
   const classes = useStyles();
-  const [services, setServices] = useState(initialServices);
+  const [services, setServices] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // const handleLoadMore = () => {
-  //   setServices([...services, ...moreServices]);
-  // };
+
+  useEffect(() => {
+    const loadServices = async () => {
+      setLoading(true);
+      const fetchedServices = await fetchServices();
+      setServices(fetchedServices);
+      setLoading(false);
+    };
+
+    loadServices();
+  }, []);
+
+  if (loading) {
+    return <Typography>Đang tải dịch vụ...</Typography>;
+  }
 
   return (
     <Container>
@@ -85,9 +98,8 @@ const Services = () => {
           <Grid item xs={12} sm={6} md={4} key={service.id}>
             <Card className={classes.card}>
               <CardMedia
-                
                 className={classes.media}
-                image={service.imageUrl}
+                image={service.imageUrl || 'https://via.placeholder.com/150'}
                 alt={service.name}
               />
               <CardContent>
@@ -96,9 +108,6 @@ const Services = () => {
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {service.description}
-                </Typography>
-                <Typography variant="body1" color="text.primary">
-                  {service.price}
                 </Typography>
               </CardContent>
               <CardActions>
@@ -110,12 +119,6 @@ const Services = () => {
           </Grid>
         ))}
       </Grid>
-      <div className={classes.loadMore}>
-      {/* onClick={handleLoadMore} */}
-        <Button variant="contained" color="primary" >
-          Xem thêm
-        </Button>
-      </div>
     </Container>
   );
 }

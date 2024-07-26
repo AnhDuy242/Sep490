@@ -117,7 +117,13 @@ const Sidebar = () => {
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Xem lịch khám" />
+            <ListItemText primary="Xem lịch làm việc" />
+          </ListItem>
+          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/schedule">
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Xem lịch khám" />{/**làm reminder vào đây */}
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
