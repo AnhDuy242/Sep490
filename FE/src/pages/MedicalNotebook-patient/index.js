@@ -169,23 +169,32 @@ const MedicalNotebook = () => {
         try {
             const response = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${medicalNotebookId}`);
             const data = await response.json();
-            return data.$values || [];
+            return data.$values || []; // Trả về dữ liệu từ trường $values
         } catch (error) {
             console.error('Lỗi khi tải kết quả xét nghiệm:', error);
             return [];
         }
     };
 
+
+
     const handleSelectedNotebook = async (notebook) => {
         setSelectedNotebook(notebook);
-        const results = await fetchTestResults(notebook.$id);
+        console.log('Selected Notebook:', selectedNotebook);
+console.log('Test Results:', selectedNotebook?.testResults);
+
+        // Giả sử `notebook.id` là `mid` mà bạn sử dụng để gọi API lấy kết quả xét nghiệm
+        const results = await fetchTestResults(notebook.id);
+
         setSelectedNotebook((prev) => ({
             ...prev,
-            testResults: results,
+            testResults: results, // Cập nhật trường testResults trong notebook
         }));
+
         setSnackbarMessage('Đã tìm thấy kết quả bệnh án!');
         setSnackbarOpen(true);
     };
+
 
     const handleSearch = () => {
         const foundNotebook = notebooks.find(notebook => notebook.$id === searchNotebookId);
@@ -239,7 +248,7 @@ const MedicalNotebook = () => {
                 <Typography variant="h4" className={classes.title}>
                     Tra cứu kết quả bệnh án
                 </Typography>
-           
+
                 <Grid container spacing={2}>
                     {loading ? (
                         <Typography variant="body2">Đang tải dữ liệu...</Typography>
@@ -295,14 +304,14 @@ const MedicalNotebook = () => {
                         <DialogTitle className={classes.dialogTitle}>Chi tiết bệnh án</DialogTitle>
                         <DialogContent className={classes.dialogContent}>
                             <DialogContentText>
-                                {selectedNotebook.testResults && selectedNotebook.testResults.length > 0 && (
+                                {selectedNotebook && selectedNotebook.testResults && selectedNotebook.testResults.length > 0 && (
                                     <div className={classes.imagesContainer}>
                                         <Typography variant="body1" style={{ marginBottom: '10px' }}>
                                             <strong>Kết quả xét nghiệm:</strong>
                                         </Typography>
                                         {selectedNotebook.testResults.map((result, index) => (
                                             <img
-                                                key={result.imgId}
+                                                key={result.imgId} // Hoặc một thuộc tính khác nếu không có imgId
                                                 src={result.imgUrl}
                                                 alt={`Kết quả xét nghiệm ${result.imgId}`}
                                                 className={classes.image}
@@ -311,6 +320,7 @@ const MedicalNotebook = () => {
                                         ))}
                                     </div>
                                 )}
+
                             </DialogContentText>
                         </DialogContent>
                         <DialogActions style={{ backgroundColor: '#f5f5f5', padding: '16px' }}>
