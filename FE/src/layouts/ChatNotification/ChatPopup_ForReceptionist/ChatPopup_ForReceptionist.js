@@ -46,24 +46,29 @@ const Chatpopup_ForReceptionist = () => {
         socketRef.current.emit('loginReceptionist', { token, nameId });
 
         socketRef.current.on('newConversation', ({ roomId, nameId }) => {
-            console.log('New conversation:', { roomId, nameId }); // Log new conversation
-            setConversations((prevConversations) => [
-                ...prevConversations,
-                { id: roomId, nameId: nameId, messages: [] }
-            ]);
+            setConversations((prevConversations) => {
+                const existingConversation = prevConversations.find(c => c.id === roomId);
+                if (existingConversation) return prevConversations; // Avoid duplicates
+                return [...prevConversations, { id: roomId, nameId, messages: [] }];
+            });
         });
 
         socketRef.current.on('message', (message) => {
-            console.log('Message received:', message); // Log tin nhắn nhận được
             setConversations((prevConversations) => {
-                const updatedConversations = [...prevConversations];
-                const conversationIndex = updatedConversations.findIndex(c => c.id === message.roomId);
-                if (conversationIndex >= 0) {
-                    updatedConversations[conversationIndex].messages.push(message);
-                } else {
+                const updatedConversations = prevConversations.map(conversation => {
+                    if (conversation.id === message.roomId) {
+                        // Avoid adding duplicate messages
+                        const messageExists = conversation.messages.some(msg => msg.id === message.id);
+                        if (!messageExists) {
+                            return { ...conversation, messages: [...conversation.messages, message] };
+                        }
+                    }
+                    return conversation;
+                });
+                // Handle new conversation if necessary
+                if (!updatedConversations.find(c => c.id === message.roomId)) {
                     updatedConversations.push({ id: message.roomId, messages: [message] });
                 }
-                console.log('Updated conversations:', updatedConversations); // Log danh sách cuộc trò chuyện sau khi cập nhật
                 return updatedConversations;
             });
 
@@ -72,10 +77,8 @@ const Chatpopup_ForReceptionist = () => {
                     ...prevConversation,
                     messages: [...prevConversation.messages, message]
                 }));
-                console.log('Current conversation after update:', currentConversation); // Log cuộc trò chuyện hiện tại sau khi cập nhật
             }
         });
-
 
         socketRef.current.on('disconnect', () => {
             console.log('Socket disconnected');
@@ -85,15 +88,14 @@ const Chatpopup_ForReceptionist = () => {
     const handleSendMessage = () => {
         if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
             const message = {
+                id: Date.now(), // Unique identifier for the message
                 text: inputMessage.trim(),
                 image: selectedImage,
                 roomId: currentConversation.id
             };
 
-            console.log('Sending message:', { receiverId: currentConversation.nameId, message }); // Log message before sending
-
             socketRef.current.emit('message', {
-                receiverId: currentConversation.nameId, // Assuming userId is the receiverId
+                receiverId: currentConversation.nameId, // Assuming nameId is the receiverId
                 message
             });
 
@@ -216,4 +218,4 @@ const Chatpopup_ForReceptionist = () => {
     );
 };
 
-export default  Chatpopup_ForReceptionist ;
+export default Chatpopup_ForReceptionist;

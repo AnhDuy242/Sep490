@@ -45,6 +45,33 @@ const ChatPopup_ForPatient = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (socketRef.current) {
+            socketRef.current.on('message', (message) => {
+                console.log('Received message:', message); // Debug log to check the received message
+                setCurrentConversation((prevConversation) => {
+                    const conversationId = prevConversation.id;
+                    if (message.roomId === conversationId) {
+                        const messageExists = prevConversation.messages.some(
+                            (msg) => msg.id === message.id
+                        );
+                        if (!messageExists) {
+                            return {
+                                ...prevConversation,
+                                messages: [...prevConversation.messages, message]
+                            };
+                        }
+                    }
+                    return prevConversation;
+                });
+            });
+
+            return () => {
+                socketRef.current.off('message'); // Cleanup listener on unmount
+            };
+        }
+    }, [currentConversation.id]);
+
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
         if (!nameId) {
@@ -61,16 +88,6 @@ const ChatPopup_ForPatient = () => {
             socketRef.current.emit('getAvailableReceptionists');
         });
 
-        socketRef.current.on('message', (message) => {
-            console.log('Received message:', message); // Debug log to check the received message
-            if (message.roomId === currentConversation.id) {
-                setCurrentConversation((prevConversation) => ({
-                    ...prevConversation,
-                    messages: [...prevConversation.messages, message]
-                }));
-            }
-        });
-        
         socketRef.current.on('disconnect', () => {
             console.log('Socket disconnected');
         });
@@ -83,21 +100,24 @@ const ChatPopup_ForPatient = () => {
     const handleSendMessage = () => {
         if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
             const message = {
+                id: Date.now(), // Unique identifier for the message
                 text: inputMessage.trim(),
                 image: selectedImage,
                 roomId: currentConversation.id
             };
 
-            // Include receiverId here
             socketRef.current.emit('message', {
                 receiverId: currentConversation.userId,
                 message
             });
 
+            // Update local messages immediately after sending
             setCurrentConversation((prevConversation) => ({
                 ...prevConversation,
                 messages: [...prevConversation.messages, { from: 'Me', ...message }]
             }));
+
+            // Reset input and selected image
             setInputMessage('');
             setSelectedImage(null);
         }
