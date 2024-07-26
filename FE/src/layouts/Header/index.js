@@ -88,7 +88,7 @@ const Header = () => {
       <AppBar position="static" color="default">
         <Toolbar>
           <NavLink to="/" className="nav__logo">
-            <img src={NavLogo} alt="Logo" className="logo-image" />
+            <img src={NavLogo} alt="Logo" className="logo-image"/>
           </NavLink>
 
           <Box className="info-class" display="flex">

@@ -9,6 +9,7 @@ import Navbar from "../../layouts/Navbar";
 import { makeStyles } from '@mui/styles';
 import { fetchMedicalNotebooksByPatientId } from '../../services/Medicalnotebook';
 import Footer from '../../layouts/Footer';
+import { Helmet } from 'react-helmet';
 
 // Đăng ký font với @react-pdf/renderer
 Font.register({
@@ -193,6 +194,11 @@ const MedicalNotebook = () => {
 
     return (
         <div className={classes.root}>
+            <Helmet>
+                <title>
+                    Tra cứu kết quả bệnh án
+                </title>
+            </Helmet>
             <Header />
             <Navbar />
             <Container className={classes.container}>
