@@ -183,10 +183,11 @@ namespace BE.Controllers.Appointment_Management
             return Ok(list);
         }
 
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> GetListSlot(int docid, [FromBody] DateTimeDto date)
         {
             var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).FirstOrDefault(x => x.Date == date.Date);
+            if (s == null) return BadRequest();
             if (s.Morning == true && s.Afternoon == true)
             {
                 var sl = _alo2Context.Slots.ToList();
