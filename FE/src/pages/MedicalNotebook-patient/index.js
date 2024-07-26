@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-    Container, Button, Typography, Snackbar, Card, CardContent, Grid, TextField, Box, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, CardActions
+    Container, Button, Typography, Snackbar, Card, CardContent, Grid, Dialog, DialogTitle, DialogContent, DialogActions,CardActions
 } from '@mui/material';
 import { Font } from '@react-pdf/renderer';
 import ArialUnicodeMS from '../../assets/font/arial-unicode-ms.ttf'; // Điều chỉnh đường dẫn nếu cần thiết
@@ -49,22 +49,27 @@ const useStyles = makeStyles({
         marginTop: '10px',
     },
     image: {
-        width: '100%',
-        height: 'auto',
-        maxWidth: '100%',
-        objectFit: 'contain', // Giữ tỷ lệ hình ảnh
+        width: '1500px', // Kích thước mặc định
+        height: '1200px', // Kích thước mặc định
+        objectFit: 'cover', // Giữ tỷ lệ hình ảnh
+        marginBottom: '20px',
     },
     imagesContainer: {
         marginTop: '20px',
-    },
-    imageWrapper: {
-        marginBottom: '20px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
     },
     dialogContent: {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         padding: '0',
+        overflowY: 'hidden', // Ẩn overflow-y
+    },
+    dialogPaper: {
+        minWidth: '1500px', // Đảm bảo dialog đủ rộng
+        minHeight: '1200px', // Đảm bảo dialog đủ cao
     },
     closeButton: {
         position: 'absolute',
@@ -84,54 +89,9 @@ const MedicalNotebook = () => {
     const [searchNotebookId, setSearchNotebookId] = useState('');
     const [loading, setLoading] = useState(false); // Trạng thái loading
 
-    const imageRefs = useRef([]);
-
     useEffect(() => {
         handleGetPatientId();
     }, []);
-
-    useEffect(() => {
-        if (selectedNotebook) {
-            const dialogElement = document.getElementById('dialog');
-            if (dialogElement) {
-                // Temporarily set a size that we will adjust later
-                dialogElement.style.width = 'auto';
-                dialogElement.style.height = 'auto';
-
-                // Ensure the images are loaded before calculating dimensions
-                const calculateDialogSize = () => {
-                    const maxWidth = Math.max(...imageRefs.current.map(img => img ? img.clientWidth : 0));
-                    const maxHeight = Math.max(...imageRefs.current.map(img => img ? img.clientHeight : 0));
-                    dialogElement.style.width = `${maxWidth}px`;
-                    dialogElement.style.height = `${maxHeight}px`;
-                };
-
-                // Set up event listeners for image load
-                const handleImageLoad = () => {
-                    calculateDialogSize();
-                };
-
-                // Add event listeners
-                imageRefs.current.forEach(img => {
-                    if (img) {
-                        img.addEventListener('load', handleImageLoad);
-                    }
-                });
-
-                // Calculate size once
-                calculateDialogSize();
-
-                // Clean up event listeners
-                return () => {
-                    imageRefs.current.forEach(img => {
-                        if (img) {
-                            img.removeEventListener('load', handleImageLoad);
-                        }
-                    });
-                };
-            }
-        }
-    }, [selectedNotebook]);
 
     const handleGetPatientId = () => {
         const isPatient = localStorage.getItem('role') === 'Patient' ? 'true' : 'false';
@@ -175,12 +135,10 @@ const MedicalNotebook = () => {
         }
     };
 
-
-
     const handleSelectedNotebook = async (notebook) => {
         setSelectedNotebook(notebook);
         console.log('Selected Notebook:', selectedNotebook);
-console.log('Test Results:', selectedNotebook?.testResults);
+        console.log('Test Results:', selectedNotebook?.testResults);
 
         // Giả sử `notebook.id` là `mid` mà bạn sử dụng để gọi API lấy kết quả xét nghiệm
         const results = await fetchTestResults(notebook.id);
@@ -193,7 +151,6 @@ console.log('Test Results:', selectedNotebook?.testResults);
         setSnackbarMessage('Đã tìm thấy kết quả bệnh án!');
         setSnackbarOpen(true);
     };
-
 
     const handleSearch = () => {
         const foundNotebook = notebooks.find(notebook => notebook.$id === searchNotebookId);
@@ -215,7 +172,7 @@ console.log('Test Results:', selectedNotebook?.testResults);
         if (printWindow) {
             printWindow.document.write('<html><head><title>Print Images</title></head><body>');
             selectedNotebook.testResults.forEach(result => {
-                printWindow.document.write(`<img src="${result.imgUrl}" style="width: 100%; max-width: 100%; margin-bottom: 20px;">`);
+                printWindow.document.write(`<img src="${result.imgUrl}" style="width: 1500px; height: 1200px; object-fit: cover; margin-bottom: 20px;">`);
             });
             printWindow.document.write('</body></html>');
             printWindow.document.close(); // Necessary for IE >= 10
@@ -283,39 +240,35 @@ console.log('Test Results:', selectedNotebook?.testResults);
                             </Grid>
                         ))
                     ) : (
-                        <Typography variant="body2">Không tìm thấy kết quả bệnh án.</Typography>
+                        <Typography variant="body2">Không có dữ liệu bệnh án</Typography>
                     )}
                 </Grid>
-                {selectedNotebook && (
+
+                {dialogOpen && (
                     <Dialog
                         open={dialogOpen}
                         onClose={handleDialogClose}
+                        maxWidth="lg" // Hoặc 'xl', tuỳ theo kích thước mong muốn
+                        PaperProps={{ className: classes.dialogPaper }}
                         fullWidth
-                        maxWidth="lg"
-                        sx={{ overflow: 'hidden' }} // Đảm bảo không có cuộn
-                        id="dialog"
                     >
-                        <DialogTitle className={classes.dialogTitle}>Chi tiết bệnh án</DialogTitle>
+                        <DialogTitle>Chi tiết bệnh án</DialogTitle>
                         <DialogContent className={classes.dialogContent}>
-                            <DialogContentText>
-                                {selectedNotebook && selectedNotebook.testResults && selectedNotebook.testResults.length > 0 && (
-                                    <div className={classes.imagesContainer}>
-                                        <Typography variant="body1" style={{ marginBottom: '10px' }}>
-                                            <strong>Kết quả xét nghiệm:</strong>
-                                        </Typography>
-                                        {selectedNotebook.testResults.map((result, index) => (
-                                            <img
-                                                key={result.imgId} // Hoặc một thuộc tính khác nếu không có imgId
-                                                src={result.imgUrl}
-                                                alt={`Kết quả xét nghiệm ${result.imgId}`}
-                                                className={classes.image}
-                                                ref={(el) => (imageRefs.current[index] = el)}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-
-                            </DialogContentText>
+                            {selectedNotebook && selectedNotebook.testResults && selectedNotebook.testResults.length > 0 && (
+                                <div className={classes.imagesContainer}>
+                                    <Typography variant="body1" style={{ marginBottom: '10px' }}>
+                                        <strong>Kết quả xét nghiệm:</strong>
+                                    </Typography>
+                                    {selectedNotebook.testResults.map((result) => (
+                                        <img
+                                            key={result.imgId} // Hoặc một thuộc tính khác nếu không có imgId
+                                            src={result.imgUrl}
+                                            alt={`Kết quả xét nghiệm ${result.imgId}`}
+                                            className={classes.image}
+                                        />
+                                    ))}
+                                </div>
+                            )}
                         </DialogContent>
                         <DialogActions style={{ backgroundColor: '#f5f5f5', padding: '16px' }}>
                             <Button onClick={handlePrintImages} color="primary" style={{ marginRight: '8px' }}>
