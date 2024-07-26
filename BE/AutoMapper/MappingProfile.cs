@@ -21,9 +21,8 @@ public class MappingProfile : Profile
         CreateMap<AccountDoctor, Account>().ReverseMap();
         //CreateMap<AnotherSourceClass, AnotherDestinationClass>();
         //// Các ánh xạ khác...
+        /// appointment
         CreateMap<Appointment, AppointmentDto>().ForMember(dest => dest.Date, otp => otp.MapFrom(src => src.Date.Date)).ReverseMap();
-
-
         CreateMap<Appointment, AppointmentPatient>()
             .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
             .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doctor.Name))
@@ -38,6 +37,7 @@ public class MappingProfile : Profile
            .ForMember(dest => dest.Date, otp => otp.MapFrom(src => src.Date.Date))
            .ReverseMap();
         CreateMap<Slot, SlotAppointment>().ReverseMap();
+        CreateMap<Schedule, DateAppointment>().ReverseMap();
 
         //service
         CreateMap<Service, ServiceMarketing>()

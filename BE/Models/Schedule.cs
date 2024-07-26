@@ -19,5 +19,7 @@ public partial class Schedule
 
     public int? Appointments { get; set; }
 
+    public virtual ICollection<Appointment> AppointmentsNavigation { get; set; } = new List<Appointment>();
+
     public virtual Doctor Doctor { get; set; } = null!;
 }
