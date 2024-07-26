@@ -1,24 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import { Box, Typography, TextField, Button, IconButton, Dialog, List, ListItem, ListItemText } from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
 import io from 'socket.io-client';
-import LoginForm from '../../LoginForm';
 import { login } from '../../../services/Authentication';
+import LoginForm from '../../LoginForm';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
-const Chatpopup_ForReceptionist = () => {
-    const [conversations, setConversations] = useState([]);
-    const [currentConversation, setCurrentConversation] = useState(null);
+const ChatPopup_ForDoctor = () => {
+    const [showLogin, setShowLogin] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [showChat, setShowChat] = useState(true);
+    const [availableReceptionists, setAvailableReceptionists] = useState([]);
+    const [currentConversation, setCurrentConversation] = useState({ id: '', messages: [] });
     const [inputMessage, setInputMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState('');
     const nameId = localStorage.getItem('nameId');
-    const currentUserId = nameId; // Assuming nameId represents the current user ID
     const socketRef = useRef(null);
-    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -45,33 +47,19 @@ const Chatpopup_ForReceptionist = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        socketRef.current.emit('loginReceptionist', { token, nameId });
+        socketRef.current.emit('login', { token, nameId });
 
-        socketRef.current.on('newConversation', ({ roomId, nameId }) => {
-            setConversations((prevConversations) => {
-                const existingConversation = prevConversations.find(c => c.id === roomId);
-                if (existingConversation) return prevConversations; // Avoid duplicates
-                return [...prevConversations, { id: roomId, nameId, messages: [] }];
-            });
+        socketRef.current.on('availableReceptionists', (receptionists) => {
+            setAvailableReceptionists(receptionists);
         });
 
         socketRef.current.on('message', (message) => {
-            setConversations((prevConversations) => {
-                const updatedConversations = prevConversations.map(conversation => {
-                    if (conversation.id === message.roomId) {
-                        return { ...conversation, messages: [...conversation.messages, message] };
-                    }
-                    return conversation;
-                });
-                return updatedConversations;
+            setCurrentConversation((prevConversation) => {
+                if (prevConversation.id === message.roomId) {
+                    return { ...prevConversation, messages: [...prevConversation.messages, message] };
+                }
+                return prevConversation;
             });
-
-            if (currentConversation && message.roomId === currentConversation.id) {
-                setCurrentConversation(prevConversation => ({
-                    ...prevConversation,
-                    messages: [...prevConversation.messages, message]
-                }));
-            }
         });
 
         socketRef.current.on('disconnect', () => {
@@ -80,25 +68,32 @@ const Chatpopup_ForReceptionist = () => {
     };
 
     const handleSendMessage = () => {
-        if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
+        if ((inputMessage.trim() || selectedImage) && socketRef.current) {
             const message = {
-                id: Date.now(), // Unique identifier for the message
+                id: Date.now(),
                 text: inputMessage.trim(),
                 image: selectedImage,
-                roomId: currentConversation.id,
-                from: currentUserId // Add the sender's ID here
+                roomId: currentConversation.id // Đây phải là ID phòng chat đúng
             };
-
-            socketRef.current.emit('message', {
-                receiverId: currentConversation.nameId, // Assuming nameId is the receiverId
-                message
-            });
-
+    
+            if (currentConversation.nameId) {
+                socketRef.current.emit('message', {
+                    receiverId: currentConversation.nameId, // ID của receptionist
+                    message
+                });
+            } else {
+                console.error('currentConversation.nameId is undefined');
+            }
+    
+            setCurrentConversation((prevConversation) => ({
+                ...prevConversation,
+                messages: [...prevConversation.messages, { from: 'Me', ...message }]
+            }));
             setInputMessage('');
             setSelectedImage(null);
         }
     };
-
+    
     const handleSelectImage = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -127,58 +122,43 @@ const Chatpopup_ForReceptionist = () => {
         }
     };
 
-    const handleConversationClick = (conversationId) => {
-        const conversation = conversations.find(c => c.id === conversationId);
-        if (conversation) {
-            setCurrentConversation(conversation);
-        }
+    const handleDialogOpen = () => {
+        setDialogOpen(true);
     };
 
-    useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [currentConversation?.messages]);
+    const handleDialogClose = () => {
+        setDialogOpen(false);
+    };
+
+    const handleStartChat = (nameId) => {
+        socketRef.current.emit('newConversation', { receiverId:nameId });
+        handleDialogClose();
+    };
 
     return (
         <Box display="flex" flexDirection="column" height="100vh">
             {isLoggedIn ? (
                 <>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" p={2} bgcolor="grey.300">
-                        <Typography variant="h6">Receptionist Chat</Typography>
-                        <IconButton>
-                            <CloseIcon />
-                        </IconButton>
-                    </Box>
-                    <Box display="flex" flexGrow={1}>
-                        <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
-                            <Typography variant="h6">Conversations</Typography>
-                            <Box>
-                                {conversations.map(conversation => (
-                                    <Box
-                                        key={conversation.id}
-                                        p={1}
-                                        bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
-                                        onClick={() => handleConversationClick(conversation.id)}
-                                    >
-                                        <Typography variant="body2">User: {conversation.nameId}</Typography>
-                                    </Box>
-                                ))}
+                    {showChat ? (
+                        <>
+                            <Box display="flex" justifyContent="space-between" alignItems="center" p={2} bgcolor="grey.300">
+                                <Typography variant="h6">Doctor Chat</Typography>
+                                <IconButton onClick={handleDialogOpen}>
+                                    <ChatIcon />
+                                </IconButton>
+                                <IconButton>
+                                    <CloseIcon />
+                                </IconButton>
                             </Box>
-                        </Box>
-                        <Box flexGrow={1} p={2} display="flex" flexDirection="column">
-                            {currentConversation ? (
-                                <>
+                            <Box display="flex" flexGrow={1}>
+                                <Box flexGrow={1} p={2} display="flex" flexDirection="column">
                                     <Box flexGrow={1} overflow="auto">
                                         {currentConversation.messages.map((message, index) => (
                                             <Box key={index} mb={1}>
-                                                <Typography variant="body2">
-                                                    <strong>{message.from === currentUserId ? 'Me' : message.from}:</strong> {message.text}
-                                                </Typography>
+                                                <Typography variant="body2"><strong>{message.from}:</strong> {message.text}</Typography>
                                                 {message.image && <img src={message.image} alt="sent" width="100%" />}
                                             </Box>
                                         ))}
-                                        <div ref={messagesEndRef} />
                                     </Box>
                                     <Box display="flex" alignItems="center">
                                         <TextField
@@ -204,12 +184,26 @@ const Chatpopup_ForReceptionist = () => {
                                             Send
                                         </Button>
                                     </Box>
-                                </>
-                            ) : (
-                                <Typography variant="body2">Select a conversation to start chatting</Typography>
-                            )}
+                                </Box>
+                            </Box>
+                        </>
+                    ) : (
+                        <Box>
+                            {/* Chat list or other components */}
                         </Box>
-                    </Box>
+                    )}
+                    <Dialog open={dialogOpen} onClose={handleDialogClose}>
+                        <Box p={2}>
+                            <Typography variant="h6">Available Receptionists</Typography>
+                            <List>
+                                {availableReceptionists.map((receptionistId) => (
+                                    <ListItem button key={receptionistId} onClick={() => handleStartChat(receptionistId)}>
+                                        <ListItemText primary={`Receptionist ${receptionistId}`} />
+                                    </ListItem>
+                                ))}
+                            </List>
+                        </Box>
+                    </Dialog>
                 </>
             ) : (
                 <LoginForm onLogin={handleLogin} />
@@ -218,4 +212,4 @@ const Chatpopup_ForReceptionist = () => {
     );
 };
 
-export default Chatpopup_ForReceptionist;
+export default ChatPopup_ForDoctor;

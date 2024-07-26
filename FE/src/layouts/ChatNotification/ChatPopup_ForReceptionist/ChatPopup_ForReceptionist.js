@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import { Box, Typography, TextField, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Badge } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
+import ChatIcon from '@mui/icons-material/Chat';
 import io from 'socket.io-client';
 import LoginForm from '../../LoginForm';
 import { login } from '../../../services/Authentication';
@@ -15,8 +16,12 @@ const Chatpopup_ForReceptionist = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const nameId = localStorage.getItem('nameId');
+    const currentUserId = nameId;
     const socketRef = useRef(null);
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -48,7 +53,7 @@ const Chatpopup_ForReceptionist = () => {
         socketRef.current.on('newConversation', ({ roomId, nameId }) => {
             setConversations((prevConversations) => {
                 const existingConversation = prevConversations.find(c => c.id === roomId);
-                if (existingConversation) return prevConversations; // Avoid duplicates
+                if (existingConversation) return prevConversations;
                 return [...prevConversations, { id: roomId, nameId, messages: [] }];
             });
         });
@@ -57,7 +62,6 @@ const Chatpopup_ForReceptionist = () => {
             setConversations((prevConversations) => {
                 const updatedConversations = prevConversations.map(conversation => {
                     if (conversation.id === message.roomId) {
-                        // Avoid adding duplicate messages
                         const messageExists = conversation.messages.some(msg => msg.id === message.id);
                         if (!messageExists) {
                             return { ...conversation, messages: [...conversation.messages, message] };
@@ -65,19 +69,18 @@ const Chatpopup_ForReceptionist = () => {
                     }
                     return conversation;
                 });
-                // Handle new conversation if necessary
+
                 if (!updatedConversations.find(c => c.id === message.roomId)) {
                     updatedConversations.push({ id: message.roomId, messages: [message] });
                 }
+
+                const count = updatedConversations.reduce((acc, conversation) => {
+                    return acc + conversation.messages.filter(msg => !msg.read && msg.from !== currentUserId).length;
+                }, 0);
+                setUnreadCount(count);
+
                 return updatedConversations;
             });
-
-            if (message.roomId === currentConversation?.id) {
-                setCurrentConversation((prevConversation) => ({
-                    ...prevConversation,
-                    messages: [...prevConversation.messages, message]
-                }));
-            }
         });
 
         socketRef.current.on('disconnect', () => {
@@ -88,20 +91,21 @@ const Chatpopup_ForReceptionist = () => {
     const handleSendMessage = () => {
         if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
             const message = {
-                id: Date.now(), // Unique identifier for the message
+                id: Date.now(),
                 text: inputMessage.trim(),
                 image: selectedImage,
-                roomId: currentConversation.id
+                roomId: currentConversation.id,
+                from: currentUserId
             };
 
             socketRef.current.emit('message', {
-                receiverId: currentConversation.nameId, // Assuming nameId is the receiverId
+                receiverId: currentConversation.nameId,
                 message
             });
 
             setCurrentConversation((prevConversation) => ({
                 ...prevConversation,
-                messages: [...prevConversation.messages, { from: 'Me', ...message }]
+                messages: [...prevConversation.messages, message]
             }));
             setInputMessage('');
             setSelectedImage(null);
@@ -143,78 +147,204 @@ const Chatpopup_ForReceptionist = () => {
         }
     };
 
+    const handleOpenDialog = () => {
+        if (currentConversation) {
+            socketRef.current.emit('markMessagesAsRead', { roomId: currentConversation.id });
+        }
+
+        const updatedConversations = conversations.map(conversation => {
+            if (conversation.id === currentConversation?.id) {
+                return {
+                    ...conversation,
+                    messages: conversation.messages.map(msg => ({
+                        ...msg,
+                        read: true
+                    }))
+                };
+            }
+            return conversation;
+        });
+        setConversations(updatedConversations);
+        setUnreadCount(0);
+        setDialogOpen(true);
+    };
+
+    useEffect(() => {
+        if (currentConversation) {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [currentConversation]);
+
+    useEffect(() => {
+        if (currentConversation) {
+            const updatedConversation = conversations.find(c => c.id === currentConversation.id);
+            if (updatedConversation) {
+                setCurrentConversation(updatedConversation);
+            }
+        }
+    }, [conversations]);
+
     return (
-        <Box display="flex" flexDirection="column" height="100vh">
-            {isLoggedIn ? (
-                <>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" p={2} bgcolor="grey.300">
+        <>
+            <IconButton
+                color="primary"
+                style={{
+                    position: 'fixed',
+                    bottom: 16,
+                    right: 16,
+                    zIndex: 1000
+                }}
+                onClick={handleOpenDialog}
+            >
+                <Badge badgeContent={unreadCount} color="error">
+                    <ChatIcon fontSize="large" />
+                </Badge>
+            </IconButton>
+
+            <Dialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                fullWidth
+                maxWidth="md"
+                PaperProps={{
+                    sx: {
+                        bgcolor: 'background.paper',
+                    }
+                }}
+            >
+                <DialogTitle>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
                         <Typography variant="h6">Receptionist Chat</Typography>
-                        <IconButton>
+                        <IconButton onClick={() => setDialogOpen(false)}>
                             <CloseIcon />
                         </IconButton>
                     </Box>
-                    <Box display="flex" flexGrow={1}>
-                        <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
-                            <Typography variant="h6">Conversations</Typography>
-                            <Box>
-                                {conversations.map(conversation => (
-                                    <Box
-                                        key={conversation.id}
-                                        p={1}
-                                        bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
-                                        onClick={() => handleConversationClick(conversation.id)}
-                                    >
-                                        <Typography variant="body2">User: {conversation.nameId}</Typography>
-                                    </Box>
-                                ))}
-                            </Box>
-                        </Box>
-                        <Box flexGrow={1} p={2} display="flex" flexDirection="column">
-                            {currentConversation ? (
-                                <>
-                                    <Box flexGrow={1} overflow="auto">
-                                        {currentConversation.messages.map((message, index) => (
-                                            <Box key={index} mb={1}>
-                                                <Typography variant="body2"><strong>{message.from}:</strong> {message.text}</Typography>
-                                                {message.image && <img src={message.image} alt="sent" width="100%" />}
+                </DialogTitle>
+                <DialogContent>
+                    {isLoggedIn ? (
+                        <Box display="flex" flexDirection="column" height="60vh">
+                            <Box display="flex" flexGrow={1}>
+                                <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
+                                    <Typography variant="h6">Conversations</Typography>
+                                    <Box>
+                                        {conversations.map(conversation => (
+                                            <Box
+                                                key={conversation.id}
+                                                p={1}
+                                                bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
+                                                onClick={() => handleConversationClick(conversation.id)}
+                                            >
+                                                <Typography variant="body2">User: {conversation.nameId}</Typography>
                                             </Box>
                                         ))}
                                     </Box>
-                                    <Box display="flex" alignItems="center">
-                                        <TextField
-                                            fullWidth
-                                            variant="outlined"
-                                            value={inputMessage}
-                                            onChange={(e) => setInputMessage(e.target.value)}
-                                            placeholder="Type a message..."
-                                        />
-                                        <input
-                                            accept="image/*"
-                                            style={{ display: 'none' }}
-                                            id="icon-button-file"
-                                            type="file"
-                                            onChange={handleSelectImage}
-                                        />
-                                        <label htmlFor="icon-button-file">
-                                            <IconButton color="primary" aria-label="upload picture" component="span">
-                                                <ImageIcon />
-                                            </IconButton>
-                                        </label>
-                                        <Button color="primary" variant="contained" onClick={handleSendMessage}>
-                                            Send
-                                        </Button>
-                                    </Box>
-                                </>
-                            ) : (
-                                <Typography variant="body2">Select a conversation to start chatting</Typography>
-                            )}
+                                </Box>
+                                <Box flexGrow={1} p={2} display="flex" flexDirection="column">
+                                    {currentConversation ? (
+                                        <>
+                                            <Box flexGrow={1} overflow="auto">
+                                                {currentConversation.messages.map((message, index) => (
+                                                    <Box
+                                                        key={index}
+                                                        display="flex"
+                                                        justifyContent={message.from === currentUserId ? 'flex-end' : 'flex-start'}
+                                                        mb={1}
+                                                    >
+                                                        <Box
+                                                            p={1}
+                                                            bgcolor={message.from === currentUserId ? 'primary.main' : 'grey.300'}
+                                                            borderRadius={1}
+                                                            maxWidth="70%"
+                                                            wordBreak="break-word"
+                                                        >
+                                                            {message.text && <Typography variant="body1">{message.text}</Typography>}
+                                                            {message.image && (
+                                                                <img
+                                                                    src={message.image}
+                                                                    alt="Selected"
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        maxWidth: '300px',
+                                                                        height: 'auto',
+                                                                        borderRadius: '4px',
+                                                                        marginTop: '8px'
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+                                                ))}
+                                                <div ref={messagesEndRef} />
+                                            </Box>
+                                            <Box mt={2} display="flex" alignItems="center" position="relative">
+                                                <input
+                                                    accept="image/*"
+                                                    id="image-upload"
+                                                    type="file"
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleSelectImage}
+                                                />
+                                                <label htmlFor="image-upload">
+                                                    <IconButton color="primary" component="span">
+                                                        <ImageIcon />
+                                                    </IconButton>
+                                                </label>
+                                                <TextField
+                                                    variant="outlined"
+                                                    size="small"
+                                                    placeholder="Type a message"
+                                                    value={inputMessage}
+                                                    onChange={(e) => setInputMessage(e.target.value)}
+                                                    fullWidth
+                                                    sx={{
+                                                        marginRight: 1,
+                                                        '& .MuiInputBase-root': {
+                                                            display: 'flex',
+                                                            alignItems: 'center'
+                                                        }
+                                                    }}
+                                                    InputProps={{
+                                                        endAdornment: selectedImage && (
+                                                            <Box
+                                                                component="img"
+                                                                src={selectedImage}
+                                                                alt="Selected"
+                                                                sx={{
+                                                                    maxWidth: '100px',
+                                                                    height: 'auto',
+                                                                    borderRadius: 1,
+                                                                    marginLeft: 1
+                                                                }}
+                                                            />
+                                                        )
+                                                    }}
+                                                />
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    onClick={handleSendMessage}
+                                                >
+                                                    Send
+                                                </Button>
+                                            </Box>
+                                        </>
+                                    ) : (
+                                        <Typography>No conversation selected</Typography>
+                                    )}
+                                </Box>
+                            </Box>
                         </Box>
-                    </Box>
-                </>
-            ) : (
-                <LoginForm onLogin={handleLogin} />
-            )}
-        </Box>
+                    ) : (
+                        <LoginForm onLogin={handleLogin} />
+                    )}
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 };
 

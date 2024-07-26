@@ -12,6 +12,7 @@ import FeedBack from '../Home/component/Feedback'
 import ChatPopup from '../../layouts/ChatNotification';
 import ChatPopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForReceptionist';
 import { AuthContext } from '../../utils/AuthContext';
+import ChatPopup_ForDoctor from '../../layouts/ChatNotification/ChatPopup_ForDoctor/ChatPopup_ForDoctor';
 function Home() {
   const { user } = useContext(AuthContext);
   const role=localStorage.getItem('role');
@@ -28,7 +29,7 @@ function Home() {
       <Service/>
       <FeedBack/>
       {role === 'Receptionist' ? <ChatPopup_ForReceptionist /> :''}
-      {role === 'Doctor' ? <ChatPopup_ForReceptionist /> :''}
+      {role === 'Doctor' ? <ChatPopup_ForDoctor /> :''}
       {role === 'Patient' ? <ChatPopup /> :''}
 
       <Footer></Footer>

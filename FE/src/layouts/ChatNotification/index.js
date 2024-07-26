@@ -19,6 +19,8 @@ const ChatPopup_ForPatient = () => {
     const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState('');
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const [fullscreenImage, setFullscreenImage] = useState(null);
     const nameId = localStorage.getItem('nameId');
     const socketRef = useRef(null);
 
@@ -56,6 +58,7 @@ const ChatPopup_ForPatient = () => {
                             (msg) => msg.id === message.id
                         );
                         if (!messageExists) {
+                            setUnreadMessages((prevCount) => prevCount + 1);
                             return {
                                 ...prevConversation,
                                 messages: [...prevConversation.messages, message]
@@ -166,8 +169,11 @@ const ChatPopup_ForPatient = () => {
         const roomId = `${[nameId, receptionistId].sort().join('_')}`;
         socketRef.current.emit('joinRoom', { receiverId: receptionistId });
         setCurrentConversation({ id: roomId, userId: receptionistId, messages: [] });
+        setUnreadMessages(0); // Reset unread messages count on starting a new conversation
         setShowChat(true);
     };
+
+    const handleCloseFullscreenImage = () => setFullscreenImage(null);
 
     return (
         <div>
@@ -176,7 +182,7 @@ const ChatPopup_ForPatient = () => {
             ) : (
                 <>
                     <Fab color="primary" onClick={handleToggleDialog} style={fabStyle}>
-                        <Badge color="secondary" variant="dot" invisible={!showChat}>
+                        <Badge color="secondary" variant="dot" invisible={!unreadMessages}>
                             <ChatIcon />
                         </Badge>
                     </Fab>
@@ -199,18 +205,45 @@ const ChatPopup_ForPatient = () => {
                                     <Box mb={2} height="400px" overflow="auto">
                                         {currentConversation.messages.map((msg, index) => (
                                             <Box key={index} mb={1}>
-                                                <Typography variant="body2">{msg.from}: {msg.text}</Typography>
-                                                {msg.image && <img src={msg.image} alt="attachment" width="100" />}
+                                                <Typography variant="body2">
+                                                    {msg.from}: {msg.text}
+                                                </Typography>
+                                                {msg.image && (
+                                                    <img
+                                                        src={msg.image}
+                                                        alt="attachment"
+                                                        width="100"
+                                                        style={{ cursor: 'pointer', borderRadius: '4px' }}
+                                                        onClick={() => setFullscreenImage(msg.image)}
+                                                    />
+                                                )}
                                             </Box>
                                         ))}
                                     </Box>
-                                    <Box display="flex" alignItems="center">
+                                    <Box display="flex" alignItems="center" style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '8px' }}>
                                         <TextField
                                             value={inputMessage}
                                             onChange={(e) => setInputMessage(e.target.value)}
                                             variant="outlined"
                                             fullWidth
                                             placeholder="Type your message..."
+                                            multiline
+                                            rows={2}
+                                            InputProps={{
+                                                endAdornment: selectedImage && (
+                                                    <IconButton onClick={() => setSelectedImage(null)}>
+                                                        <CloseIcon />
+                                                    </IconButton>
+                                                ),
+                                                startAdornment: selectedImage && (
+                                                    <img
+                                                        src={selectedImage}
+                                                        alt="selected"
+                                                        width="50"
+                                                        style={{ marginRight: '8px', borderRadius: '4px' }}
+                                                    />
+                                                )
+                                            }}
                                         />
                                         <input
                                             accept="image/*"
@@ -248,6 +281,48 @@ const ChatPopup_ForPatient = () => {
                                     </Box>
                                 </Box>
                             )}
+                        </Box>
+                    </Dialog>
+
+                    <Dialog
+                        open={!!fullscreenImage}
+                        onClose={handleCloseFullscreenImage}
+                        maxWidth="md"
+                        fullWidth
+                        PaperProps={{
+                            style: {
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center'
+                            }
+                        }}
+                    >
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            p={2}
+                            style={{ position: 'relative' }}
+                        >
+                            <IconButton
+                                style={{
+                                    position: 'absolute',
+                                    top: 16,
+                                    right: 16
+                                }}
+                                onClick={handleCloseFullscreenImage}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                            <img
+                                src={fullscreenImage}
+                                alt="fullscreen"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '80vh',
+                                    objectFit: 'contain'
+                                }}
+                            />
                         </Box>
                     </Dialog>
                 </>
