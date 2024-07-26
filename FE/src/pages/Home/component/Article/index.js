@@ -8,7 +8,7 @@ import Container from '@mui/material/Container';
 import image1 from '../../../../assets/images/bacsi1.png';
 import '../../../../assets/new.css';
 import { Button } from '@mui/material';
-
+import { useNavigate } from 'react-router-dom';
 function Article() {
   const articles = [
     {
@@ -48,6 +48,10 @@ function Article() {
       image: image1
     },
   ];
+  const navigate = useNavigate();
+  const handleButtonClick = () => {
+    navigate('/about-us');
+  };
   return (
     <Container className="container">
       <Typography variant="h4" component="h1" gutterBottom className="heading">
@@ -79,7 +83,7 @@ function Article() {
           </Grid>
         ))}
         <Grid item xs={12} className="button-container">
-          <Button className="button">Xem thêm</Button>
+          <Button className="button" onClick={handleButtonClick}>Xem thêm</Button>
         </Grid>
       </Grid>
     </Container>
