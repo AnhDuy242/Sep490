@@ -27,6 +27,7 @@ import Create_CustomerFeedback from './pages/Feedback/Create_CustomerFeedback'
 import DoctorAnswerQuestion from './pages/DoctorManagement/AnswerQuestion/doctor_answer_question'
 import ViewOnlinePatient_forDoctor from './pages/DoctorManagement/ViewOnlinePatient_Doctor/ViewOnlinePatient_Doctor';
 import ViewWeeklySchedule_Doctor from './pages/DoctorManagement/ViewWeeklySchedule_Doctor/ViewWeeklySchedule_Doctor'
+import About from './pages/Article/index'
 function App() {
   return (
     <Routes>
@@ -71,6 +72,7 @@ function App() {
       </Route>
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
+      <Route path="/about-us" element={<About />} />
 
 
 

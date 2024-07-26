@@ -13,12 +13,19 @@ import ChatPopup from '../../layouts/ChatNotification';
 import ChatPopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForRecepptionist';
 import { AuthContext } from '../../utils/AuthContext';
 import CustomerServiec from './component/CustomerService'
+import { Helmet } from 'react-helmet';
+
 function Home() {
   const { user } = useContext(AuthContext);
   const role=localStorage.getItem('role');
   console.log(role);
   return (
     <div>
+      <Helmet>
+        <title>
+          Phòng khám Đa khoa 68A
+        </title>
+      </Helmet>
       <Header />
       <NavBar />
       <CarouselSlider></CarouselSlider>

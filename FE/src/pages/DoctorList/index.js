@@ -5,7 +5,7 @@ import Footer from '../../layouts/Footer';
 import { fetchDoctors } from '../../services/doctorListHomePage';
 import { Container, Grid, Card, CardContent, CardMedia, Typography, Box } from '@mui/material';
 import img from '../../assets/images/images (1).jpg'; // Import image
-
+import { Helmet } from 'react-helmet';
 const ListDoctorView = () => {
     const [doctors, setDoctors] = useState([]);
 
@@ -19,6 +19,9 @@ const ListDoctorView = () => {
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '150vh' }}>
+            <Helmet>
+                <title>Đội ngũ bác sĩ</title>
+            </Helmet>
             <Header />
             <NavBar />
             <Box sx={{ flex: 1 }}>

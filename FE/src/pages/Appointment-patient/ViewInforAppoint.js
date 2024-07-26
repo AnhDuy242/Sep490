@@ -9,6 +9,7 @@ import Navbar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
 import { format, parse, compareDesc } from 'date-fns';
 import Alert from '@mui/material/Alert'; // Import Alert component
+import { Helmet } from 'react-helmet';
 
 const GetAppointment = () => {
     const [appointments, setAppointments] = useState([]);
@@ -182,6 +183,11 @@ const GetAppointment = () => {
 
     return (
         <>
+        <Helmet>
+            <title>
+                Xem lịch thăm khám
+            </title>
+        </Helmet>
             <Header />
             <Navbar />
             <div className="appointment-list-container">
