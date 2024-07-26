@@ -1,221 +1,142 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import ImageIcon from '@mui/icons-material/Image';
-import io from 'socket.io-client';
-import LoginForm from '../../LoginForm';
-import { login } from '../../../services/Authentication';
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
 
-const tokenTimeout = 3600000; // 1 hour in milliseconds
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST']
+    }
+});
 
-const Chatpopup_ForReceptionist = () => {
-    const [conversations, setConversations] = useState([]);
-    const [currentConversation, setCurrentConversation] = useState(null);
-    const [inputMessage, setInputMessage] = useState('');
-    const [selectedImage, setSelectedImage] = useState(null);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [token, setToken] = useState('');
-    const nameId = localStorage.getItem('nameId');
-    const currentUserId = nameId; // Assuming nameId represents the current user ID
-    const socketRef = useRef(null);
-    const messagesEndRef = useRef(null);
+const users = {}; // Stores user sockets
+const receptionists = {}; // Stores receptionist sockets
+const availableReceptionists = []; // List of available receptionists
+const doctors = {}; // Stores doctor sockets
+const availableDoctors = []; // List of available doctors
 
-    useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
-        if (storedToken && storedTokenTimestamp) {
-            const currentTime = new Date().getTime();
-            const tokenAge = currentTime - parseInt(storedTokenTimestamp);
-            if (tokenAge < tokenTimeout) {
-                setIsLoggedIn(true);
-                setToken(storedToken);
-                connectSocket(storedToken);
+// Function to generate JWT token
+
+
+
+io.on('connection', (socket) => {
+    console.log('A user connected');
+    socket.on('login', ({ token, nameId }) => {
+        console.log("User logged in with token:", token);
+        if (nameId) {
+            console.log(`User ${nameId} logged in`);
+            socket.nameId = nameId;
+            users[nameId] = socket;
+        } else {
+            console.log('Invalid token, disconnecting socket.');
+            socket.disconnect();
+        }
+    });
+
+    socket.on('loginReceptionist', ({ token, nameId }) => {
+        if (nameId) {
+            if (!availableReceptionists.includes(nameId)) {
+                availableReceptionists.push(nameId); // Add only if not present
+            }
+            receptionists[nameId] = socket;
+            socket.nameId = nameId;
+            io.emit('availableReceptionists', availableReceptionists); // Update all connected clients
+        } else {
+            socket.disconnect();
+        }
+    });
+    socket.on('loginDoctor', ({ token, nameId }) => {
+        if (nameId) {
+            doctors[nameId] = socket;
+            socket.nameId = nameId;
+            if (!availableDoctors.includes(nameId)) {
+                availableDoctors.push(nameId); // Add only if not present
+            }
+            io.emit('availableDoctors', availableDoctors); // Update all connected clients
+        } else {
+            socket.disconnect();
+        }
+    });
+
+
+
+
+    socket.on('joinRoom', ({ receiverId }) => {
+        if (socket.nameId) {
+            const roomId = generateRoomId(socket.nameId, receiverId);
+            socket.join(roomId);
+            console.log(`User ${socket.nameId} joined room: ${roomId}`);
+
+            // Notify the other participant about the new conversation
+            if (receptionists[receiverId]) {
+                receptionists[receiverId].join(roomId);
+                io.to(receptionists[receiverId].id).emit('newConversation', { roomId, nameId: socket.nameId });
+            } else if (doctors[receiverId]) {
+                doctors[receiverId].join(roomId);
+                io.to(doctors[receiverId].id).emit('newConversation', { roomId, nameId: socket.nameId });
             } else {
-                localStorage.removeItem('token');
-                localStorage.removeItem('tokenTimestamp');
+                console.log(`Receptionist/Doctor ${receiverId} not found`);
             }
         }
+    });
+    // Handle sending messages
 
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
+    socket.on('message', ({ receiverId, message }) => {
+        if (socket.nameId && receiverId) {
+            const roomId = generateRoomId(socket.nameId, receiverId);
+            if (roomId) {
+                console.log(`Message from ${socket.nameId} to room ${roomId}:`, message);
+                io.to(roomId).emit('message', { from: socket.nameId, ...message });
+            } else {
+                console.error(`Failed to send message: Invalid roomId`);
             }
-        };
-    }, []);
-
-    const connectSocket = (token) => {
-        socketRef.current = io('http://localhost:3001');
-        socketRef.current.emit('loginReceptionist', { token, nameId });
-
-        socketRef.current.on('newConversation', ({ roomId, nameId }) => {
-            setConversations((prevConversations) => {
-                const existingConversation = prevConversations.find(c => c.id === roomId);
-                if (existingConversation) return prevConversations; // Avoid duplicates
-                return [...prevConversations, { id: roomId, nameId, messages: [] }];
-            });
-        });
-
-        socketRef.current.on('message', (message) => {
-            setConversations((prevConversations) => {
-                const updatedConversations = prevConversations.map(conversation => {
-                    if (conversation.id === message.roomId) {
-                        return { ...conversation, messages: [...conversation.messages, message] };
-                    }
-                    return conversation;
-                });
-                return updatedConversations;
-            });
-
-            if (currentConversation && message.roomId === currentConversation.id) {
-                setCurrentConversation(prevConversation => ({
-                    ...prevConversation,
-                    messages: [...prevConversation.messages, message]
-                }));
-            }
-        });
-
-        socketRef.current.on('disconnect', () => {
-            console.log('Socket disconnected');
-        });
-    };
-
-    const handleSendMessage = () => {
-        if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
-            const message = {
-                id: Date.now(), // Unique identifier for the message
-                text: inputMessage.trim(),
-                image: selectedImage,
-                roomId: currentConversation.id,
-                from: currentUserId // Add the sender's ID here
-            };
-
-            socketRef.current.emit('message', {
-                receiverId: currentConversation.nameId, // Assuming nameId is the receiverId
-                message
-            });
-
-            setInputMessage('');
-            setSelectedImage(null);
+        } else {
+            console.error(`Message event failed: socket.nameId or receiverId is undefined`);
         }
-    };
+    });
 
-    const handleSelectImage = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setSelectedImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+
+
+
+    // Get available doctors and receptionists
+    socket.on('getAvailableDoctors', () => {
+        socket.emit('availableDoctors', availableDoctors);
+    });
+
+    socket.on('getAvailableReceptionists', () => {
+        socket.emit('availableReceptionists', availableReceptionists);
+    });
+    // Handle disconnection
+
+    socket.on('disconnect', () => {
+        console.log(`Socket ${socket.nameId} disconnected`);
+        delete users[socket.nameId];
+        delete receptionists[socket.nameId];
+        delete doctors[socket.nameId];
+
+        // Remove from available lists
+        const receptionistIndex = availableReceptionists.indexOf(socket.nameId);
+        if (receptionistIndex !== -1) {
+            availableReceptionists.splice(receptionistIndex, 1);
         }
-    };
 
-    const updateToken = (token) => {
-        setIsLoggedIn(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
-        setToken(token);
-        connectSocket(token);
-    };
-
-    const handleLogin = async ({ username, password }) => {
-        try {
-            const { token } = await login(username, password);
-            updateToken(token);
-        } catch (error) {
-            console.error('Login failed:', error);
+        const doctorIndex = availableDoctors.indexOf(socket.nameId);
+        if (doctorIndex !== -1) {
+            availableDoctors.splice(doctorIndex, 1);
         }
-    };
 
-    const handleConversationClick = (conversationId) => {
-        const conversation = conversations.find(c => c.id === conversationId);
-        if (conversation) {
-            setCurrentConversation(conversation);
-        }
-    };
+        io.emit('availableDoctors', availableDoctors);
+        io.emit('availableReceptionists', availableReceptionists);
+    });
+});
 
-    useEffect(() => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-    }, [currentConversation?.messages]);
+function generateRoomId(nameId1, nameId2) {
+    const sortedNameIds = [nameId1, nameId2].sort();
+    return `${sortedNameIds[0]}_${sortedNameIds[1]}`;
+}
 
-    return (
-        <Box display="flex" flexDirection="column" height="100vh">
-            {isLoggedIn ? (
-                <>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" p={2} bgcolor="grey.300">
-                        <Typography variant="h6">Receptionist Chat</Typography>
-                        <IconButton>
-                            <CloseIcon />
-                        </IconButton>
-                    </Box>
-                    <Box display="flex" flexGrow={1}>
-                        <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
-                            <Typography variant="h6">Conversations</Typography>
-                            <Box>
-                                {conversations.map(conversation => (
-                                    <Box
-                                        key={conversation.id}
-                                        p={1}
-                                        bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
-                                        onClick={() => handleConversationClick(conversation.id)}
-                                    >
-                                        <Typography variant="body2">User: {conversation.nameId}</Typography>
-                                    </Box>
-                                ))}
-                            </Box>
-                        </Box>
-                        <Box flexGrow={1} p={2} display="flex" flexDirection="column">
-                            {currentConversation ? (
-                                <>
-                                    <Box flexGrow={1} overflow="auto">
-                                        {currentConversation.messages.map((message, index) => (
-                                            <Box key={index} mb={1}>
-                                                <Typography variant="body2">
-                                                    <strong>{message.from === currentUserId ? 'Me' : message.from}:</strong> {message.text}
-                                                </Typography>
-                                                {message.image && <img src={message.image} alt="sent" width="100%" />}
-                                            </Box>
-                                        ))}
-                                        <div ref={messagesEndRef} />
-                                    </Box>
-                                    <Box display="flex" alignItems="center">
-                                        <TextField
-                                            fullWidth
-                                            variant="outlined"
-                                            value={inputMessage}
-                                            onChange={(e) => setInputMessage(e.target.value)}
-                                            placeholder="Type a message..."
-                                        />
-                                        <input
-                                            accept="image/*"
-                                            style={{ display: 'none' }}
-                                            id="icon-button-file"
-                                            type="file"
-                                            onChange={handleSelectImage}
-                                        />
-                                        <label htmlFor="icon-button-file">
-                                            <IconButton color="primary" aria-label="upload picture" component="span">
-                                                <ImageIcon />
-                                            </IconButton>
-                                        </label>
-                                        <Button color="primary" variant="contained" onClick={handleSendMessage}>
-                                            Send
-                                        </Button>
-                                    </Box>
-                                </>
-                            ) : (
-                                <Typography variant="body2">Select a conversation to start chatting</Typography>
-                            )}
-                        </Box>
-                    </Box>
-                </>
-            ) : (
-                <LoginForm onLogin={handleLogin} />
-            )}
-        </Box>
-    );
-};
-
-export default Chatpopup_ForReceptionist;
+server.listen(3001, () => {
+    console.log('Server listening on port 3001');
+});

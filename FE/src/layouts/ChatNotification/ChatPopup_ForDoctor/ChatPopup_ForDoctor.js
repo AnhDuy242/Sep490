@@ -1,30 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, IconButton, Dialog, List, ListItem, ListItemText } from '@mui/material';
-import ChatIcon from '@mui/icons-material/Chat';
+import { Box, Typography, TextField, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Badge } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
+import ChatIcon from '@mui/icons-material/Chat';
 import io from 'socket.io-client';
-import { login } from '../../../services/Authentication';
 import LoginForm from '../../LoginForm';
+import { login } from '../../../services/Authentication';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
 const ChatPopup_ForDoctor = () => {
-    const [showLogin, setShowLogin] = useState(false);
-    const [dialogOpen, setDialogOpen] = useState(false);
-    const [showChat, setShowChat] = useState(true);
-    const [availableReceptionists, setAvailableReceptionists] = useState([]);
-    const [currentConversation, setCurrentConversation] = useState({ id: '', messages: [] });
+    const [conversations, setConversations] = useState([]);
+    const [currentConversation, setCurrentConversation] = useState(null);
     const [inputMessage, setInputMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [token, setToken] = useState('');
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
     const nameId = localStorage.getItem('nameId');
+    const currentUserId = nameId;
     const socketRef = useRef(null);
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
+        const storedToken = localStorage.getItem('doctorToken');
+        const storedTokenTimestamp = localStorage.getItem('doctorTokenTimestamp');
         if (storedToken && storedTokenTimestamp) {
             const currentTime = new Date().getTime();
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
@@ -33,8 +34,8 @@ const ChatPopup_ForDoctor = () => {
                 setToken(storedToken);
                 connectSocket(storedToken);
             } else {
-                localStorage.removeItem('token');
-                localStorage.removeItem('tokenTimestamp');
+                localStorage.removeItem('doctorToken');
+                localStorage.removeItem('doctorTokenTimestamp');
             }
         }
 
@@ -47,18 +48,38 @@ const ChatPopup_ForDoctor = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        socketRef.current.emit('login', { token, nameId });
+        socketRef.current.emit('loginDoctor', { token, nameId });
 
-        socketRef.current.on('availableReceptionists', (receptionists) => {
-            setAvailableReceptionists(receptionists);
+        socketRef.current.on('newConversation', ({ roomId, nameId }) => {
+            setConversations((prevConversations) => {
+                const existingConversation = prevConversations.find(c => c.id === roomId);
+                if (existingConversation) return prevConversations;
+                return [...prevConversations, { id: roomId, nameId, messages: [] }];
+            });
         });
 
         socketRef.current.on('message', (message) => {
-            setCurrentConversation((prevConversation) => {
-                if (prevConversation.id === message.roomId) {
-                    return { ...prevConversation, messages: [...prevConversation.messages, message] };
+            setConversations((prevConversations) => {
+                const updatedConversations = prevConversations.map(conversation => {
+                    if (conversation.id === message.roomId) {
+                        const messageExists = conversation.messages.some(msg => msg.id === message.id);
+                        if (!messageExists) {
+                            return { ...conversation, messages: [...conversation.messages, message] };
+                        }
+                    }
+                    return conversation;
+                });
+
+                if (!updatedConversations.find(c => c.id === message.roomId)) {
+                    updatedConversations.push({ id: message.roomId, messages: [message] });
                 }
-                return prevConversation;
+
+                const count = updatedConversations.reduce((acc, conversation) => {
+                    return acc + conversation.messages.filter(msg => !msg.read && msg.from !== currentUserId).length;
+                }, 0);
+                setUnreadCount(count);
+
+                return updatedConversations;
             });
         });
 
@@ -68,32 +89,29 @@ const ChatPopup_ForDoctor = () => {
     };
 
     const handleSendMessage = () => {
-        if ((inputMessage.trim() || selectedImage) && socketRef.current) {
+        if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
             const message = {
                 id: Date.now(),
                 text: inputMessage.trim(),
                 image: selectedImage,
-                roomId: currentConversation.id // Đây phải là ID phòng chat đúng
+                roomId: currentConversation.id,
+                from: currentUserId
             };
-    
-            if (currentConversation.nameId) {
-                socketRef.current.emit('message', {
-                    receiverId: currentConversation.nameId, // ID của receptionist
-                    message
-                });
-            } else {
-                console.error('currentConversation.nameId is undefined');
-            }
-    
+
+            socketRef.current.emit('message', {
+                receiverId: currentConversation.nameId,
+                message
+            });
+
             setCurrentConversation((prevConversation) => ({
                 ...prevConversation,
-                messages: [...prevConversation.messages, { from: 'Me', ...message }]
+                messages: [...prevConversation.messages, message]
             }));
             setInputMessage('');
             setSelectedImage(null);
         }
     };
-    
+
     const handleSelectImage = (event) => {
         const file = event.target.files[0];
         if (file) {
@@ -107,8 +125,8 @@ const ChatPopup_ForDoctor = () => {
 
     const updateToken = (token) => {
         setIsLoggedIn(true);
-        localStorage.setItem('token', token);
-        localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
+        localStorage.setItem('doctorToken', token);
+        localStorage.setItem('doctorTokenTimestamp', new Date().getTime().toString());
         setToken(token);
         connectSocket(token);
     };
@@ -118,97 +136,176 @@ const ChatPopup_ForDoctor = () => {
             const { token } = await login(username, password);
             updateToken(token);
         } catch (error) {
-            console.error('Login failed:', error);
+            console.error('Doctor login failed:', error);
         }
     };
 
-    const handleDialogOpen = () => {
+    const handleConversationClick = (conversationId) => {
+        const conversation = conversations.find(c => c.id === conversationId);
+        if (conversation) {
+            setCurrentConversation(conversation);
+        }
+    };
+
+    const handleOpenDialog = () => {
+        if (currentConversation) {
+            socketRef.current.emit('markMessagesAsRead', { roomId: currentConversation.id });
+        }
+
+        const updatedConversations = conversations.map(conversation => {
+            if (conversation.id === currentConversation?.id) {
+                return {
+                    ...conversation,
+                    messages: conversation.messages.map(msg => ({
+                        ...msg,
+                        read: true
+                    }))
+                };
+            }
+            return conversation;
+        });
+        setConversations(updatedConversations);
+        setUnreadCount(0);
         setDialogOpen(true);
     };
 
-    const handleDialogClose = () => {
-        setDialogOpen(false);
-    };
-
-    const handleStartChat = (nameId) => {
-        socketRef.current.emit('newConversation', { receiverId:nameId });
-        handleDialogClose();
-    };
+    useEffect(() => {
+        if (currentConversation) {
+            if (messagesEndRef.current) {
+                messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    }, [currentConversation]);
 
     return (
-        <Box display="flex" flexDirection="column" height="100vh">
-            {isLoggedIn ? (
-                <>
-                    {showChat ? (
-                        <>
-                            <Box display="flex" justifyContent="space-between" alignItems="center" p={2} bgcolor="grey.300">
-                                <Typography variant="h6">Doctor Chat</Typography>
-                                <IconButton onClick={handleDialogOpen}>
-                                    <ChatIcon />
-                                </IconButton>
-                                <IconButton>
-                                    <CloseIcon />
-                                </IconButton>
-                            </Box>
+        <>
+            <IconButton
+                color="primary"
+                style={{
+                    position: 'fixed',
+                    bottom: 16,
+                    right: 16,
+                    zIndex: 1000
+                }}
+                onClick={handleOpenDialog}
+            >
+                <Badge badgeContent={unreadCount} color="error">
+                    <ChatIcon fontSize="large" />
+                </Badge>
+            </IconButton>
+
+            <Dialog
+                open={dialogOpen}
+                onClose={() => setDialogOpen(false)}
+                fullWidth
+                maxWidth="md"
+            >
+                <DialogTitle>
+                    <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <Typography variant="h6">Doctor Chat</Typography>
+                        <IconButton onClick={() => setDialogOpen(false)}>
+                            <CloseIcon />
+                        </IconButton>
+                    </Box>
+                </DialogTitle>
+                <DialogContent>
+                    {isLoggedIn ? (
+                        <Box display="flex" flexDirection="column" height="60vh">
                             <Box display="flex" flexGrow={1}>
-                                <Box flexGrow={1} p={2} display="flex" flexDirection="column">
-                                    <Box flexGrow={1} overflow="auto">
-                                        {currentConversation.messages.map((message, index) => (
-                                            <Box key={index} mb={1}>
-                                                <Typography variant="body2"><strong>{message.from}:</strong> {message.text}</Typography>
-                                                {message.image && <img src={message.image} alt="sent" width="100%" />}
+                                <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
+                                    <Typography variant="h6">Patient Conversations</Typography>
+                                    <Box>
+                                        {conversations.map(conversation => (
+                                            <Box
+                                                key={conversation.id}
+                                                p={1}
+                                                bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
+                                                onClick={() => handleConversationClick(conversation.id)}
+                                            >
+                                                <Typography variant="body2">Patient: {conversation.nameId}</Typography>
                                             </Box>
                                         ))}
                                     </Box>
-                                    <Box display="flex" alignItems="center">
-                                        <TextField
-                                            fullWidth
-                                            variant="outlined"
-                                            value={inputMessage}
-                                            onChange={(e) => setInputMessage(e.target.value)}
-                                            placeholder="Type a message..."
-                                        />
-                                        <input
-                                            accept="image/*"
-                                            style={{ display: 'none' }}
-                                            id="icon-button-file"
-                                            type="file"
-                                            onChange={handleSelectImage}
-                                        />
-                                        <label htmlFor="icon-button-file">
-                                            <IconButton color="primary" aria-label="upload picture" component="span">
-                                                <ImageIcon />
-                                            </IconButton>
-                                        </label>
-                                        <Button color="primary" variant="contained" onClick={handleSendMessage}>
-                                            Send
-                                        </Button>
-                                    </Box>
+                                </Box>
+                                <Box flexGrow={1} p={2} display="flex" flexDirection="column">
+                                    {currentConversation ? (
+                                        <>
+                                            <Box flexGrow={1} overflow="auto">
+                                                {currentConversation.messages.map((message, index) => (
+                                                    <Box
+                                                        key={index}
+                                                        display="flex"
+                                                        justifyContent={message.from === currentUserId ? 'flex-end' : 'flex-start'}
+                                                        mb={1}
+                                                    >
+                                                        <Box
+                                                            p={1}
+                                                            bgcolor={message.from === currentUserId ? 'primary.main' : 'grey.300'}
+                                                            borderRadius={1}
+                                                            maxWidth="70%"
+                                                            wordBreak="break-word"
+                                                        >
+                                                            {message.text && <Typography variant="body1">{message.text}</Typography>}
+                                                            {message.image && (
+                                                                <img
+                                                                    src={message.image}
+                                                                    alt="Selected"
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        maxWidth: '300px',
+                                                                        height: 'auto',
+                                                                        borderRadius: '4px',
+                                                                        marginTop: '8px'
+                                                                    }}
+                                                                />
+                                                            )}
+                                                        </Box>
+                                                    </Box>
+                                                ))}
+                                                <div ref={messagesEndRef} />
+                                            </Box>
+                                            <Box mt={2} display="flex" alignItems="center">
+                                                <TextField
+                                                    variant="outlined"
+                                                    size="small"
+                                                    placeholder="Type a message"
+                                                    value={inputMessage}
+                                                    onChange={(e) => setInputMessage(e.target.value)}
+                                                    fullWidth
+                                                />
+                                                <input
+                                                    accept="image/*"
+                                                    id="image-upload"
+                                                    type="file"
+                                                    style={{ display: 'none' }}
+                                                    onChange={handleSelectImage}
+                                                />
+                                                <label htmlFor="image-upload">
+                                                    <IconButton color="primary" component="span">
+                                                        <ImageIcon />
+                                                    </IconButton>
+                                                </label>
+                                                <Button
+                                                    variant="contained"
+                                                    color="primary"
+                                                    onClick={handleSendMessage}
+                                                >
+                                                    Send
+                                                </Button>
+                                            </Box>
+                                        </>
+                                    ) : (
+                                        <Typography>Select a conversation to start chatting</Typography>
+                                    )}
                                 </Box>
                             </Box>
-                        </>
+                        </Box>
                     ) : (
-                        <Box>
-                            {/* Chat list or other components */}
-                        </Box>
+                        <LoginForm onLogin={handleLogin} />
                     )}
-                    <Dialog open={dialogOpen} onClose={handleDialogClose}>
-                        <Box p={2}>
-                            <Typography variant="h6">Available Receptionists</Typography>
-                            <List>
-                                {availableReceptionists.map((receptionistId) => (
-                                    <ListItem button key={receptionistId} onClick={() => handleStartChat(receptionistId)}>
-                                        <ListItemText primary={`Receptionist ${receptionistId}`} />
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Box>
-                    </Dialog>
-                </>
-            ) : (
-                <LoginForm onLogin={handleLogin} />
-            )}
-        </Box>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 };
 
