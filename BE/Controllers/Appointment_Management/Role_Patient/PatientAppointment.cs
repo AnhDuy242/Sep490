@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BE.DTOs.AppointmentDto;
+using BE.DTOs.DateDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
 using BE.DTOs.ScheduleDto;
@@ -183,9 +184,9 @@ namespace BE.Controllers.Appointment_Management
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetListSlot(int docid, DateTime date)
+        public async Task<IActionResult> GetListSlot(int docid, [FromBody] DateTimeDto date)
         {
-            var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).FirstOrDefault(x => x.Date == date);
+            var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).FirstOrDefault(x => x.Date == date.Date);
             if (s.Morning == true && s.Afternoon == true)
             {
                 var sl = _alo2Context.Slots.ToList();
