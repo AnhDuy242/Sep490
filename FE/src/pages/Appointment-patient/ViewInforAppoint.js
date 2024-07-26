@@ -550,7 +550,7 @@ const GetAppointment = () => {
                                         height: '40px', // Đảm bảo chiều cao của phần tử chọn
                                         display: 'flex',
                                         alignItems: 'center', // Căn giữa chữ theo chiều dọc
-                                        justifyContent: 'center', // Căn giữa chữ theo chiều ngang
+                                        justifyContent: 'left', // Căn giữa chữ theo chiều ngang
                                         padding: '10px', // Thay đổi khoảng cách bên trong
                                     },
                                     '& .MuiOutlinedInput-notchedOutline': {
