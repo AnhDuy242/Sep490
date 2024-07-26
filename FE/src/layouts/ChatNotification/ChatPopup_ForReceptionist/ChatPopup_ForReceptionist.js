@@ -8,7 +8,7 @@ import { login } from '../../../services/Authentication';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
-const Chatpopup_Forceptionist = () => {
+const Chatpopup_ForReceptionist = () => {
     const [conversations, setConversations] = useState([]);
     const [currentConversation, setCurrentConversation] = useState(null);
     const [inputMessage, setInputMessage] = useState('');
@@ -49,7 +49,7 @@ const Chatpopup_Forceptionist = () => {
             console.log('New conversation:', { roomId, nameId }); // Log new conversation
             setConversations((prevConversations) => [
                 ...prevConversations,
-                { id: roomId, userId: nameId, messages: [] }
+                { id: roomId, nameId: nameId, messages: [] }
             ]);
         });
 
@@ -90,10 +90,10 @@ const Chatpopup_Forceptionist = () => {
                 roomId: currentConversation.id
             };
 
-            console.log('Sending message:', { receiverId: currentConversation.userId, message }); // Log message before sending
+            console.log('Sending message:', { receiverId: currentConversation.nameId, message }); // Log message before sending
 
             socketRef.current.emit('message', {
-                receiverId: currentConversation.userId, // Assuming userId is the receiverId
+                receiverId: currentConversation.nameId, // Assuming userId is the receiverId
                 message
             });
 
@@ -162,7 +162,7 @@ const Chatpopup_Forceptionist = () => {
                                         bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
                                         onClick={() => handleConversationClick(conversation.id)}
                                     >
-                                        <Typography variant="body2">User: {conversation.userId}</Typography>
+                                        <Typography variant="body2">User: {conversation.nameId}</Typography>
                                     </Box>
                                 ))}
                             </Box>
@@ -216,4 +216,4 @@ const Chatpopup_Forceptionist = () => {
     );
 };
 
-export default Chatpopup_Forceptionist;
+export default  Chatpopup_ForReceptionist ;

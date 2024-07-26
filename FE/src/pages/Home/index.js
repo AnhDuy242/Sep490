@@ -10,7 +10,7 @@ import Article from '../Home/component/Article'
 import Service from '../Home/component/PolyServ'
 import FeedBack from '../Home/component/Feedback'
 import ChatPopup from '../../layouts/ChatNotification';
-import ChatPopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForRecepptionist';
+import ChatPopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForReceptionist';
 import { AuthContext } from '../../utils/AuthContext';
 function Home() {
   const { user } = useContext(AuthContext);

@@ -1,7 +1,6 @@
     const express = require('express');
     const http = require('http');
     const { Server } = require('socket.io');
-    const jwt = require('jsonwebtoken');
 
     const app = express();
     const server = http.createServer(app);
@@ -15,12 +14,8 @@
     const users = {}; // Stores user sockets
     const receptionists = {}; // Stores receptionist sockets
     const availableReceptionists = []; // List of available receptionists
-    const JWT_SECRET = 'your_secret_key_here'; // Secret key for JWT
 
     // Function to generate JWT token
-    function generateToken(nameId) {
-        return jwt.sign({ nameId }, JWT_SECRET, { expiresIn: '1h' });
-    }
 
 
 
@@ -32,7 +27,6 @@
                 console.log(`User ${nameId} logged in`);
                 socket.nameId = nameId;
                 users[nameId] = socket;
-                socket.emit('newToken', generateToken(nameId));
             } else {
                 console.log('Invalid token, disconnecting socket.');
                 socket.disconnect();
@@ -62,6 +56,7 @@
         
                 // Notify the receptionist about the new conversation if they are online
                 if (receptionists[receiverId]) {
+                    receptionists[receiverId].join(roomId); // Đảm bảo receptionist tham gia phòng
                     io.to(receptionists[receiverId].id).emit('newConversation', { roomId, nameId: socket.nameId });
                 } else {
                     console.log(`Receptionist ${receiverId} not found`);

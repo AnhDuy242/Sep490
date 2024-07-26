@@ -9,7 +9,7 @@ import LoginForm from '../LoginForm';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
-const ChatPopup = () => {
+const ChatPopup_ForPatient = () => {
     const [showLogin, setShowLogin] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [showChat, setShowChat] = useState(false);
@@ -236,4 +236,4 @@ const ChatPopup = () => {
     );
 };
 
-export default ChatPopup;
+export default ChatPopup_ForPatient;
