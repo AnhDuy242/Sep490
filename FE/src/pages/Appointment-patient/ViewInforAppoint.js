@@ -199,6 +199,7 @@ const GetAppointment = () => {
                                 <TableCell><strong>Thời gian</strong></TableCell>
                                 <TableCell><strong>Ngày</strong></TableCell>
                                 <TableCell><strong>Bác sĩ</strong></TableCell>
+                                <TableCell><strong>Dịch vụ</strong></TableCell>
                                 <TableCell><strong>Trạng thái</strong></TableCell>
                                 <TableCell><strong>Ghi chú</strong></TableCell>
                                 <TableCell><strong>Hành động</strong></TableCell>
@@ -211,6 +212,7 @@ const GetAppointment = () => {
                                         <TableCell>{appointment.time}</TableCell>
                                         <TableCell>{appointment.date}</TableCell>
                                         <TableCell>{appointment.doctorName}</TableCell>
+                                        <TableCell>{appointment.serviceName}</TableCell>
                                         <TableCell>{appointment.status}</TableCell>
                                         <TableCell>{appointment.note}</TableCell>
                                         <TableCell>
