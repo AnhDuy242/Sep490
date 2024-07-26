@@ -695,6 +695,7 @@ import Header from '../../layouts/Header';
 import Navbar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
 import MuiAlert from '@mui/material/Alert';
+import { Helmet } from 'react-helmet';
 
 const AppointmentScreen = () => {
   const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -856,6 +857,11 @@ const AppointmentScreen = () => {
 
   return (
     <>
+     <Helmet>
+            <title>
+                Đặt lịch khám
+            </title>
+        </Helmet>
       <Header />
       <Navbar />
       <Container sx={{ marginTop: 20 }}>
