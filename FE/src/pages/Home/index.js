@@ -32,8 +32,8 @@ function Home() {
       <CarouselSlider></CarouselSlider>
       <CustomerServiec></CustomerServiec>
       <DoctorList/>
-      <Blog/>
-      <Article/>
+      {/* <Blog/>
+      <Article/> */}
       <Service/>
       <FeedBack/>
       {role === 'Patient' ? <ChatPopup_ForPatient /> :''}

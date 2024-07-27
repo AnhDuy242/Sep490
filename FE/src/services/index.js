@@ -11,3 +11,17 @@ export const fetchServices = async () => {
       return [];
     }
   };
+  export const fetchFeedbacks = async () => {
+    try {
+      const response = await fetch('https://localhost:7240/api/PatientFeedback/GetAllFeedback');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Fetch feedbacks failed:', error);
+      throw error;
+    }
+  };
+  
