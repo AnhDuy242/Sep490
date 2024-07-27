@@ -6,10 +6,11 @@ import ChatIcon from '@mui/icons-material/Chat';
 import io from 'socket.io-client';
 import LoginForm from '../../LoginForm';
 import { login } from '../../../services/Authentication';
+import notificationSound from '../../../assets/sound/notification_sound.mp3'; // Import the notification sound
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
-const ChatPopup_ForDoctor = () => {
+const Chatpopup_ForDoctor = () => {
     const [conversations, setConversations] = useState([]);
     const [currentConversation, setCurrentConversation] = useState(null);
     const [inputMessage, setInputMessage] = useState('');
@@ -22,10 +23,11 @@ const ChatPopup_ForDoctor = () => {
     const currentUserId = nameId;
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
+    const audioRef = useRef(new Audio(notificationSound)); // Create a reference for the audio object
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('doctorToken');
-        const storedTokenTimestamp = localStorage.getItem('doctorTokenTimestamp');
+        const storedToken = localStorage.getItem('token');
+        const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
         if (storedToken && storedTokenTimestamp) {
             const currentTime = new Date().getTime();
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
@@ -34,8 +36,8 @@ const ChatPopup_ForDoctor = () => {
                 setToken(storedToken);
                 connectSocket(storedToken);
             } else {
-                localStorage.removeItem('doctorToken');
-                localStorage.removeItem('doctorTokenTimestamp');
+                localStorage.removeItem('token');
+                localStorage.removeItem('tokenTimestamp');
             }
         }
 
@@ -78,6 +80,8 @@ const ChatPopup_ForDoctor = () => {
                     return acc + conversation.messages.filter(msg => !msg.read && msg.from !== currentUserId).length;
                 }, 0);
                 setUnreadCount(count);
+
+                audioRef.current.play(); // Play the notification sound when a new message is received
 
                 return updatedConversations;
             });
@@ -125,8 +129,8 @@ const ChatPopup_ForDoctor = () => {
 
     const updateToken = (token) => {
         setIsLoggedIn(true);
-        localStorage.setItem('doctorToken', token);
-        localStorage.setItem('doctorTokenTimestamp', new Date().getTime().toString());
+        localStorage.setItem('token', token);
+        localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
         setToken(token);
         connectSocket(token);
     };
@@ -136,7 +140,7 @@ const ChatPopup_ForDoctor = () => {
             const { token } = await login(username, password);
             updateToken(token);
         } catch (error) {
-            console.error('Doctor login failed:', error);
+            console.error('Login failed:', error);
         }
     };
 
@@ -177,6 +181,15 @@ const ChatPopup_ForDoctor = () => {
         }
     }, [currentConversation]);
 
+    useEffect(() => {
+        if (currentConversation) {
+            const updatedConversation = conversations.find(c => c.id === currentConversation.id);
+            if (updatedConversation) {
+                setCurrentConversation(updatedConversation);
+            }
+        }
+    }, [conversations]);
+
     return (
         <>
             <IconButton
@@ -185,7 +198,10 @@ const ChatPopup_ForDoctor = () => {
                     position: 'fixed',
                     bottom: 16,
                     right: 16,
-                    zIndex: 1000
+                    zIndex: 1000,
+                    backgroundColor: '#f5f5f5', // Set background color
+                    borderRadius: '50%',
+                    padding: 8
                 }}
                 onClick={handleOpenDialog}
             >
@@ -199,6 +215,11 @@ const ChatPopup_ForDoctor = () => {
                 onClose={() => setDialogOpen(false)}
                 fullWidth
                 maxWidth="md"
+                PaperProps={{
+                    sx: {
+                        bgcolor: 'background.paper',
+                    }
+                }}
             >
                 <DialogTitle>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -213,7 +234,7 @@ const ChatPopup_ForDoctor = () => {
                         <Box display="flex" flexDirection="column" height="60vh">
                             <Box display="flex" flexGrow={1}>
                                 <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
-                                    <Typography variant="h6">Patient Conversations</Typography>
+                                    <Typography variant="h6">Conversations</Typography>
                                     <Box>
                                         {conversations.map(conversation => (
                                             <Box
@@ -222,7 +243,7 @@ const ChatPopup_ForDoctor = () => {
                                                 bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
                                                 onClick={() => handleConversationClick(conversation.id)}
                                             >
-                                                <Typography variant="body2">Patient: {conversation.nameId}</Typography>
+                                                <Typography variant="body2">User: {conversation.nameId}</Typography>
                                             </Box>
                                         ))}
                                     </Box>
@@ -243,20 +264,15 @@ const ChatPopup_ForDoctor = () => {
                                                             bgcolor={message.from === currentUserId ? 'primary.main' : 'grey.300'}
                                                             borderRadius={1}
                                                             maxWidth="70%"
-                                                            wordBreak="break-word"
+                                                            color="white"
                                                         >
-                                                            {message.text && <Typography variant="body1">{message.text}</Typography>}
+                                                            <Typography variant="body2">{message.text}</Typography>
                                                             {message.image && (
                                                                 <img
                                                                     src={message.image}
-                                                                    alt="Selected"
-                                                                    style={{
-                                                                        width: '100%',
-                                                                        maxWidth: '300px',
-                                                                        height: 'auto',
-                                                                        borderRadius: '4px',
-                                                                        marginTop: '8px'
-                                                                    }}
+                                                                    alt="Attached"
+                                                                    style={{ maxWidth: '100%', cursor: 'pointer' }}
+                                                                    onClick={() => window.open(message.image, '_blank')}
                                                                 />
                                                             )}
                                                         </Box>
@@ -264,49 +280,38 @@ const ChatPopup_ForDoctor = () => {
                                                 ))}
                                                 <div ref={messagesEndRef} />
                                             </Box>
-                                            <Box mt={2} display="flex" alignItems="center">
+                                            <Box display="flex" alignItems="center" mt={2}>
                                                 <TextField
                                                     variant="outlined"
                                                     size="small"
-                                                    placeholder="Type a message"
+                                                    fullWidth
+                                                    placeholder="Type a message..."
                                                     value={inputMessage}
                                                     onChange={(e) => setInputMessage(e.target.value)}
-                                                    fullWidth
                                                 />
-                                                <input
-                                                    accept="image/*"
-                                                    id="image-upload"
-                                                    type="file"
-                                                    style={{ display: 'none' }}
-                                                    onChange={handleSelectImage}
-                                                />
-                                                <label htmlFor="image-upload">
-                                                    <IconButton color="primary" component="span">
-                                                        <ImageIcon />
-                                                    </IconButton>
-                                                </label>
-                                                <Button
-                                                    variant="contained"
-                                                    color="primary"
-                                                    onClick={handleSendMessage}
-                                                >
-                                                    Send
-                                                </Button>
+                                                <IconButton component="label" color="primary">
+                                                    <ImageIcon />
+                                                    <input type="file" hidden onChange={handleSelectImage} />
+                                                </IconButton>
+                                                <Button variant="contained" color="primary" onClick={handleSendMessage}>Send</Button>
                                             </Box>
                                         </>
                                     ) : (
-                                        <Typography>Select a conversation to start chatting</Typography>
+                                        <Typography>No conversation selected</Typography>
                                     )}
                                 </Box>
                             </Box>
                         </Box>
                     ) : (
-                        <LoginForm onLogin={handleLogin} />
+                        <LoginForm onSubmit={handleLogin} />
                     )}
                 </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
+                </DialogActions>
             </Dialog>
         </>
     );
 };
 
-export default ChatPopup_ForDoctor;
+export default Chatpopup_ForDoctor;

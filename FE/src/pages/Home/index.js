@@ -15,6 +15,7 @@ import CustomerServiec from './component/CustomerService'
 import { Helmet } from 'react-helmet';
 import Chatpopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForReceptionist';
 import ChatPopup_ForPatient from '../../layouts/ChatNotification';
+import ChatPopup_ForPatient_Doctor from '../../layouts/ChatNotification/ChatPopup_ForPatient/ChatPopup_ForPatient';
 
 function Home() {
   const { user } = useContext(AuthContext);
@@ -36,7 +37,7 @@ function Home() {
       <Article/>
       <Service/>
       <FeedBack/>
-      {role === 'Patient' ? <ChatPopup_ForPatient /> :''}
+      {role === 'Patient' ? <ChatPopup_ForPatient_Doctor /> :''}
       {role === 'Receptionist' ? <Chatpopup_ForReceptionist /> :''}
 
       <Footer></Footer>

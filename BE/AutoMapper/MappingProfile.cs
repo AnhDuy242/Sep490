@@ -12,6 +12,8 @@ using BE.DTOs.FeedbackDto;
 using BE.DTOs.QuestionDto;
 using BE.DTOs.TestResultDto;
 using BE.DTOs.PatientDto;
+using BE.DTOs.MessageDto; // Cập nhật namespace
+using BE.DTOs.ConversationDto; // Cập nhật namespace
 
 public class MappingProfile : Profile
 {
@@ -83,5 +85,14 @@ public class MappingProfile : Profile
             .ReverseMap();
         CreateMap<Schedule, ScheduleDoctor>()
             .ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Doctor.Name)).ReverseMap();
+
+        //message and conversation
+           CreateMap<Message, MessageDto>().ReverseMap();
+        CreateMap<CreateMessageDto, Message>();
+        CreateMap<UpdateMessageDto, Message>();
+
+        CreateMap<Conversation, ConversationDto>().ReverseMap();
+        CreateMap<CreateConversationDto, Conversation>();
+        CreateMap<UpdateConversationDto, Conversation>();
     }
 }

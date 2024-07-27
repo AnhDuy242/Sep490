@@ -14,6 +14,8 @@ public partial class MedPalContext : DbContext
         : base(options)
     {
     }
+    public virtual DbSet<Message> Messages { get; set; }
+    public virtual DbSet<Conversation> Conversations { get; set; }
 
     public virtual DbSet<Account> Accounts { get; set; }
 
@@ -209,6 +211,10 @@ public partial class MedPalContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Article_manager_Account");
         });
+        modelBuilder.Entity<Message>()
+             .HasOne(m => m.Conversation)
+             .WithMany(c => c.Messages)
+             .HasForeignKey(m => m.ConversationId);
 
         modelBuilder.Entity<Blog>(entity =>
         {
