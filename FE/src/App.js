@@ -27,6 +27,9 @@ import Create_CustomerFeedback from './pages/Feedback/Create_CustomerFeedback'
 import DoctorAnswerQuestion from './pages/DoctorManagement/AnswerQuestion/doctor_answer_question'
 import ViewOnlinePatient_forDoctor from './pages/DoctorManagement/ViewOnlinePatient_Doctor/ViewOnlinePatient_Doctor';
 import ViewWeeklySchedule_Doctor from './pages/DoctorManagement/ViewWeeklySchedule_Doctor/ViewWeeklySchedule_Doctor'
+import About1 from '../src/pages/Article/baiviet1'
+import About2 from './pages/Article/baiviet2'
+import About3 from './pages/Article/baiviet3'
 import About from './pages/Article/index'
 function App() {
   return (
@@ -34,6 +37,10 @@ function App() {
       {/**Route hướng home */}
       <Route path="/" element={<Home />} >
       </Route>
+      {/**các bài viết giới thiệu */}
+      <Route path="/about-clinic" element={<About1 />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/trang-thiet-bi-tai-phong-kham" element={<About3 />} />
       {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
@@ -73,9 +80,6 @@ function App() {
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
       <Route path="/about-us" element={<About />} />
-
-
-
       {/*Doctor*/}
       <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
         <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />
