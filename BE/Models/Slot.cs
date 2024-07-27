@@ -9,5 +9,7 @@ public partial class Slot
 
     public string Time { get; set; } = null!;
 
+    public int? Shift { get; set; }
+
     public virtual ICollection<Appointment> Appointments { get; set; } = new List<Appointment>();
 }

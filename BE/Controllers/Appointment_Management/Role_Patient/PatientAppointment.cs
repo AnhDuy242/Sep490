@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
 using BE.DTOs.AppointmentDto;
+using BE.DTOs.DateDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
+using BE.DTOs.ScheduleDto;
 using BE.DTOs.ServiceDto;
 using BE.DTOs.SlotDto;
 using BE.Models;
@@ -49,6 +51,11 @@ namespace BE.Controllers.Appointment_Management
                 Status = "Đang chờ phê duyệt",
                 ServiceId = appointmentDto.ServiceId,
             };
+            if (appointment.DoctorId != null)
+            {
+                var s = _alo2Context.Schedules.Include(x => x.AppointmentsNavigation).Include(x => x.Doctor).Where(x => x.DoctorId == appointment.DoctorId).FirstOrDefault(x => x.Date == appointment.Date);
+                appointment.ScheduleId = s.Id;
+            }
             _alo2Context.Appointments.Add(appointment);
             _alo2Context.SaveChanges();
             return Ok(appointment);
@@ -142,7 +149,7 @@ namespace BE.Controllers.Appointment_Management
             }
             else
             {
-                var listDoc =  _alo2Context.Doctors
+                var listDoc = _alo2Context.Doctors
              .Where(d => d.Services.Any(s => s.ServiceId == seId))
              .ToList();
                 var list = _mapper.Map<List<DoctorAppointment>>(listDoc);
@@ -176,12 +183,36 @@ namespace BE.Controllers.Appointment_Management
             return Ok(list);
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetListSlot()
+        [HttpPost]
+        public async Task<IActionResult> GetListSlot(int docid, [FromBody] DateTimeDto date)
         {
-            var listDe = _alo2Context.Slots.ToList();
-            var list = _mapper.Map<List<SlotAppointment>>(listDe);
-            return Ok(list);
+            var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).FirstOrDefault(x => x.Date == date.Date);
+            if (s == null) return BadRequest();
+            if (s.Morning == true && s.Afternoon == true)
+            {
+                var sl = _alo2Context.Slots.ToList();
+                return Ok(sl);
+            }
+            if (s.Morning == false && s.Afternoon == true)
+            {
+                var sl = _alo2Context.Slots.Where(x => x.Shift == 2).ToList();
+                return Ok(sl);
+            }
+            if (s.Morning == true && s.Afternoon == false)
+            {
+                var sl = _alo2Context.Slots.Where(x => x.Shift == 1).ToList();
+                return Ok(sl);
+            }
+            return BadRequest();
+           
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetListDate(int docid)
+        {
+            var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).ToList();
+            var d = _mapper.Map<List<DateAppointment>>(s);
+            return Ok(d);
         }
         [HttpPut]
         public async Task<IActionResult> CancelAppointment(int aid)

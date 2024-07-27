@@ -162,7 +162,17 @@ app.UseHangfireDashboard();
 app.UseHangfireServer();
 
 // Configure Hangfire job
-var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
-recurringJobManager.AddOrUpdate<ReminderService>("send-reminders", service => service.CheckAppointments(), Cron.Daily);
+using (var scope = app.Services.CreateScope())
+{
+    var reminderService = scope.ServiceProvider.GetRequiredService<ReminderService>();
+    var recurringJobManager = scope.ServiceProvider.GetRequiredService<IRecurringJobManager>();
+
+    var notificationTime = reminderService.GetNotificationTime();
+    if (notificationTime.HasValue)
+    {
+        var cronExpression = $"{notificationTime.Value.Minutes} {notificationTime.Value.Hours} * * *";
+        recurringJobManager.AddOrUpdate("send-reminders", () => reminderService.CheckAppointmentsAsync(), cronExpression);
+    }
+}
 
 app.Run();

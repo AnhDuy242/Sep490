@@ -21,9 +21,13 @@ public partial class Appointment
 
     public int? ServiceId { get; set; }
 
+    public int? ScheduleId { get; set; }
+
     public virtual Doctor? Doctor { get; set; }
 
     public virtual Patient Patient { get; set; } = null!;
+
+    public virtual Schedule? Schedule { get; set; }
 
     public virtual Service? Service { get; set; }
 

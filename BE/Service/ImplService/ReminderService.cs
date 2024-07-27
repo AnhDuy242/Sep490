@@ -3,6 +3,7 @@
     using BE.DTOs;
     using BE.Models;
     using BE.Service.IService;
+    using Microsoft.EntityFrameworkCore;
     using System;
     using System.Linq;
 
@@ -10,18 +11,28 @@
     {
         private readonly MedPalContext _context;
         private readonly IEmailService _emailService;
+        private readonly IConfiguration _configuration;
 
-        public ReminderService(MedPalContext context, IEmailService emailService)
+        public ReminderService(MedPalContext context, IEmailService emailService, IConfiguration configuration)
         {
             _context = context;
             _emailService = emailService;
+            _configuration = configuration;
         }
-
-        public void CheckAppointments()
+        public TimeSpan? GetNotificationTime()
         {
-            var appointments = _context.Appointments
+            var time = _configuration["NotificationTime:Time"];
+            if (TimeSpan.TryParse(time, out TimeSpan parsedTime))
+            {
+                return parsedTime;
+            }
+            return null;
+        }
+        public async Task CheckAppointmentsAsync()
+        {
+            var appointments = await _context.Appointments
                 .Where(a => a.Status == "Tái khám" && a.Date.Date == DateTime.Today.AddDays(3).Date)
-                .ToList();
+                .ToListAsync();
 
             foreach (var appointment in appointments)
             {

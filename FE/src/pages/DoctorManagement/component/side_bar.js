@@ -120,6 +120,12 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Xem bệnh nhân đang hoạt động" />
           </ListItem>
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/view-online-patient"> {/**sua o cho nay */}
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Bệnh nhân đã khám" />
+          </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
           <Button variant="contained" className={classes.logoutButton} onClick={handleLogoutClick}>

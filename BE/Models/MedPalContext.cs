@@ -82,6 +82,7 @@ public partial class MedPalContext : DbContext
             var ConnectionString = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetConnectionString("DefaultConnection");
             optionsBuilder.UseSqlServer(ConnectionString);
         }
+
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -157,6 +158,7 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.Note).HasColumnName("note");
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
+            entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
             entity.Property(e => e.ServiceId).HasColumnName("service_id");
             entity.Property(e => e.SlotId).HasColumnName("slot_id");
             entity.Property(e => e.Status).HasColumnName("status");
@@ -169,6 +171,10 @@ public partial class MedPalContext : DbContext
                 .HasForeignKey(d => d.PatientId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Appointment_Patient");
+
+            entity.HasOne(d => d.Schedule).WithMany(p => p.AppointmentsNavigation)
+                .HasForeignKey(d => d.ScheduleId)
+                .HasConstraintName("FK_Appointment_Schedule");
 
             entity.HasOne(d => d.Service).WithMany(p => p.Appointments)
                 .HasForeignKey(d => d.ServiceId)
@@ -623,6 +629,7 @@ public partial class MedPalContext : DbContext
             entity.ToTable("Slot");
 
             entity.Property(e => e.SlotId).HasColumnName("slot_id");
+            entity.Property(e => e.Shift).HasColumnName("shift");
             entity.Property(e => e.Time)
                 .IsUnicode(false)
                 .HasColumnName("time");

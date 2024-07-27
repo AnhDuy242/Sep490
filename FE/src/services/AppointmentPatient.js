@@ -156,7 +156,7 @@ export const fetchDoctors = async () => {
   }
 };
 //lấy slot list
-export const fetchSlots = async () => {
+export const fetchSlots = async () => {///////////
   try {
       const response = await fetch('https://localhost:7240/api/PatientAppointment/GetListSlot');
       if (!response.ok) {
@@ -194,3 +194,52 @@ export const cancelAppointment = async (appointmentId) => {
   }
 };
 
+//lấy ngày làm việc theo id bác sĩ
+export const fetchDateByDoctor = async (docid) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListDate?docid=${docid}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data.$values || []; // chỉ trả về mảng $values
+  } catch (error) {
+    console.error('Failed to fetch services:', error);
+    throw error;
+  }
+};
+//lấy slot theo date
+// export const fetchSlotsByDate = async (doctorId, date) => {
+//   try {
+//     const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListSlot?docid=${doctorId}`);
+//     if (!response.ok) {
+//       throw new Error('Network response was not ok');
+//     }
+//     const data = await response.json();
+//     return data.$values || []; // Chỉ trả về mảng $values
+//   } catch (error) {
+//     console.error('Failed to fetch slots:', error);
+//     throw error;
+//   }
+// };
+// src/services/AppointmentPatient.js
+
+export const fetchSlotsByDoctorAndDate = async (doctorId, date) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListSlot?docid=${doctorId}`, {
+      method: 'POST', // Sử dụng phương thức POST
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ date }), // Gửi date trong body
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data.$values || []; // chỉ trả về mảng $values
+  } catch (error) {
+    console.error('Failed to fetch slots:', error);
+    throw error;
+  }
+};
