@@ -69,6 +69,26 @@ export const bookAppointment = (appointmentData) => {
   });
 };
 
+export const ReceptionbookAppointment = (appointmentData) => {
+  return fetch('https://localhost:7240/api/ReceptionistAppointment/CreateAppointment', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(appointmentData),
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return response.json();
+  })
+  .catch(error => {
+    console.error('There was an error booking the appointment!', error);
+    throw error;
+  });
+};
+
 //lấy ra list danh sách doctor 
 const listDoctor = 'https://localhost:7240/api/PatientAppointment/GetListDoctor';
 

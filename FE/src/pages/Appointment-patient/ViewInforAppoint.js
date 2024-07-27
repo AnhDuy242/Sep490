@@ -562,6 +562,8 @@ const GetAppointment = () => {
                                 <MenuItem value="Đã phê duyệt">Đã phê duyệt</MenuItem>
                                 <MenuItem value="Đang chờ phê duyệt">Đang chờ phê duyệt</MenuItem>
                                 <MenuItem value="Đã hủy">Đã hủy</MenuItem>
+                                <MenuItem value="Tái khám">Tái khám</MenuItem>
+                                <MenuItem value="Đã khám">Đã khám</MenuItem>
                             </Select>
                         </div>
                     </div>
