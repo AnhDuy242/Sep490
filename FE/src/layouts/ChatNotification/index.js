@@ -1,27 +1,30 @@
-// ChatPopup.jsx
 import React, { useState, useEffect, useRef } from 'react';
-import { Fab, Badge, Popover, Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import { Fab, Badge, Dialog, Box, Typography, TextField, Button, IconButton } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
 import io from 'socket.io-client';
 import { login } from '../../services/Authentication';
 import LoginForm from '../LoginForm';
+import notificationSound from '../../assets/sound/notification_sound.mp3'; // Import the notification sound
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
-const ChatPopup = () => {
-    const [showLogin, setShowLogin] = useState(false); // State to manage login form visibility
-    const [anchorEl, setAnchorEl] = useState(null);
-    const [messages, setMessages] = useState([]);
+const ChatPopup_ForPatient = () => {
+    const [showLogin, setShowLogin] = useState(false);
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [showChat, setShowChat] = useState(false);
+    const [availableReceptionists, setAvailableReceptionists] = useState([]);
+    const [currentConversation, setCurrentConversation] = useState({ id: '', messages: [] });
     const [inputMessage, setInputMessage] = useState('');
-    const [selectedImage, setSelectedImage] = useState(null); // State for selected image
+    const [selectedImage, setSelectedImage] = useState(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [isConnected, setIsConnected] = useState(false); // State to manage socket connection
-    const [currentRoomId, setCurrentRoomId] = useState(null); // State to track current room ID
     const [token, setToken] = useState('');
-
-    const socketRef = useRef(null); // Ref to store the socket instance
+    const [unreadMessages, setUnreadMessages] = useState(0);
+    const [fullscreenImage, setFullscreenImage] = useState(null);
+    const nameId = localStorage.getItem('nameId');
+    const socketRef = useRef(null);
+    const audioRef = useRef(new Audio(notificationSound)); // Create a reference to the audio object
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -31,7 +34,8 @@ const ChatPopup = () => {
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
             if (tokenAge < tokenTimeout) {
                 setIsLoggedIn(true);
-                setToken(storedToken); // Set token state
+                setToken(storedToken);
+                connectSocket(storedToken);
             } else {
                 localStorage.removeItem('token');
                 localStorage.removeItem('tokenTimestamp');
@@ -45,14 +49,49 @@ const ChatPopup = () => {
         };
     }, []);
 
+    useEffect(() => {
+        if (socketRef.current) {
+            socketRef.current.on('message', (message) => {
+                console.log('Received message:', message); // Debug log to check the received message
+                setCurrentConversation((prevConversation) => {
+                    const conversationId = prevConversation.id;
+                    if (message.roomId === conversationId) {
+                        const messageExists = prevConversation.messages.some(
+                            (msg) => msg.id === message.id
+                        );
+                        if (!messageExists) {
+                            setUnreadMessages((prevCount) => prevCount + 1);
+                            audioRef.current.play(); // Play the notification sound
+                            return {
+                                ...prevConversation,
+                                messages: [...prevConversation.messages, message]
+                            };
+                        }
+                    }
+                    return prevConversation;
+                });
+            });
+
+            return () => {
+                socketRef.current.off('message'); // Cleanup listener on unmount
+            };
+        }
+    }, [currentConversation.id]);
+
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        
-        // Send token to server for login and authentication
-        socketRef.current.emit('login', { token });
+        if (!nameId) {
+            console.error('nameId not found in localStorage');
+            return;
+        }
+        socketRef.current.emit('login', { token, nameId });
 
-        socketRef.current.on('message', (message) => {
-            setMessages((prevMessages) => [...prevMessages, message]);
+        socketRef.current.on('availableReceptionists', (receptionists) => {
+            setAvailableReceptionists(receptionists);
+        });
+
+        socketRef.current.on('connect', () => {
+            socketRef.current.emit('getAvailableReceptionists');
         });
 
         socketRef.current.on('disconnect', () => {
@@ -60,52 +99,35 @@ const ChatPopup = () => {
         });
     };
 
-    const handleClick = (event) => {
-        setAnchorEl(event.currentTarget);
+    const handleToggleDialog = () => {
+        setDialogOpen(!dialogOpen);
     };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
-
-    const handleStartChat = () => {
-        if (!isConnected && token) {
-            connectSocket(token); // Kết nối socket với token sau khi đăng nhập thành công
-            setIsConnected(true);
-    
-            socketRef.current.on('connect', () => {
-                console.log('Socket connected');
-                // Sau khi kết nối, gửi yêu cầu tham gia room chat với receptionist
-                socketRef.current.emit('joinRoom', { receiverId:2 }); // Thay thế bằng id thực của receptionist
-            });
-    
-            socketRef.current.on('message', (message) => {
-                setMessages((prevMessages) => [...prevMessages, message]);
-            });
-    
-            socketRef.current.on('disconnect', () => {
-                setIsConnected(false);
-                console.log('Socket disconnected');
-            });
-        }
-    };
-    
 
     const handleSendMessage = () => {
-        if (inputMessage.trim() || selectedImage) {
+        if ((inputMessage.trim() || selectedImage) && socketRef.current && currentConversation) {
             const message = {
+                id: Date.now(), // Unique identifier for the message
                 text: inputMessage.trim(),
                 image: selectedImage,
-                receiverId: 2, // Thay thế bằng id thực của receptionist
+                roomId: currentConversation.id
             };
-    
-            socketRef.current.emit('message', message);
-            setMessages((prevMessages) => [...prevMessages, { ...message, fromSelf: true }]);
+
+            socketRef.current.emit('message', {
+                receiverId: currentConversation.userId,
+                message
+            });
+
+            // Update local messages immediately after sending
+            setCurrentConversation((prevConversation) => ({
+                ...prevConversation,
+                messages: [...prevConversation.messages, { from: 'Me', ...message }]
+            }));
+
+            // Reset input and selected image
             setInputMessage('');
-            setSelectedImage(null); // Clear selected image after sending
+            setSelectedImage(null);
         }
     };
-    
 
     const handleSelectImage = (event) => {
         const file = event.target.files[0];
@@ -125,8 +147,9 @@ const ChatPopup = () => {
         setIsLoggedIn(true);
         localStorage.setItem('token', token);
         localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
-        setToken(token); // Update token state
-        window.location.href = '/';
+        setToken(token);
+        connectSocket(token);
+        handleToggleDialog();
     };
 
     const handleLogin = async ({ username, password }) => {
@@ -139,100 +162,180 @@ const ChatPopup = () => {
         }
     };
 
-    const open = Boolean(anchorEl);
-    const id = open ? 'chat-popover' : undefined;
-
     const fabStyle = {
         position: 'fixed',
-        bottom: '16px',
-        right: '16px',
+        bottom: 16,
+        right: 16,
     };
 
-    const popoverStyle = {
-        padding: '20px',
-        width: '300px',
+    const selectReceptionistAndJoinRoom = (receptionistId) => {
+        const roomId = `${[nameId, receptionistId].sort().join('_')}`;
+        socketRef.current.emit('joinRoom', { receiverId: receptionistId });
+        setCurrentConversation({ id: roomId, userId: receptionistId, messages: [] });
+        setUnreadMessages(0); // Reset unread messages count on starting a new conversation
+        setShowChat(true);
     };
+
+    const handleCloseFullscreenImage = () => setFullscreenImage(null);
 
     return (
-        <>
-            <Fab color="primary" style={fabStyle} onClick={handleClick}>
-                <Badge badgeContent={messages.length} color="error">
-                    <ChatIcon />
-                </Badge>
-            </Fab>
-            <Popover
-                id={id}
-                open={open}
-                anchorEl={anchorEl}
-                onClose={handleClose}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-            >
-                <Box sx={popoverStyle}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h6">Chat</Typography>
-                        <IconButton onClick={handleClose}>
-                            <CloseIcon />
-                        </IconButton>
-                    </Box>
-                    <Button onClick={handleStartChat} variant="contained" color="primary" fullWidth>
-                        Start Chat
-                    </Button>
-                    <Box mt={2}>
-                        {messages.map((msg, index) => (
-                            <Box key={index} mb={1} display="flex" flexDirection="column" alignItems={msg.fromSelf ? 'flex-end' : 'flex-start'}>
-                                {msg.text && (
-                                    <Typography
-                                        variant="body1"
-                                        sx={{
-                                            background: msg.fromSelf ? '#cfe9ff' : '#e5e5e5',
-                                            padding: '10px',
-                                            borderRadius: '10px',
-                                        }}
-                                    >
-                                        {msg.text}
-                                    </Typography>
-                                )}
-                                {msg.image && (
-                                    <img src={msg.image} alt="sent" style={{ maxWidth: '100%', marginTop: '10px', borderRadius: '10px' }} />
-                                )}
-                            </Box>
-                        ))}
-                    </Box>
-                    <TextField
+        <div>
+            {!isLoggedIn ? (
+                <LoginForm onLogin={handleLogin} />
+            ) : (
+                <>
+                    <Fab color="primary" onClick={handleToggleDialog} style={fabStyle}>
+                        <Badge color="secondary" variant="dot" invisible={!unreadMessages}>
+                            <ChatIcon />
+                        </Badge>
+                    </Fab>
+
+                    <Dialog open={dialogOpen} onClose={handleToggleDialog} fullWidth maxWidth="md">
+                        <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
+                            <Typography variant="h6">Chat</Typography>
+                            <IconButton edge="end" color="inherit" onClick={handleToggleDialog} aria-label="close">
+                                <CloseIcon />
+                            </IconButton>
+                        </Box>
+                        <Box p={2}>
+                            {showChat ? (
+                                <>
+                                    <Box mb={2}>
+                                        <Typography variant="body1">
+                                            Current Conversation: {currentConversation.id}
+                                        </Typography>
+                                    </Box>
+                                    <Box mb={2} height="400px" overflow="auto">
+                                        {currentConversation.messages.map((msg, index) => (
+                                            <Box
+                                                key={index}
+                                                mb={1}
+                                                display="flex"
+                                                justifyContent={msg.from === 'Me' ? 'flex-end' : 'flex-start'}
+                                            >
+                                                <Box
+                                                    p={1}
+                                                    style={{
+                                                        backgroundColor: msg.from === 'Me' ? '#d1e7dd' : '#e9ecef',
+                                                        borderRadius: '8px',
+                                                        maxWidth: '70%',
+                                                        wordBreak: 'break-word'
+                                                    }}
+                                                >
+                                                    <Typography variant="body2">
+                                                        {msg.from}: {msg.text}
+                                                    </Typography>
+                                                    {msg.image && (
+                                                        <img
+                                                            src={msg.image}
+                                                            alt="attachment"
+                                                            width="100"
+                                                            style={{ cursor: 'pointer', borderRadius: '4px', marginTop: '4px' }}
+                                                            onClick={() => setFullscreenImage(msg.image)}
+                                                        />
+                                                    )}
+                                                </Box>
+                                            </Box>
+                                        ))}
+                                    </Box>
+                                    <Box display="flex" alignItems="center" style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '8px' }}>
+                                        <TextField
+                                            value={inputMessage}
+                                            onChange={(e) => setInputMessage(e.target.value)}
+                                            variant="outlined"
+                                            fullWidth
+                                            placeholder="Type your message..."
+                                            multiline
+                                            rows={2}
+                                            InputProps={{
+                                                endAdornment: (
+                                                    <input
+                                                        accept="image/*"
+                                                        id="raised-button-file"
+                                                        type="file"
+                                                        style={{ display: 'none' }}
+                                                        onChange={handleSelectImage}
+                                                    />
+                                                ),
+                                            }}
+                                        />
+                                        <label htmlFor="raised-button-file">
+                                            <IconButton component="span">
+                                                <ImageIcon />
+                                            </IconButton>
+                                        </label>
+                                        <Button onClick={handleSendMessage} color="primary" variant="contained">
+                                            Send
+                                        </Button>
+                                    </Box>
+                                </>
+                            ) : (
+                                <Box>
+                                    <Typography variant="h6">Select a Receptionist</Typography>
+                                    <Box mt={2}>
+                                        {availableReceptionists.map((receptionist) => (
+                                            <Button
+                                                key={receptionist}
+                                                onClick={() => selectReceptionistAndJoinRoom(receptionist)}
+                                                variant="contained"
+                                                color="primary"
+                                                fullWidth
+                                                style={{ marginBottom: '8px' }}
+                                            >
+                                                {receptionist}
+                                            </Button>
+                                        ))}
+                                    </Box>
+                                </Box>
+                            )}
+                        </Box>
+                    </Dialog>
+
+                    <Dialog
+                        open={!!fullscreenImage}
+                        onClose={handleCloseFullscreenImage}
+                        maxWidth="md"
                         fullWidth
-                        variant="outlined"
-                        placeholder="Type a message"
-                        value={inputMessage}
-                        onChange={(e) => setInputMessage(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                handleSendMessage();
+                        PaperProps={{
+                            style: {
+                                display: 'flex',
+                                justifyContent: 'center',
+                                alignItems: 'center'
                             }
                         }}
-                        InputProps={{
-                            endAdornment: (
-                                <IconButton color="primary" component="label">
-                                    <ImageIcon />
-                                    <input type="file" hidden onChange={handleSelectImage} />
-                                </IconButton>
-                            ),
-                        }}
-                    />
-                    <Button onClick={handleSendMessage} variant="contained" color="primary" fullWidth>
-                        Send
-                    </Button>
-                </Box>
-            </Popover>
-            <LoginForm 
-                show={showLogin} 
-                handleLogin={handleLogin} 
-                handleClose={handleCloseLogin} 
-            />
-        </>
+                    >
+                        <Box
+                            display="flex"
+                            justifyContent="center"
+                            alignItems="center"
+                            p={2}
+                            style={{ position: 'relative' }}
+                        >
+                            <IconButton
+                                style={{
+                                    position: 'absolute',
+                                    top: 16,
+                                    right: 16
+                                }}
+                                onClick={handleCloseFullscreenImage}
+                            >
+                                <CloseIcon />
+                            </IconButton>
+                            <img
+                                src={fullscreenImage}
+                                alt="fullscreen"
+                                style={{
+                                    maxWidth: '100%',
+                                    maxHeight: '80vh',
+                                    objectFit: 'contain'
+                                }}
+                            />
+                        </Box>
+                    </Dialog>
+                </>
+            )}
+        </div>
     );
 };
 
-export default ChatPopup;
+export default ChatPopup_ForPatient;

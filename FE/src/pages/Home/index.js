@@ -10,10 +10,11 @@ import Article from '../Home/component/Article'
 import Service from '../Home/component/PolyServ'
 import FeedBack from '../Home/component/Feedback'
 import ChatPopup from '../../layouts/ChatNotification';
-import ChatPopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForRecepptionist';
 import { AuthContext } from '../../utils/AuthContext';
 import CustomerServiec from './component/CustomerService'
 import { Helmet } from 'react-helmet';
+import Chatpopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForReceptionist';
+import ChatPopup_ForPatient from '../../layouts/ChatNotification';
 
 function Home() {
   const { user } = useContext(AuthContext);
@@ -35,9 +36,8 @@ function Home() {
       <Article/>
       <Service/>
       <FeedBack/>
-      {role === 'Receptionist' ? <ChatPopup_ForReceptionist /> :''}
-      {role === 'Doctor' ? <ChatPopup_ForReceptionist /> :''}
-      {role === 'Patient' ? <ChatPopup /> :''}
+      {role === 'Patient' ? <ChatPopup_ForPatient /> :''}
+      {role === 'Receptionist' ? <Chatpopup_ForReceptionist /> :''}
 
       <Footer></Footer>
 

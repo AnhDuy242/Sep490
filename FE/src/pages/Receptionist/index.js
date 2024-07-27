@@ -1,4 +1,3 @@
-import ChatPopup from "../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForRecepptionist.js";
 import React, { useState, useEffect } from 'react';
 import { Fab, Badge, Popover, Box, Typography, TextField, Button } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -14,7 +13,6 @@ const tokenTimeout = 3600000; // 1 hour in milliseconds
 const ReceptionistDemo =()=>{
     return(
         <>
-    <ChatPopup></ChatPopup>
     </>
     )
 }
