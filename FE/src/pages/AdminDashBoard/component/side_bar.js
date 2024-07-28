@@ -119,7 +119,7 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Xem lịch làm việc" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/schedule">
+          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/ViewAppointment">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>

@@ -31,6 +31,7 @@ import About1 from '../src/pages/Article/baiviet1'
 import About2 from './pages/Article/baiviet2'
 import About3 from './pages/Article/baiviet3'
 import About from './pages/Article/index'
+import AdminViewAppointment from './pages/AdminDashBoard/view_appointment';
 function App() {
   return (
     <Routes>
@@ -45,6 +46,7 @@ function App() {
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
         <Route path="/admin/dashboard/schedule" element={<ScheduleAdmin />} />
+        <Route path="/admin/dashboard/ViewAppointment" element={<AdminViewAppointment />} />
       </Route>
       <Route path="/receptionist-account" element={<ProtectedRoute requiredRole="Receptionist">< Receptionist /></ProtectedRoute>} />
 
