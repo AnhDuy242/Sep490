@@ -191,16 +191,31 @@ namespace BE.Controllers.Appointment_Management
             if (s.Morning == true && s.Afternoon == true)
             {
                 var sl = _alo2Context.Slots.ToList();
+                foreach(var slot in sl)
+                {
+                    var a = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id).Where(x => x.SlotId == slot.SlotId).ToList();
+                    if(a.Count == 3) sl.Remove(slot);
+                }
                 return Ok(sl);
             }
             if (s.Morning == false && s.Afternoon == true)
             {
                 var sl = _alo2Context.Slots.Where(x => x.Shift == 2).ToList();
+                foreach (var slot in sl)
+                {
+                    var a = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id).Where(x => x.SlotId == slot.SlotId).ToList();
+                    if (a.Count == 3) sl.Remove(slot);
+                }
                 return Ok(sl);
             }
             if (s.Morning == true && s.Afternoon == false)
             {
                 var sl = _alo2Context.Slots.Where(x => x.Shift == 1).ToList();
+                foreach (var slot in sl)
+                {
+                    var a = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id).Where(x => x.SlotId == slot.SlotId).ToList();
+                    if (a.Count == 3) sl.Remove(slot);
+                }
                 return Ok(sl);
             }
             return BadRequest();
