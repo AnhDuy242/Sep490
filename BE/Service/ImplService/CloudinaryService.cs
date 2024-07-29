@@ -26,7 +26,7 @@
             var uploadParams = new ImageUploadParams()
             {
                 File = new FileDescription(filePath),
-                PublicId = "sample_image"
+                PublicId = "sample_image123"
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);

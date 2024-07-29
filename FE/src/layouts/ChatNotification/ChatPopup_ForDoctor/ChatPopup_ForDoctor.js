@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box, Typography, TextField, Button, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Badge } from '@mui/material';
+import { Box, Typography, TextField, IconButton, Dialog, DialogTitle, DialogContent, DialogActions, Badge,Button } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import ImageIcon from '@mui/icons-material/Image';
+import SendIcon from '@mui/icons-material/Send';
 import ChatIcon from '@mui/icons-material/Chat';
 import io from 'socket.io-client';
 import LoginForm from '../../LoginForm';
@@ -19,11 +20,14 @@ const Chatpopup_ForDoctor = () => {
     const [token, setToken] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [imageModalOpen, setImageModalOpen] = useState(false); // State for image modal
+    const [modalImageSrc, setModalImageSrc] = useState(''); // State for modal image source
     const nameId = localStorage.getItem('nameId');
     const currentUserId = nameId;
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference for the audio object
+    const accountId = parseInt(localStorage.getItem('accountId'));
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -50,7 +54,7 @@ const Chatpopup_ForDoctor = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        socketRef.current.emit('loginDoctor', { token, nameId });
+        socketRef.current.emit('loginDoctor', { token,nameId: accountId.toString() });
 
         socketRef.current.on('newConversation', ({ roomId, nameId }) => {
             setConversations((prevConversations) => {
@@ -173,6 +177,11 @@ const Chatpopup_ForDoctor = () => {
         setDialogOpen(true);
     };
 
+    const handleImageClick = (imageSrc) => {
+        setModalImageSrc(imageSrc);
+        setImageModalOpen(true);
+    };
+
     useEffect(() => {
         if (currentConversation) {
             if (messagesEndRef.current) {
@@ -248,66 +257,130 @@ const Chatpopup_ForDoctor = () => {
                                         ))}
                                     </Box>
                                 </Box>
-                                <Box flexGrow={1} p={2} display="flex" flexDirection="column">
+                                <Box flexGrow={1} display="flex" flexDirection="column">
                                     {currentConversation ? (
                                         <>
-                                            <Box flexGrow={1} overflow="auto">
-                                                {currentConversation.messages.map((message, index) => (
+                                            <Box flexGrow={1} overflow="auto" mb={2}>
+                                                {currentConversation.messages.map(msg => (
                                                     <Box
-                                                        key={index}
+                                                        key={msg.id}
                                                         display="flex"
-                                                        justifyContent={message.from === currentUserId ? 'flex-end' : 'flex-start'}
+                                                        flexDirection={msg.from === currentUserId ? 'row-reverse' : 'row'}
                                                         mb={1}
+                                                        p={1}
+                                                        onClick={() => msg.image && handleImageClick(msg.image)}
                                                     >
-                                                        <Box
-                                                            p={1}
-                                                            bgcolor={message.from === currentUserId ? 'primary.main' : 'grey.300'}
-                                                            borderRadius={1}
-                                                            maxWidth="70%"
-                                                            color="white"
-                                                        >
-                                                            <Typography variant="body2">{message.text}</Typography>
-                                                            {message.image && (
-                                                                <img
-                                                                    src={message.image}
-                                                                    alt="Attached"
-                                                                    style={{ maxWidth: '100%', cursor: 'pointer' }}
-                                                                    onClick={() => window.open(message.image, '_blank')}
-                                                                />
-                                                            )}
-                                                        </Box>
+                                                        {msg.text && (
+                                                            <Box
+                                                                bgcolor={msg.from === currentUserId ? 'primary.main' : 'grey.300'}
+                                                                color={msg.from === currentUserId ? 'white' : 'black'}
+                                                                borderRadius={1}
+                                                                p={1}
+                                                                maxWidth="70%"
+                                                            >
+                                                                <Typography variant="body2">{msg.text}</Typography>
+                                                            </Box>
+                                                        )}
+                                                        {msg.image && (
+                                                            <Box
+                                                                component="img"
+                                                                src={msg.image}
+                                                                alt="message"
+                                                                sx={{
+                                                                    width: 100,
+                                                                    height: 100,
+                                                                    objectFit: 'cover',
+                                                                    borderRadius: 1,
+                                                                    cursor: 'pointer',
+                                                                    ml: 1
+                                                                }}
+                                                                onClick={() => handleImageClick(msg.image)}
+                                                            />
+                                                        )}
                                                     </Box>
                                                 ))}
                                                 <div ref={messagesEndRef} />
                                             </Box>
-                                            <Box display="flex" alignItems="center" mt={2}>
+                                            <Box display="flex" alignItems="center" mt={2} p={1} bgcolor="grey.100">
+                                                <input
+                                                    type="file"
+                                                    accept="image/*"
+                                                    style={{ display: 'none' }}
+                                                    id="imageUpload"
+                                                    onChange={handleSelectImage}
+                                                />
+                                                <label htmlFor="imageUpload">
+                                                    <IconButton
+                                                        color="primary"
+                                                        component="span"
+                                                    >
+                                                        <ImageIcon />
+                                                    </IconButton>
+                                                </label>
+                                                {selectedImage && (
+                                                    <Box
+                                                        component="img"
+                                                        src={selectedImage}
+                                                        alt="selected"
+                                                        sx={{
+                                                            width: 100,
+                                                            height: 100,
+                                                            objectFit: 'cover',
+                                                            borderRadius: 1,
+                                                            cursor: 'pointer',
+                                                            ml: 2
+                                                        }}
+                                                        onClick={() => handleImageClick(selectedImage)}
+                                                    />
+                                                )}
                                                 <TextField
                                                     variant="outlined"
                                                     size="small"
-                                                    fullWidth
-                                                    placeholder="Type a message..."
                                                     value={inputMessage}
                                                     onChange={(e) => setInputMessage(e.target.value)}
+                                                    fullWidth
+                                                    placeholder="Type a message"
+                                                    sx={{ ml: 2 }}
                                                 />
-                                                <IconButton component="label" color="primary">
-                                                    <ImageIcon />
-                                                    <input type="file" hidden onChange={handleSelectImage} />
+                                                <IconButton
+                                                    color="primary"
+                                                    onClick={handleSendMessage}
+                                                    sx={{ ml: 2 }}
+                                                >
+                                                    <SendIcon />
                                                 </IconButton>
-                                                <Button variant="contained" color="primary" onClick={handleSendMessage}>Send</Button>
                                             </Box>
                                         </>
                                     ) : (
-                                        <Typography>No conversation selected</Typography>
+                                        <Typography variant="body2">Select a conversation to start chatting.</Typography>
                                     )}
                                 </Box>
                             </Box>
                         </Box>
                     ) : (
-                        <LoginForm onSubmit={handleLogin} />
+                        <LoginForm onLogin={handleLogin} />
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
+                    <Button onClick={() => setDialogOpen(false)}>Close</Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog
+                open={imageModalOpen}
+                onClose={() => setImageModalOpen(false)}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogContent>
+                    <img
+                        src={modalImageSrc}
+                        alt="Fullscreen"
+                        style={{ width: '100%', height: 'auto' }}
+                    />
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setImageModalOpen(false)}>Close</Button>
                 </DialogActions>
             </Dialog>
         </>

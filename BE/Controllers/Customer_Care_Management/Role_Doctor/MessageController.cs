@@ -100,5 +100,37 @@ namespace BE.Controllers.Customer_Care_Management
 
             return NoContent();
         }
+        // GET: api/messages/getbyparticipant/{id}
+        [HttpGet("getbyparticipant/{id}")]
+        public async Task<IActionResult> GetByParticipantId(int id)
+        {
+            var messages = await _context.Messages
+                .Where(m => m.SenderId == id || m.ReceiverId == id)
+                .ToListAsync();
+
+            if (messages == null || !messages.Any())
+            {
+                return NotFound();
+            }
+
+            var result = _mapper.Map<List<MessageDto>>(messages);
+            return Ok(result);
+        }
+        [HttpGet("{conversationId}")]
+        public async Task<IActionResult> GetAllMessagesByConversationId(int conversationId)
+        {
+            var messages = await _context.Messages
+                .Where(m => m.ConversationId == conversationId)
+                .ToListAsync();
+
+            if (messages == null || !messages.Any())
+            {
+                return NotFound();
+            }
+
+            var result = _mapper.Map<List<MessageDto>>(messages);
+            return Ok(result);
+        }
+
     }
 }

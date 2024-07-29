@@ -4,6 +4,7 @@ using BE.DTOs.ConversationDto;
 using BE.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SendGrid.Helpers.Mail;
 
 [Route("api/[controller]/[action]")]
 [ApiController]
@@ -46,19 +47,31 @@ public class ConversationsController : ControllerBase
 
     // POST: api/conversations/create
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreateConversationDto createConversationDto)
+    public async Task<IActionResult> CreateIfNotExist([FromBody] CreateConversationDto createConversationDto)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
+        // Check if a conversation already exists for the given DoctorId and PatientId
+        var existingConversation = await _context.Conversations
+            .FirstOrDefaultAsync(c => c.DoctorId == createConversationDto.DoctorId && c.PatientId == createConversationDto.PatientId);
+
+        if (existingConversation != null)
+        {
+            // If a conversation already exists, return the existing conversation
+            var result = _mapper.Map<ConversationDto>(existingConversation);
+            return Ok(result); // You might want to use `Ok` instead of `CreatedAtAction` here
+        }
+
+        // Create a new conversation if none exists
         var conversation = _mapper.Map<Conversation>(createConversationDto);
         _context.Conversations.Add(conversation);
         await _context.SaveChangesAsync();
 
-        var result = _mapper.Map<ConversationDto>(conversation);
-        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
+        var newResult = _mapper.Map<ConversationDto>(conversation);
+        return CreatedAtAction(nameof(GetById), new { id = newResult.Id }, newResult);
     }
 
     // PUT: api/conversations/update/{id}
@@ -98,5 +111,67 @@ public class ConversationsController : ControllerBase
 
         return NoContent();
     }
+    [HttpGet("getbydoctor/{doctorId}")]
+    public async Task<IActionResult> GetByDoctorId(int doctorId)
+    {
+        var conversations = await _context.Conversations
+            .Where(c => c.DoctorId == doctorId)
+            .ToListAsync();
 
+        if (conversations == null || !conversations.Any())
+        {
+            return NotFound();
+        }
+
+        var result = _mapper.Map<List<ConversationDto>>(conversations);
+        return Ok(result);
+    }
+    [HttpGet("")]
+    public async Task<IActionResult> GetByDoctorIdAndPatientID([FromQuery]int doctorId,  int patientId)
+    {
+        var conversations = await _context.Conversations
+            .Where(c => c.DoctorId == doctorId && c.PatientId == patientId)
+            .ToListAsync();
+
+        if (conversations == null || !conversations.Any())
+        {
+            return NotFound();
+        }
+
+        var result = _mapper.Map<List<ConversationDto>>(conversations);
+        return Ok(result);
+    }
+    [HttpGet("patientname/{patientId}")]
+    public async Task<IActionResult> GetPatientName(int patientId)
+    {
+        // Find the patient by their ID
+        var patient = await _context.Patients
+            .Where(p => p.PatientId == patientId)
+            .Select(p => p.Name)
+            .FirstOrDefaultAsync();
+
+        if (patient == null)
+        {
+            return NotFound(); // Return 404 if the patient is not found
+        }
+
+        return Ok(patient); // Return the patient's name
+    }
+
+    [HttpGet("{doctorId}")]
+    public async Task<IActionResult> GetDoctorName(int doctorId)
+    {
+        var doctor = await _context.Doctors
+            .Where(d => d.DocId == doctorId)
+            .Select(d => new { d.Name })
+            .FirstOrDefaultAsync();
+
+        if (doctor == null)
+        {
+            return NotFound();
+        }
+
+        return Ok(doctor.Name);
+    }
 }
+

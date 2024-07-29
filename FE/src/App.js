@@ -32,6 +32,7 @@ import About2 from './pages/Article/baiviet2'
 import About3 from './pages/Article/baiviet3'
 import About from './pages/Article/index'
 import AdminViewAppointment from './pages/AdminDashBoard/view_appointment';
+import ExaminatedPatients from './pages/DoctorManagement/ExaminatedPatient_Doctor/ExaminatedPatient_Doctor';
 function App() {
   return (
     <Routes>
@@ -88,6 +89,7 @@ function App() {
         <Route path="doctor-answer-question" element={<DoctorAnswerQuestion />} />
         <Route path="view-online-patient" element={<ViewOnlinePatient_forDoctor />} />
         <Route path="viewweeklyschedule" element={<ViewWeeklySchedule_Doctor />} />
+        <Route path="examinatedpatients" element={<ExaminatedPatients/>} />
 
       </Route>
       {/**Hỏi đáp và các service khác */}

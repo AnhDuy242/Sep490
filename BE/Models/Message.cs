@@ -6,7 +6,8 @@ namespace BE.Models
     {
         public int Id { get; set; }
         public int ConversationId { get; set; }
-        public string SenderId { get; set; }
+        public int SenderId { get; set; }
+        public int ReceiverId { get; set; }
         public string? MessageText { get; set; }
         public string? ImageUrl { get; set; }
         public DateTime SentAt { get; set; }

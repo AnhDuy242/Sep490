@@ -25,7 +25,7 @@ const ChatPopup_ForPatient_Doctor = () => {
     const nameId = localStorage.getItem('nameId');
     const socketRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound));
-
+    const accountId= localStorage.getItem('accountId');
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
@@ -84,7 +84,7 @@ const ChatPopup_ForPatient_Doctor = () => {
             console.error('nameId not found in localStorage');
             return;
         }
-        socketRef.current.emit('login', { token, nameId });
+        socketRef.current.emit('login', { token, nameId: accountId.toString() });
 
         socketRef.current.on('availableDoctors', (doctors) => {
             setAvailableDoctors(doctors);
@@ -167,7 +167,7 @@ const ChatPopup_ForPatient_Doctor = () => {
     };
 
     const selectDoctorAndJoinRoom = (doctorId) => {
-        const roomId = `${[nameId, doctorId].sort().join('_')}`;
+        const roomId = `${[accountId, parseInt(doctorId)].sort((a, b) => a - b).join('_')}`;
         socketRef.current.emit('joinRoom', { receiverId: doctorId });
         setCurrentConversation({ id: roomId, userId: doctorId, messages: [] });
         setUnreadMessages(0);

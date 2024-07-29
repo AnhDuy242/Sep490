@@ -7,6 +7,7 @@ const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [token, setToken] = useState(null);
   const [role, setRole] = useState(null);
+  const [nameId,setNameId]=useState(null);
 
   useEffect(() => {
     const storedToken = localStorage.getItem('token');
@@ -19,6 +20,7 @@ const AuthProvider = ({ children }) => {
         setIsLoggedIn(true);
         const decoded = jwtDecode(storedToken);
         setRole(decoded.role);
+        
       } else {
         handleTokenExpiration();
       }
@@ -30,6 +32,8 @@ const AuthProvider = ({ children }) => {
     setIsLoggedIn(true);
     const decoded = jwtDecode(newToken);
     setRole(decoded.role);
+    localStorage.setItem('nameId',decoded.nameId );
+
     localStorage.setItem('token', newToken);
     localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
   };

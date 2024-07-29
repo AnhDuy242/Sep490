@@ -94,5 +94,8 @@ public class MappingProfile : Profile
         CreateMap<Conversation, ConversationDto>().ReverseMap();
         CreateMap<CreateConversationDto, Conversation>();
         CreateMap<UpdateConversationDto, Conversation>();
+
+        CreateMap<CreateConversationDto, Conversation>();
+        CreateMap<Conversation, ConversationDto>();
     }
 }

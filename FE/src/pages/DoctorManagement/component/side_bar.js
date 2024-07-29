@@ -120,11 +120,11 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Xem bệnh nhân đang hoạt động" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/view-online-patient"> {/**sua o cho nay */}
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/examinatedpatients"> {/**sua o cho nay */}
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Bệnh nhân đã khám" />
+            <ListItemText primary="Tương tác với các bệnh nhân đã khám" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
