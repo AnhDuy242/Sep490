@@ -7,7 +7,7 @@ import { createPatient, getAllPatients, updatePatientStatus } from './../../serv
 import AddIcon from '@mui/icons-material/Add';
 import { bookAppointment, getListDepartment, fetchDoctors, fetchSlots, fetchServices, fetchDoctorByService, fetchSlotsByDoctorAndDate, fetchDateByDoctor, ReceptionbookAppointment } from '../../services/AppointmentPatient';
 import MuiAlert from '@mui/material/Alert';
-import { format } from 'date-fns';
+import { format, addDays } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './component/rep.css'
 
@@ -100,14 +100,41 @@ const CreatePatientAccount = () => {
         }
     }, [serviceId]);
 
+    // useEffect(() => {
+    //     // Fetch dates by doctor
+    //     if (doctorId) {
+    //         fetchDateByDoctor(doctorId)
+    //             .then(data => setDateOptions(data || []))
+    //             .catch(error => console.error('Failed to fetch dates:', error));
+    //     }
+    // }, [doctorId]);
     useEffect(() => {
         // Fetch dates by doctor
         if (doctorId) {
             fetchDateByDoctor(doctorId)
-                .then(data => setDateOptions(data || []))
+                .then(data => {
+                    const filteredDates = getNextFourDays(data);
+                    setDateOptions(filteredDates || []);
+                })
                 .catch(error => console.error('Failed to fetch dates:', error));
         }
     }, [doctorId]);
+
+    //Lấy 30 ngày
+    const getNextFourDays = (dates) => {
+        const today = new Date();
+        const nextFourDays = [];
+
+        for (let i = 0; i < 30; i++) {
+            const dateStr = format(addDays(today, i), 'dd-MM-yyyy');
+            if (dates.some(dateItem => dateItem.date === dateStr)) {
+                nextFourDays.push({ date: dateStr });
+            }
+        }
+
+        return nextFourDays;
+    };
+
 
     useEffect(() => {
         // Fetch slots when date or doctor changes
