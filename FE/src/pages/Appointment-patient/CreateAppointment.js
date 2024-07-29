@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, FormControl, InputLabel, Select, MenuItem, Box, Snackbar, Button } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isAfter } from 'date-fns';
 import { bookAppointment, getListDepartment, fetchServices, fetchDoctorByService, fetchDateByDoctor, fetchSlotsByDoctorAndDate } from '../../services/AppointmentPatient';
 import Header from '../../layouts/Header';
 import Navbar from '../../layouts/Navbar';
@@ -69,6 +69,7 @@ const AppointmentScreen = () => {
         .catch(error => console.error('Failed to fetch dates:', error));
     }
   }, [doctorId]);
+  
   
 
   useEffect(() => {
@@ -184,16 +185,23 @@ const AppointmentScreen = () => {
   const getNextFourDays = (dates) => {
     const today = new Date();
     const nextFourDays = [];
+    let count = 0;
   
-    for (let i = 0; i < 4; i++) {
-      const dateStr = format(addDays(today, i), 'dd-MM-yyyy');
-      if (dates.some(dateItem => dateItem.date === dateStr)) {
-        nextFourDays.push({ date: dateStr });
+    for (const dateItem of dates) {
+      const [day, month, year] = dateItem.date.split('-');
+      const date = new Date(`${year}-${month}-${day}`);
+      
+      if (isAfter(date, today) || date.toDateString() === today.toDateString()) {
+        nextFourDays.push(dateItem);
+        count++;
       }
+  
+      if (count === 4) break;
     }
   
     return nextFourDays;
   };
+  
   
   return (
     <>

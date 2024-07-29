@@ -7,7 +7,7 @@ import { createPatient, getAllPatients, updatePatientStatus } from './../../serv
 import AddIcon from '@mui/icons-material/Add';
 import { bookAppointment, getListDepartment, fetchDoctors, fetchSlots, fetchServices, fetchDoctorByService, fetchSlotsByDoctorAndDate, fetchDateByDoctor, ReceptionbookAppointment } from '../../services/AppointmentPatient';
 import MuiAlert from '@mui/material/Alert';
-import { format, addDays } from 'date-fns';
+import { format, addDays, isAfter } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './component/rep.css'
 
@@ -111,29 +111,37 @@ const CreatePatientAccount = () => {
     useEffect(() => {
         // Fetch dates by doctor
         if (doctorId) {
-            fetchDateByDoctor(doctorId)
-                .then(data => {
-                    const filteredDates = getNextFourDays(data);
-                    setDateOptions(filteredDates || []);
-                })
-                .catch(error => console.error('Failed to fetch dates:', error));
+          fetchDateByDoctor(doctorId)
+            .then(data => {
+              const filteredDates = getNextFourDays(data);
+              setDateOptions(filteredDates || []);
+            })
+            .catch(error => console.error('Failed to fetch dates:', error));
         }
-    }, [doctorId]);
+      }, [doctorId]);
+      
 
     //Lấy 30 ngày
     const getNextFourDays = (dates) => {
         const today = new Date();
         const nextFourDays = [];
-
-        for (let i = 0; i < 30; i++) {
-            const dateStr = format(addDays(today, i), 'dd-MM-yyyy');
-            if (dates.some(dateItem => dateItem.date === dateStr)) {
-                nextFourDays.push({ date: dateStr });
-            }
+        let count = 0;
+      
+        for (const dateItem of dates) {
+          const [day, month, year] = dateItem.date.split('-');
+          const date = new Date(`${year}-${month}-${day}`);
+          
+          if (isAfter(date, today) || date.toDateString() === today.toDateString()) {
+            nextFourDays.push(dateItem);
+            count++;
+          }
+      
+          if (count === 30) break;
         }
-
+      
         return nextFourDays;
-    };
+      };
+      
 
 
     useEffect(() => {
