@@ -87,6 +87,9 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             {
                 var m = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Include(x => x.TestResults).FirstOrDefault(x => x.Id == mid);
                 var p = _context.Patients.FirstOrDefault(x => x.PatientId == m.PatientId);
+                var a = _context.Appointments.Where(x => x.PatientId == p.PatientId).FirstOrDefault(x => x.Date == DateTime.Now);
+                a.Status = "Đã khám";
+                _context.Appointments.Update(a);
                 p.Check = null;
                 _context.Patients.Update(p);
                 _context.SaveChanges();
