@@ -408,8 +408,8 @@ import google_icon from '../../assets/images/google.png';
 import '../LoginForm/LoginForm.css';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../utils/AuthContext';
-import {createFeedback} from '../../services/Authentication';
-
+import { createFeedback } from '../../services/Authentication';
+import { Rating } from '@mui/material';
 
 const validationSchema = yup.object({
   identifier: yup
@@ -503,22 +503,22 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
 
   const handleFeedbackSubmit = async () => {
     const pid = localStorage.getItem('accountId'); // Lấy pid từ localStorage
-  
+
     if (!pid) {
       setSnackbar({ open: true, message: 'Không tìm thấy ID bệnh nhân', severity: 'error' });
       return;
     }
-  
+
     try {
       const result = await createFeedback(feedback, pid);
       setSnackbar({ open: true, message: 'Phản hồi đã được gửi thành công', severity: 'success' });
-  
+
       // Reset feedback form
       setFeedback({ content: '', star: 0 });
-  
+
       // Cập nhật giá trị check trong localStorage
       localStorage.setItem('check', '2');
-  
+
       // Đóng dialog sau khi gửi phản hồi
       setTimeout(() => {
         setShowFeedbackDialog(false);
@@ -527,8 +527,8 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
       setSnackbar({ open: true, message: 'Gửi phản hồi thất bại: Đã xảy ra lỗi', severity: 'error' });
     }
   };
-  
-  
+
+
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -612,7 +612,7 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-      <Dialog open={showFeedbackDialog} onClose={() => {}} aria-labelledby="feedback-dialog-title">
+      {/* <Dialog open={showFeedbackDialog} onClose={() => {}} aria-labelledby="feedback-dialog-title">
         <DialogTitle id="feedback-dialog-title">Gửi phản hồi</DialogTitle>
         <DialogContent>
           <TextField
@@ -634,7 +634,34 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleFeedbackSubmit} color="primary">Lưu</Button>
+          <Button onClick={handleFeedbackSubmit} color="primary">Gửi</Button>
+        </DialogActions>
+      </Dialog> */}
+      <Dialog open={showFeedbackDialog} onClose={() => { }} aria-labelledby="feedback-dialog-title">
+        <DialogTitle id="feedback-dialog-title">Gửi phản hồi</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nội dung"
+            type="text"
+            fullWidth
+            value={feedback.content}
+            onChange={(e) => setFeedback({ ...feedback, content: e.target.value })}
+          />
+          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
+            <Typography variant="body2" sx={{ mr: 2 }}>Chọn số sao:</Typography>
+            <Rating
+              name="rating"
+              value={feedback.star}
+              onChange={(event, newValue) => setFeedback({ ...feedback, star: newValue })}
+              size="large"
+              max={5}
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleFeedbackSubmit} color="primary">Gửi</Button>
         </DialogActions>
       </Dialog>
     </>
