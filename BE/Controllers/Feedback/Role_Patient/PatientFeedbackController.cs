@@ -29,7 +29,7 @@ namespace BE.Controllers.Feedback.Role_Patient
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateFeedback([FromBody] FeedbackCreate feedbackCreate)
+        public async Task<IActionResult> CreateFeedback([FromBody] FeedbackCreate feedbackCreate, int pid)
         {
             var f = new Models.Feedback()
             {
@@ -39,6 +39,9 @@ namespace BE.Controllers.Feedback.Role_Patient
                 Star = feedbackCreate.Star,
             };
             _context.Feedbacks.Add(f);
+            var p = _context.Patients.FirstOrDefault(x => x.PatientId == pid);
+            p.Check = 2;
+            _context.Patients.Update(p);
             _context.SaveChanges();
             return Ok(f);
 
