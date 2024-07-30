@@ -170,3 +170,24 @@ export const RegisterCompleteForm = async (registrationDetails) => {
     throw error; // Propagate error to handle in caller function or component
   }
 };
+
+//tạo feedback của bệnh nhân
+
+export const createFeedback = async (feedback, pid) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientFeedback/CreateFeedback?pid=${pid}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(feedback),
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    return await response.json();
+  } catch (error) {
+    console.error('Error creating feedback:', error);
+    throw error;
+  }
+};

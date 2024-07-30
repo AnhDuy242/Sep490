@@ -185,52 +185,6 @@ const CreatePatientAccount = () => {
     };
 
     const accountId = localStorage.getItem('accountId');
-    // const handleSubmit1 = (event) => {
-    //     event.preventDefault();
-    //     const formattedDate = date ? format(new Date(date), 'dd-MM-yyyy') : '';
-    //     const appointmentDto = {
-    //         patientId: parseInt(patientId, 10), // Đảm bảo patientId là số nguyên
-    //         doctorId: doctorId,
-    //         date: formattedDate,
-    //         slotId: time,
-    //         depId: depId,
-    //         serviceId: serviceId
-    //     };
-
-    //     // Kiểm tra giá trị của từng trường
-    //     console.log('appointmentDto:', appointmentDto);
-
-    //     if (isNaN(appointmentDto.patientId) || !appointmentDto.doctorId || !appointmentDto.date || !appointmentDto.slotId || !appointmentDto.depId || !appointmentDto.serviceId) {
-    //         console.error('Appointment data is incomplete');
-    //         setOpenSnackbar(true);
-    //         setSnackbarMessage('Vui lòng điền đầy đủ thông tin!');
-    //         return;
-    //     }
-
-    //     bookAppointment(appointmentDto)
-    //         .then(responseData => {
-    //             console.log('Appointment booked successfully:', responseData);
-    //             setOpenSnackbar(true);
-    //             setSnackbarMessage('Đặt lịch thành công!');
-    //             setPatientId('');
-    //             setDoctor('');
-    //             setDoctorId('');
-    //             setDate('');
-    //             setTime('');
-    //             setDepId('');
-    //             setServId('');
-
-    //             if (formRef.current) {
-    //                 formRef.current.scrollTop = 0;
-    //             }
-    //             handleAddDialogClose();
-    //         })
-    //         .catch(error => {
-    //             console.error('Error booking appointment:', error);
-    //             setOpenSnackbar(true);
-    //             setSnackbarMessage('Đặt lịch thất bại. Vui lòng thử lại!');
-    //         });
-    // };
     const convertToDate = (dateStr) => {
         const [day, month, year] = dateStr.split('-');
         return new Date(`${year}-${month}-${day}`);
@@ -550,7 +504,7 @@ const CreatePatientAccount = () => {
                                         color="primary"
                                         onClick={() => handleStatusChange(patient.patientId, patient.check)}
                                     >
-                                        {patient.check !== null ? 'Hoạt động' : 'Không hoạt động'}
+                                        {patient.check === 1 ? 'Hoạt động' : (patient.check === 2 || patient.check === 3) ? 'Không hoạt động' : ''}
                                     </Button>
                                 </TableCell>
                             </TableRow>
