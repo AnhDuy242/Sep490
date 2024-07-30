@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, CardContent, Typography, Box } from '@mui/material';
+import { Button, Card, CardContent, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider } from '@mui/material';
 import { getPatientsByDoctorId, fetchOrCreateConversation } from '../../../services/doctor_service';
 import ChatBoxDialog from '../component/ChatboxDialog';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const ExaminatedPatients = () => {
   const [patients, setPatients] = useState([]);
   const [openChat, setOpenChat] = useState(false);
-  const [conversationId, setConversationId] = useState(null); // Add state for conversationId
+  const [conversationId, setConversationId] = useState(null);
+  const [patientIdSelected, setPatientIdSelected] = useState(null);
+  const [notebooks, setNotebooks] = useState([]);
+  const [expanded, setExpanded] = useState(null);
   const doctorId = localStorage.getItem('accountId');
-   const [patientIdSelected,setPatientIdSelected]=useState(null); 
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         const patientsData = await getPatientsByDoctorId(doctorId);
-        console.log('Patients Data:', patientsData); // Debug log
+        console.log('Patients Data:', patientsData);
         setPatients(patientsData);
       } catch (error) {
         console.error('Error fetching patients:', error);
@@ -25,19 +29,13 @@ const ExaminatedPatients = () => {
 
   const handleChatStart = async (patientId) => {
     try {
-      // Fetch or create a conversation
       const conversation = await fetchOrCreateConversation(doctorId, patientId);
-  
-      console.log('Fetched or Created Conversation:', conversation); // Debug log
-  
-      // Ensure conversation has $values and it's not empty
+      console.log('Fetched or Created Conversation:', conversation);
+
       if (conversation.$values && conversation.$values.length > 0) {
-        // Get the first item from $values
         const conversationData = conversation.$values[0];
-  
-        // Ensure conversationData has an id
         if (conversationData.id) {
-          setConversationId(conversationData.id); // Set conversationId from conversationData
+          setConversationId(conversationData.id);
           setPatientIdSelected(patientId);
           setOpenChat(true);
         } else {
@@ -50,30 +48,94 @@ const ExaminatedPatients = () => {
       console.error('Error starting chat:', error);
     }
   };
-  
+
+  const handleFetchNotebooks = async (patientId) => {
+    try {
+      const response = await fetch(`https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientId?pid=${patientId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setNotebooks(data.$values || []);
+      setExpanded(expanded === patientId ? null : patientId);
+    } catch (error) {
+      console.error('Error fetching notebooks:', error);
+    }
+  };
+
   const handleCloseChat = () => {
     setOpenChat(false);
-    setConversationId(null); // Clear conversationId when closing chat
+    setConversationId(null);
   };
 
   return (
     <Box display="flex" flexDirection="row" p={2} height="100vh">
       <Box flex={1} mr={2} overflow="auto">
         {patients.map((patient) => (
-          <Card key={patient.patientId} style={{ marginBottom: '10px' }}>
+          <Card 
+            key={patient.patientId} 
+            sx={{ 
+              marginBottom: '10px',
+              '&:hover': {
+                backgroundColor: '#e3f2fd', // Light blue background color
+              }
+            }}
+          >
             <CardContent>
-              <Typography variant="h6">{patient.name}</Typography>
+              <Box display="flex" flexDirection="column" alignItems="flex-start">
+                <Typography
+                  variant="h6"
+                  sx={{ marginBottom: '10px' }}
+                >
+                  {patient.name}
+                </Typography>
+                <Box display="flex" flexDirection="row" gap={2} mb={2}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => handleFetchNotebooks(patient.patientId)}
+                  >
+                    Xem hồ sơ bệnh án
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleChatStart(patient.patientId)}
+                  >
+                    Start Chat
+                  </Button>
+                </Box>
+              </Box>
               <Typography variant="body2">Gender: {patient.gender}</Typography>
               <Typography variant="body2">Address: {patient.address}</Typography>
               <Typography variant="body2">Date of Birth: {new Date(patient.dob).toLocaleDateString()}</Typography>
-              <Button 
-                variant="contained" 
-                color="primary" 
-                onClick={() => handleChatStart(patient.patientId)}
-                style={{ marginTop: '10px' }}
-              >
-                Start Chat
-              </Button>
+
+              {expanded === patient.patientId && notebooks.length > 0 && (
+                <Box mt={2}>
+                  {notebooks.map((notebook) => (
+                    <Accordion key={notebook.id}>
+                      <AccordionSummary
+                        expandIcon={<ExpandMoreIcon />}
+                        sx={{ bgcolor: 'background.paper' }}
+                      >
+                        <Typography variant="subtitle1">{notebook.diagnostic}</Typography>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Typography variant="body2">
+                          <strong>Prescription:</strong> {notebook.prescription}
+                        </Typography>
+                        <Divider sx={{ my: 1 }} />
+                        <Typography variant="body2">
+                          <strong>Doctor:</strong> {notebook.doctorName}
+                        </Typography>
+                        <Typography variant="body2">
+                          <strong>Date:</strong> {notebook.dateCreate ? new Date(notebook.dateCreate).toLocaleDateString() : 'Not available'}
+                        </Typography>
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </Box>
+              )}
             </CardContent>
           </Card>
         ))}
@@ -81,7 +143,7 @@ const ExaminatedPatients = () => {
       <ChatBoxDialog
         open={openChat}
         onClose={handleCloseChat}
-        conversationId={conversationId} // Pass conversationId to ChatBoxDialog
+        conversationId={conversationId}
         patientIdSelected={patientIdSelected}
       />
     </Box>

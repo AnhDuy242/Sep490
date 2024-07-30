@@ -3,7 +3,7 @@ import {
     Container, Button, Typography, Snackbar, Card, CardContent, Grid, Dialog, DialogTitle, DialogContent, DialogActions,CardActions
 } from '@mui/material';
 import { Font } from '@react-pdf/renderer';
-import ArialUnicodeMS from '../../assets/font/arial-unicode-ms.ttf'; // Điều chỉnh đường dẫn nếu cần thiết
+import ArialUnicodeMS from '../../assets/font/arial-unicode-ms.ttf';
 import Header from "../../layouts/Header";
 import Navbar from "../../layouts/Navbar";
 import { makeStyles } from '@mui/styles';
@@ -11,20 +11,20 @@ import { fetchMedicalNotebooksByPatientId } from '../../services/Medicalnotebook
 import Footer from '../../layouts/Footer';
 import { Helmet } from 'react-helmet';
 
-// Đăng ký font với @react-pdf/renderer
 Font.register({
     family: 'ArialUnicodeMS',
     src: ArialUnicodeMS,
 });
+
 const useStyles = makeStyles({
     root: {
         display: 'flex',
         flexDirection: 'column',
-        minHeight: '100vh', // Chiều cao tối thiểu của toàn bộ trang
+        minHeight: '100vh',
     },
     container: {
         flex: 1,
-        paddingBottom: '60px', // Để tránh nội dung bị che bởi Footer
+        paddingBottom: '60px',
     },
     footer: {
         position: 'relative',
@@ -42,17 +42,23 @@ const useStyles = makeStyles({
     },
     card: {
         marginBottom: '20px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', // Thêm bóng cho card
-        borderRadius: '8px', // Bo tròn góc
-        overflow: 'hidden', // Để hình ảnh không bị tràn ra ngoài
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        transition: 'transform 0.3s, box-shadow 0.3s, background-color 0.3s',
+        '&:hover': {
+            transform: 'scale(1.02)',
+            boxShadow: '0 8px 16px rgba(0, 0, 0, 0.2)',
+            backgroundColor: '#e0f7fa', // Thay đổi màu nền khi hover
+        },
     },
     button: {
         marginTop: '10px',
     },
     image: {
-        width: '1500px', // Kích thước mặc định
-        height: '1200px', // Kích thước mặc định
-        objectFit: 'cover', // Giữ tỷ lệ hình ảnh
+        width: '100%',
+        height: 'auto',
+        objectFit: 'cover',
         marginBottom: '20px',
     },
     imagesContainer: {
@@ -66,11 +72,11 @@ const useStyles = makeStyles({
         flexDirection: 'column',
         alignItems: 'center',
         padding: '0',
-        overflowY: 'hidden', // Ẩn overflow-y
+        overflowY: 'hidden',
     },
     dialogPaper: {
-        minWidth: '1500px', // Đảm bảo dialog đủ rộng
-        minHeight: '1200px', // Đảm bảo dialog đủ cao
+        minWidth: '1500px',
+        minHeight: '1200px',
     },
     closeButton: {
         position: 'absolute',
@@ -88,7 +94,7 @@ const MedicalNotebook = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchNotebookId, setSearchNotebookId] = useState('');
-    const [loading, setLoading] = useState(false); // Trạng thái loading
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         handleGetPatientId();
@@ -104,7 +110,7 @@ const MedicalNotebook = () => {
 
     const fetchData = async (patientId) => {
         try {
-            setLoading(true); // Bắt đầu loading
+            setLoading(true);
             const data = await fetchMedicalNotebooksByPatientId(patientId);
             console.log(data);
             if (data && data.length > 0) {
@@ -121,7 +127,7 @@ const MedicalNotebook = () => {
             setSnackbarMessage('Lỗi khi tải dữ liệu!');
             setSnackbarOpen(true);
         } finally {
-            setLoading(false); // Dừng loading
+            setLoading(false);
         }
     };
 
@@ -129,7 +135,7 @@ const MedicalNotebook = () => {
         try {
             const response = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${medicalNotebookId}`);
             const data = await response.json();
-            return data.$values || []; // Trả về dữ liệu từ trường $values
+            return data.$values || [];
         } catch (error) {
             console.error('Lỗi khi tải kết quả xét nghiệm:', error);
             return [];
@@ -141,12 +147,11 @@ const MedicalNotebook = () => {
         console.log('Selected Notebook:', selectedNotebook);
         console.log('Test Results:', selectedNotebook?.testResults);
 
-        // Giả sử `notebook.id` là `mid` mà bạn sử dụng để gọi API lấy kết quả xét nghiệm
         const results = await fetchTestResults(notebook.id);
 
         setSelectedNotebook((prev) => ({
             ...prev,
-            testResults: results, // Cập nhật trường testResults trong notebook
+            testResults: results,
         }));
 
         setSnackbarMessage('Đã tìm thấy kết quả bệnh án!');
@@ -173,12 +178,12 @@ const MedicalNotebook = () => {
         if (printWindow) {
             printWindow.document.write('<html><head><title>Print Images</title></head><body>');
             selectedNotebook.testResults.forEach(result => {
-                printWindow.document.write(`<img src="${result.imgUrl}" style="width: 1500px; height: 1200px; object-fit: cover; margin-bottom: 20px;">`);
+                printWindow.document.write(`<img src="${result.imgUrl}" style="width: 100%; height: auto; object-fit: cover; margin-bottom: 20px;">`);
             });
             printWindow.document.write('</body></html>');
-            printWindow.document.close(); // Necessary for IE >= 10
-            printWindow.focus(); // Necessary for IE >= 10
-            printWindow.print(); // Trigger the print dialog
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
         }
     };
 
@@ -188,7 +193,7 @@ const MedicalNotebook = () => {
 
     useEffect(() => {
         if (selectedNotebook && snackbarOpen) {
-            setDialogOpen(true); // Mở Dialog khi có medical note và snackbar đang mở
+            setDialogOpen(true);
         }
     }, [selectedNotebook, snackbarOpen]);
 
@@ -254,7 +259,7 @@ const MedicalNotebook = () => {
                     <Dialog
                         open={dialogOpen}
                         onClose={handleDialogClose}
-                        maxWidth="lg" // Hoặc 'xl', tuỳ theo kích thước mong muốn
+                        maxWidth="lg"
                         PaperProps={{ className: classes.dialogPaper }}
                         fullWidth
                     >
@@ -267,7 +272,7 @@ const MedicalNotebook = () => {
                                     </Typography>
                                     {selectedNotebook.testResults.map((result) => (
                                         <img
-                                            key={result.imgId} // Hoặc một thuộc tính khác nếu không có imgId
+                                            key={result.imgId}
                                             src={result.imgUrl}
                                             alt={`Kết quả xét nghiệm ${result.imgId}`}
                                             className={classes.image}

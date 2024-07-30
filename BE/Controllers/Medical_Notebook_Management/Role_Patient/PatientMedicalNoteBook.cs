@@ -34,5 +34,17 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Patient
             var lists = _mapper.Map<List<TestResultPatient>>(list);
             return Ok(lists);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetMedicalNotebooksByDoctorAndPatient(int doctorId, int patientId)
+        {
+            var list = await _context.MedicalNotebooks
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                .Where(x => x.DoctorId == doctorId && x.PatientId == patientId)
+                .ToListAsync();
+
+            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
+        }
     }
 }

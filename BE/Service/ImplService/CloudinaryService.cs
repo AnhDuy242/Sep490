@@ -23,10 +23,12 @@
 
         public async Task<ImageUploadResult> UploadImageAsync(string filePath)
         {
+            var uniquePublicId = Guid.NewGuid().ToString(); // Generate a unique ID
             var uploadParams = new ImageUploadParams()
             {
                 File = new FileDescription(filePath),
-                PublicId = "sample_image123"
+                PublicId = uniquePublicId,
+                Overwrite = true // Optional: Ensure it doesn't overwrite existing images with the same public ID
             };
 
             var uploadResult = await _cloudinary.UploadAsync(uploadParams);

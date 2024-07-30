@@ -33,6 +33,7 @@ import About3 from './pages/Article/baiviet3'
 import About from './pages/Article/index'
 import AdminViewAppointment from './pages/AdminDashBoard/view_appointment';
 import ExaminatedPatients from './pages/DoctorManagement/ExaminatedPatient_Doctor/ExaminatedPatient_Doctor';
+import DoctorAndMedicalNotebooks from './pages/DoctorInteraction-patient/DoctorInteraction';
 function App() {
   return (
     <Routes>
@@ -79,6 +80,8 @@ function App() {
       <Route path="/CreateAppointment" element={<ProtectedRoute requiredRole="Patient"><CreateAppointment /></ProtectedRoute>}>
       </Route>
       <Route path="/Create_CustomerFeedback" element={<ProtectedRoute requiredRole="Patient"><Create_CustomerFeedback /></ProtectedRoute>}>
+      </Route>
+      <Route path="/getDoctorInteraction" element={<ProtectedRoute requiredRole="Patient"><DoctorAndMedicalNotebooks/></ProtectedRoute>}>
       </Route>
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />

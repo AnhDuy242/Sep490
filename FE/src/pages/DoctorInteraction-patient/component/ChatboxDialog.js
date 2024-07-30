@@ -1,18 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { Box, TextField, IconButton, List, ListItem, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Snackbar, Alert, Tooltip } from '@mui/material';
+import {
+    Box,
+    TextField,
+    IconButton,
+    List,
+    ListItem,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Typography,
+    Snackbar,
+    Alert
+} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
+const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImagePreview, setSelectedImagePreview] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // success, error, warning, info
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const [previewImageUrl, setPreviewImageUrl] = useState('');
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const accountId = localStorage.getItem('accountId');
@@ -47,13 +60,9 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
     
         let imageUrl = '';
         const nowUtc = new Date();
-    
-        // Chuyển đổi thời gian UTC sang giờ Việt Nam
-        const offset = 7; // Múi giờ Việt Nam là UTC+7
+        const offset = 7; // Vietnam Time Zone
         const nowVietnam = new Date(nowUtc.getTime() + offset * 60 * 60 * 1000);
-        
-        // Định dạng thời gian dưới dạng ISO 8601
-        const sentAt = nowVietnam.toISOString(); 
+        const sentAt = nowVietnam.toISOString();
 
         if (selectedImage) {
             const uploadFormData = new FormData();
@@ -86,7 +95,7 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
         const message = {
             conversationId,
             senderId: parseInt(accountId),
-            receiverId: patientIdSelected,
+            receiverId: doctorIdSelected,
             messageText: newMessage,
             imageUrl: imageUrl || null,
             sentAt
@@ -165,39 +174,12 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
 
     return (
         <>
-            <Dialog open={open} onClose={handleCloseChat} maxWidth="sm" fullWidth>
-                <DialogTitle>
-                    Chat
-                    <IconButton
-                        edge="end"
-                        color="inherit"
-                        onClick={handleCloseChat}
-                        aria-label="close"
-                        sx={{ position: 'absolute', right: 8, top: 8 }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers>
-                    <Box display="flex" flexDirection="column" height="400px" overflow="auto" id="chatBox">
-                        <List sx={{ padding: 0 }}>
-                            {messages.map((msg) => {
-                                const messageTime = new Date(msg.sentAt);
-                                const formattedTime = messageTime.toLocaleTimeString('vi-VN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                });
-                                const fullDateTime = messageTime.toLocaleString('vi-VN', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: 'numeric',
-                                    minute: 'numeric',
-                                    second: 'numeric',
-                                });
-                                
-                                return (
+            <Dialog open={open} onClose={handleCloseChat} maxWidth="md" fullWidth>
+                <DialogContent dividers sx={{ height: 500 }}>
+                    <Box display="flex" flexDirection="column" height="100%" overflow="hidden">
+                        <Box flex={1} overflow="auto" sx={{ padding: 2, bgcolor: '#f0f0f0' }}>
+                            <List sx={{ padding: 0 }}>
+                                {messages.map((msg) => (
                                     <ListItem
                                         key={msg.id}
                                         sx={{
@@ -205,47 +187,65 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
                                             padding: 0,
                                         }}
                                     >
-                                        <Tooltip
-                                            title={fullDateTime}
-                                            arrow
+                                        <Box
+                                            sx={{
+                                                maxWidth: '80%',
+                                                p: 2,
+                                                borderRadius: '8px',
+                                                bgcolor: msg.senderId === parseInt(accountId) ? 'primary.main' : 'grey.300',
+                                                color: msg.senderId === parseInt(accountId) ? 'white' : 'black',
+                                                textAlign: 'left',
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                                alignItems: 'flex-start',
+                                                ml: msg.senderId === parseInt(accountId) ? 'auto' : 'none',
+                                                mb: 1,
+                                                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                                transition: 'background-color 0.2s ease',
+                                                position: 'relative',
+                                                '&:hover .timestamp': {
+                                                    opacity: 1,
+                                                },
+                                            }}
                                         >
-                                            <Box
+                                            <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                                {msg.messageText}
+                                            </Typography>
+                                            {msg.imageUrl && (
+                                                <img
+                                                    src={msg.imageUrl}
+                                                    alt="message attachment"
+                                                    style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px', cursor: 'pointer' }}
+                                                    onClick={() => handleImageClick(msg.imageUrl)}
+                                                />
+                                            )}
+                                            <Typography
+                                                variant="caption"
                                                 sx={{
-                                                    maxWidth: '80%',
-                                                    p: 1,
-                                                    borderRadius: '8px',
-                                                    bgcolor: msg.senderId === parseInt(accountId) ? 'primary.main' : 'grey.300',
-                                                    color: msg.senderId === parseInt(accountId) ? 'white' : 'black',
-                                                    textAlign: 'left',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    alignItems: 'flex-start',
-                                                    ml: msg.senderId === parseInt(accountId) ? 'auto' : 'none',
-                                                    mb: 1,
-                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
-                                                    transition: 'background-color 0.2s ease',
+                                                    mt: 0.5,
+                                                    color: 'text.secondary',
+                                                    position: 'absolute',
+                                                    bottom: 0,
+                                                    right: 0,
+                                                    opacity: 0,
+                                                    transition: 'opacity 0.3s',
                                                 }}
+                                                className="timestamp"
                                             >
-                                                <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                    {msg.messageText}
-                                                </Typography>
-                                                {msg.imageUrl && (
-                                                    <img
-                                                        src={msg.imageUrl}
-                                                        alt="message attachment"
-                                                        style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px', cursor: 'pointer' }}
-                                                        onClick={() => handleImageClick(msg.imageUrl)}
-                                                    />
-                                                )}
-                                                <Typography variant="caption" sx={{ mt: 0.5 }}>
-                                                    {formattedTime}
-                                                </Typography>
-                                            </Box>
-                                        </Tooltip>
+                                                {new Date(msg.sentAt).toLocaleString('vi-VN', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    second: '2-digit',
+                                                })}
+                                            </Typography>
+                                        </Box>
                                     </ListItem>
-                                );
-                            })}
-                        </List>
+                                ))}
+                            </List>
+                        </Box>
                     </Box>
                 </DialogContent>
                 <DialogActions>
