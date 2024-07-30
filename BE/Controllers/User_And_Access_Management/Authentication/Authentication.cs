@@ -14,11 +14,13 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
     {
         private readonly AuthService _authService;
         private readonly MedPalContext _alo2Context;
+        private readonly ISMSService _sMSService;
 
-        public Authentication(AuthService authService, MedPalContext alo2Context)
+        public Authentication(AuthService authService, MedPalContext alo2Context, ISMSService sMSService)
         {
             _authService = authService;
             _alo2Context = alo2Context;
+            _sMSService = sMSService;
         }
 
         [HttpPost]
@@ -34,6 +36,11 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             return Ok(new { Token = token });
         }
 
+        //[HttpPost]
+        //public async Task<IActionResult> RegisterByPhone(string phone)
+        //{
+
+        //}
 
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
