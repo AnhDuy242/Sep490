@@ -102,7 +102,7 @@ const ExaminatedPatients = () => {
                     color="primary"
                     onClick={() => handleChatStart(patient.patientId)}
                   >
-                    Start Chat
+                    Chat
                   </Button>
                 </Box>
               </Box>

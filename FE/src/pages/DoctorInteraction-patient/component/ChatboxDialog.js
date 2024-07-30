@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     Box,
     TextField,
@@ -30,6 +30,8 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const accountId = localStorage.getItem('accountId');
 
+    const messagesEndRef = useRef(null);
+
     const fetchMessages = async () => {
         try {
             const response = await fetch(`https://localhost:7240/api/Messages/GetAllMessagesByConversationId/${conversationId}`);
@@ -49,6 +51,11 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
             fetchMessages();
         }
     }, [open, conversationId]);
+
+    useEffect(() => {
+        // Scroll to bottom when messages change
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
 
     const handleSendMessage = async () => {
         if (!newMessage.trim() && !selectedImage) {
@@ -174,82 +181,88 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
 
     return (
         <>
-            <Dialog open={open} onClose={handleCloseChat} maxWidth="md" fullWidth>
-                <DialogContent dividers sx={{ height: 500 }}>
-                    <Box display="flex" flexDirection="column" height="100%" overflow="hidden">
-                        <Box flex={1} overflow="auto" sx={{ padding: 2, bgcolor: '#f0f0f0' }}>
-                            <List sx={{ padding: 0 }}>
-                                {messages.map((msg) => (
-                                    <ListItem
-                                        key={msg.id}
+            <Dialog open={open} onClose={handleCloseChat} maxWidth="xl" fullWidth>
+                <DialogTitle> Chat với bác sĩ</DialogTitle>
+                <DialogContent sx={{ height: '80vh', display: 'flex', flexDirection: 'column' }}>
+                    <Box flex={1} overflow="auto" sx={{ padding: 2, bgcolor: '#f0f0f0' }}>
+                        <List sx={{ padding: 0 }}>
+                            {messages.map((msg) => (
+                                <ListItem
+                                    key={msg.id}
+                                    sx={{
+                                        justifyContent: msg.senderId === parseInt(accountId) ? 'flex-end' : 'flex-start',
+                                        padding: 0,
+                                    }}
+                                >
+                                    <Box
                                         sx={{
-                                            justifyContent: msg.senderId === parseInt(accountId) ? 'flex-end' : 'flex-start',
-                                            padding: 0,
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                maxWidth: '80%',
-                                                p: 2,
-                                                borderRadius: '8px',
-                                                bgcolor: msg.senderId === parseInt(accountId) ? 'primary.main' : 'grey.300',
-                                                color: msg.senderId === parseInt(accountId) ? 'white' : 'black',
-                                                textAlign: 'left',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignItems: 'flex-start',
-                                                ml: msg.senderId === parseInt(accountId) ? 'auto' : 'none',
-                                                mb: 1,
-                                                boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
-                                                transition: 'background-color 0.2s ease',
-                                                position: 'relative',
-                                                '&:hover .timestamp': {
-                                                    opacity: 1,
-                                                },
-                                            }}
-                                        >
-                                            <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
-                                                {msg.messageText}
-                                            </Typography>
-                                            {msg.imageUrl && (
-                                                <img
-                                                    src={msg.imageUrl}
-                                                    alt="message attachment"
-                                                    style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px', cursor: 'pointer' }}
-                                                    onClick={() => handleImageClick(msg.imageUrl)}
-                                                />
-                                            )}
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    mt: 0.5,
-                                                    color: 'text.secondary',
-                                                    position: 'absolute',
-                                                    bottom: 0,
-                                                    right: 0,
-                                                    opacity: 0,
-                                                    transition: 'opacity 0.3s',
-                                                }}
-                                                className="timestamp"
-                                            >
-                                                {new Date(msg.sentAt).toLocaleString('vi-VN', {
+                                            maxWidth: '70%',
+                                            p: 2,
+                                            borderRadius: '8px',
+                                            bgcolor: msg.senderId === parseInt(accountId) ? 'primary.main' : 'grey.300',
+                                            color: msg.senderId === parseInt(accountId) ? 'white' : 'black',
+                                            textAlign: 'left',
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'flex-start',
+                                            ml: msg.senderId === parseInt(accountId) ? 'auto' : 'none',
+                                            mb: 1,
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                                            transition: 'background-color 0.2s ease',
+                                            position: 'relative',
+                                            '&:hover::after': {
+                                                content: `'${new Date(msg.sentAt).toLocaleString('vi-VN', {
                                                     day: '2-digit',
                                                     month: '2-digit',
                                                     year: 'numeric',
                                                     hour: '2-digit',
                                                     minute: '2-digit',
                                                     second: '2-digit',
-                                                })}
-                                            </Typography>
-                                        </Box>
-                                    </ListItem>
-                                ))}
-                            </List>
-                        </Box>
+                                                })}'`,
+                                                position: 'absolute',
+                                                bottom: '100%',
+                                                left: '50%',
+                                                transform: 'translateX(-50%)',
+                                                padding: '4px 8px',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                                                color: 'white',
+                                                borderRadius: '4px',
+                                                fontSize: '12px',
+                                                whiteSpace: 'nowrap',
+                                                zIndex: 10,
+                                            },
+                                        }}
+                                    >
+                                        <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                            {msg.messageText}
+                                        </Typography>
+                                        {msg.imageUrl && (
+                                            <img
+                                                src={msg.imageUrl}
+                                                alt="message attachment"
+                                                style={{ maxWidth: '100%', borderRadius: '8px', marginTop: '8px', cursor: 'pointer' }}
+                                                onClick={() => handleImageClick(msg.imageUrl)}
+                                            />
+                                        )}
+                                    </Box>
+                                </ListItem>
+                            ))}
+                            <div ref={messagesEndRef} /> {/* Add a ref to the end of the list */}
+                        </List>
                     </Box>
-                </DialogContent>
-                <DialogActions>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            width: '100%',
+                            mt: 1,
+                            bgcolor: 'background.paper',
+                            boxShadow: '0 -2px 5px rgba(0, 0, 0, 0.2)',
+                            position: 'sticky',
+                            bottom: 0,
+                            zIndex: 1000,
+                        }}
+                    >
                         <input
                             type="file"
                             accept="image/*"
@@ -272,79 +285,51 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
                             variant="outlined"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSendMessage();
-                                    e.preventDefault();
-                                }
-                            }}
-                            InputProps={{
-                                endAdornment: selectedImagePreview && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-                                        <img
-                                            src={selectedImagePreview}
-                                            alt="Selected preview"
-                                            style={{ maxWidth: '150px', borderRadius: '8px', marginRight: '8px' }}
-                                        />
-                                        <IconButton onClick={handleRemoveImage} color="secondary">
-                                            <ClearIcon />
-                                        </IconButton>
-                                    </Box>
-                                ),
-                            }}
+                            sx={{ flex: 1 }}
                         />
-                        <IconButton onClick={handleSendMessage} color="primary">
+                        <IconButton color="primary" onClick={handleSendMessage}>
                             <SendIcon />
                         </IconButton>
+                        {selectedImagePreview && (
+                            <Box sx={{ position: 'relative', display: 'inline-block', ml: 1 }}>
+                                <img
+                                    src={selectedImagePreview}
+                                    alt="Selected"
+                                    style={{ maxWidth: '100px', borderRadius: '8px' }}
+                                />
+                                <IconButton
+                                    color="error"
+                                    onClick={handleRemoveImage}
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                    }}
+                                >
+                                    <ClearIcon />
+                                </IconButton>
+                            </Box>
+                        )}
                     </Box>
-                </DialogActions>
+                </DialogContent>
             </Dialog>
-            <Dialog
-                open={previewDialogOpen}
-                onClose={handleClosePreviewDialog}
-                fullScreen
-            >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '100%',
-                        backgroundColor: 'black',
-                    }}
-                >
-                    <IconButton
-                        edge="end"
-                        color="inherit"
-                        onClick={handleClosePreviewDialog}
-                        aria-label="close"
-                        sx={{ position: 'absolute', right: 16, top: 16, color: 'white' }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
+            <Dialog open={previewDialogOpen} onClose={handleClosePreviewDialog} maxWidth="xl" fullWidth>
+                <DialogTitle>Image Preview</DialogTitle>
+                <DialogContent>
                     <img
                         src={previewImageUrl}
-                        alt="Full-screen preview"
-                        style={{ maxHeight: '90vh', maxWidth: '90vw', objectFit: 'contain' }}
+                        alt="Preview"
+                        style={{ maxWidth: '100%' }}
                     />
-                </Box>
-            </Dialog>
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                action={
-                    <IconButton
-                        size="small"
-                        aria-label="close"
-                        color="inherit"
-                        onClick={handleCloseSnackbar}
-                    >
-                        <CloseIcon fontSize="small" />
+                </DialogContent>
+                <DialogActions>
+                    <IconButton color="error" onClick={handleClosePreviewDialog}>
+                        <CloseIcon />
                     </IconButton>
-                }
-            >
-                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+                </DialogActions>
+            </Dialog>
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>
             </Snackbar>

@@ -1,21 +1,37 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, IconButton, List, ListItem, Dialog, DialogActions, DialogContent, DialogTitle, Typography, Snackbar, Alert, Tooltip } from '@mui/material';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+    Box,
+    TextField,
+    IconButton,
+    List,
+    ListItem,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Typography,
+    Snackbar,
+    Alert,
+    Tooltip
+} from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
+const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
     const [selectedImagePreview, setSelectedImagePreview] = useState('');
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
-    const [snackbarSeverity, setSnackbarSeverity] = useState('success'); // success, error, warning, info
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
     const [previewImageUrl, setPreviewImageUrl] = useState('');
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const accountId = localStorage.getItem('accountId');
+
+    const messagesEndRef = useRef(null);
 
     const fetchMessages = async () => {
         try {
@@ -37,6 +53,11 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
         }
     }, [open, conversationId]);
 
+    useEffect(() => {
+        // Cuộn xuống dưới cùng khi tin nhắn thay đổi
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }, [messages]);
+
     const handleSendMessage = async () => {
         if (!newMessage.trim() && !selectedImage) {
             setSnackbarMessage('Please enter a message or select an image before sending.');
@@ -47,13 +68,9 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
     
         let imageUrl = '';
         const nowUtc = new Date();
-    
-        // Chuyển đổi thời gian UTC sang giờ Việt Nam
-        const offset = 7; // Múi giờ Việt Nam là UTC+7
+        const offset = 7; // Múi giờ Việt Nam
         const nowVietnam = new Date(nowUtc.getTime() + offset * 60 * 60 * 1000);
-        
-        // Định dạng thời gian dưới dạng ISO 8601
-        const sentAt = nowVietnam.toISOString(); 
+        const sentAt = nowVietnam.toISOString();
 
         if (selectedImage) {
             const uploadFormData = new FormData();
@@ -86,7 +103,7 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
         const message = {
             conversationId,
             senderId: parseInt(accountId),
-            receiverId: patientIdSelected,
+            receiverId: doctorIdSelected,
             messageText: newMessage,
             imageUrl: imageUrl || null,
             sentAt
@@ -165,39 +182,13 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
 
     return (
         <>
-            <Dialog open={open} onClose={handleCloseChat} maxWidth="sm" fullWidth>
-                <DialogTitle>
-                    Chat
-                    <IconButton
-                        edge="end"
-                        color="inherit"
-                        onClick={handleCloseChat}
-                        aria-label="close"
-                        sx={{ position: 'absolute', right: 8, top: 8 }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent dividers>
-                    <Box display="flex" flexDirection="column" height="400px" overflow="auto" id="chatBox">
-                        <List sx={{ padding: 0 }}>
-                            {messages.map((msg) => {
-                                const messageTime = new Date(msg.sentAt);
-                                const formattedTime = messageTime.toLocaleTimeString('vi-VN', {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                });
-                                const fullDateTime = messageTime.toLocaleString('vi-VN', {
-                                    weekday: 'long',
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric',
-                                    hour: 'numeric',
-                                    minute: 'numeric',
-                                    second: 'numeric',
-                                });
-                                
-                                return (
+            <Dialog open={open} onClose={handleCloseChat} maxWidth="lg" fullWidth>
+                <DialogTitle>Chat với bệnh nhân</DialogTitle>
+                <DialogContent dividers sx={{ height:10000 }}>
+                    <Box display="flex" flexDirection="column" height="100%" overflow="hidden">
+                        <Box flex={1} overflow="auto" sx={{ padding: 2, bgcolor: '#f0f0f0' }}>
+                            <List sx={{ padding: 0 }}>
+                                {messages.map((msg) => (
                                     <ListItem
                                         key={msg.id}
                                         sx={{
@@ -206,14 +197,22 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
                                         }}
                                     >
                                         <Tooltip
-                                            title={fullDateTime}
+                                            title={new Date(msg.sentAt).toLocaleString('vi-VN', {
+                                                day: '2-digit',
+                                                month: '2-digit',
+                                                year: 'numeric',
+                                                hour: '2-digit',
+                                                minute: '2-digit',
+                                                second: '2-digit',
+                                            })}
                                             arrow
+                                            placement={msg.senderId === parseInt(accountId) ? 'left' : 'right'}
                                         >
                                             <Box
                                                 sx={{
                                                     maxWidth: '80%',
-                                                    p: 1,
-                                                    borderRadius: '8px',
+                                                    p: 3, // Tăng padding để tin nhắn trông to hơn
+                                                    borderRadius: '12px', // Tăng borderRadius
                                                     bgcolor: msg.senderId === parseInt(accountId) ? 'primary.main' : 'grey.300',
                                                     color: msg.senderId === parseInt(accountId) ? 'white' : 'black',
                                                     textAlign: 'left',
@@ -222,11 +221,12 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
                                                     alignItems: 'flex-start',
                                                     ml: msg.senderId === parseInt(accountId) ? 'auto' : 'none',
                                                     mb: 1,
-                                                    boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                                                    boxShadow: '0 4px 8px rgba(0,0,0,0.3)', // Tăng shadow
                                                     transition: 'background-color 0.2s ease',
+                                                    position: 'relative',
                                                 }}
                                             >
-                                                <Typography variant="body2" sx={{ wordBreak: 'break-word' }}>
+                                                <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>
                                                     {msg.messageText}
                                                 </Typography>
                                                 {msg.imageUrl && (
@@ -237,19 +237,17 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
                                                         onClick={() => handleImageClick(msg.imageUrl)}
                                                     />
                                                 )}
-                                                <Typography variant="caption" sx={{ mt: 0.5 }}>
-                                                    {formattedTime}
-                                                </Typography>
                                             </Box>
                                         </Tooltip>
                                     </ListItem>
-                                );
-                            })}
-                        </List>
+                                ))}
+                                <div ref={messagesEndRef} /> {/* Thêm ref vào cuối danh sách */}
+                            </List>
+                        </Box>
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%',height:'100%' }}>
                         <input
                             type="file"
                             accept="image/*"
@@ -272,79 +270,51 @@ const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
                             variant="outlined"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
-                            onKeyPress={(e) => {
-                                if (e.key === 'Enter') {
-                                    handleSendMessage();
-                                    e.preventDefault();
-                                }
-                            }}
-                            InputProps={{
-                                endAdornment: selectedImagePreview && (
-                                    <Box sx={{ display: 'flex', alignItems: 'center', ml: 2 }}>
-                                        <img
-                                            src={selectedImagePreview}
-                                            alt="Selected preview"
-                                            style={{ maxWidth: '150px', borderRadius: '8px', marginRight: '8px' }}
-                                        />
-                                        <IconButton onClick={handleRemoveImage} color="secondary">
-                                            <ClearIcon />
-                                        </IconButton>
-                                    </Box>
-                                ),
-                            }}
+                            sx={{ flex: 1 }}
                         />
-                        <IconButton onClick={handleSendMessage} color="primary">
+                        <IconButton color="primary" onClick={handleSendMessage}>
                             <SendIcon />
                         </IconButton>
+                        {selectedImagePreview && (
+                            <Box sx={{ position: 'relative', display: 'inline-block', ml: 1 }}>
+                                <img
+                                    src={selectedImagePreview}
+                                    alt="Selected"
+                                    style={{ maxWidth: '100px', borderRadius: '8px' }}
+                                />
+                                <IconButton
+                                    color="error"
+                                    onClick={handleRemoveImage}
+                                    sx={{
+                                        position: 'absolute',
+                                        top: 0,
+                                        right: 0,
+                                    }}
+                                >
+                                    <ClearIcon />
+                                </IconButton>
+                            </Box>
+                        )}
                     </Box>
                 </DialogActions>
             </Dialog>
-            <Dialog
-                open={previewDialogOpen}
-                onClose={handleClosePreviewDialog}
-                fullScreen
-            >
-                <Box
-                    sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        height: '100%',
-                        backgroundColor: 'black',
-                    }}
-                >
-                    <IconButton
-                        edge="end"
-                        color="inherit"
-                        onClick={handleClosePreviewDialog}
-                        aria-label="close"
-                        sx={{ position: 'absolute', right: 16, top: 16, color: 'white' }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
+            <Dialog open={previewDialogOpen} onClose={handleClosePreviewDialog} maxWidth="md" fullWidth>
+                <DialogTitle>Image Preview</DialogTitle>
+                <DialogContent>
                     <img
                         src={previewImageUrl}
-                        alt="Full-screen preview"
-                        style={{ maxHeight: '90vh', maxWidth: '90vw', objectFit: 'contain' }}
+                        alt="Preview"
+                        style={{ maxWidth: '100%' }}
                     />
-                </Box>
-            </Dialog>
-            <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleCloseSnackbar}
-                action={
-                    <IconButton
-                        size="small"
-                        aria-label="close"
-                        color="inherit"
-                        onClick={handleCloseSnackbar}
-                    >
-                        <CloseIcon fontSize="small" />
+                </DialogContent>
+                <DialogActions>
+                    <IconButton color="error" onClick={handleClosePreviewDialog}>
+                        <CloseIcon />
                     </IconButton>
-                }
-            >
-                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+                </DialogActions>
+            </Dialog>
+            <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+                <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
                     {snackbarMessage}
                 </Alert>
             </Snackbar>

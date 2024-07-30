@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     TextField, Typography, Box, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Select, MenuItem, Button, Modal, Container, Snackbar,
-    Alert, Tabs, Tab, Card, CardContent,Grid
+    Alert, Tabs, Tab, Card, CardContent, Grid, Dialog, DialogContent, DialogTitle
 } from '@mui/material';
 import { fetchPatients, createMedicalNotebook } from '../../../services/patient_service';
 
@@ -28,6 +28,8 @@ const PatientManagement = () => {
     const [medicalNotebooks, setMedicalNotebooks] = useState([]);
     const [activeTab, setActiveTab] = useState(0);
     const [openViewDialog, setOpenViewDialog] = useState(false);
+    const [openImageDialog, setOpenImageDialog] = useState(false);
+    const [selectedImage, setSelectedImage] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -107,12 +109,25 @@ const PatientManagement = () => {
 
     const handleOpenViewDialog = async (patientId) => {
         try {
-            const response = await fetch(`https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientId?pid=${patientId}`);
-            const data = await response.json();
-            setMedicalNotebooks(data.$values || []);
+            // Fetch medical notebooks
+            const notebooksResponse = await fetch(`https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientId?pid=${patientId}`);
+            const notebooksData = await notebooksResponse.json();
+            setMedicalNotebooks(notebooksData.$values || []);
+            
+            // Fetch test results to get image URLs
+            const imgUrlsResponse = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${patientId}`);
+            const imgUrlsData = await imgUrlsResponse.json();
+            const imgUrls = imgUrlsData.$values.map(result => result.imgUrl);
+            
+            // Add image URLs to medical notebooks (if needed)
+            setMedicalNotebooks(prevNotebooks => prevNotebooks.map(notebook => ({
+                ...notebook,
+                imgUrls // Attach imgUrls here if needed
+            })));
+
             setOpenViewDialog(true);
         } catch (error) {
-            console.error('Failed to fetch medical notebooks:', error);
+            console.error('Failed to fetch medical notebooks or test results:', error);
         }
     };
 
@@ -122,6 +137,16 @@ const PatientManagement = () => {
 
     const handleTabChange = (event, newValue) => {
         setActiveTab(newValue);
+    };
+
+    const handleOpenImageDialog = (imgUrl) => {
+        setSelectedImage(imgUrl);
+        setOpenImageDialog(true);
+    };
+
+    const handleCloseImageDialog = () => {
+        setOpenImageDialog(false);
+        setSelectedImage('');
     };
 
     return (
@@ -166,7 +191,7 @@ const PatientManagement = () => {
                                             width: 12,
                                             height: 12,
                                             borderRadius: '50%',
-                                            backgroundColor: patient.check !==null ? 'green' : 'red'
+                                            backgroundColor: patient.check !== null ? 'green' : 'red'
                                         }}
                                     />
                                 </TableCell>
@@ -231,17 +256,14 @@ const PatientManagement = () => {
                             required
                             fullWidth
                             id="diagnostic"
-                            label="Chỉ định"
+                            label="Chẩn đoán"
                             name="diagnostic"
                             value={formData.diagnostic}
                             onChange={handleFormChange}
                             error={Boolean(errors.diagnostic)}
                             helperText={errors.diagnostic}
-                            multiline
-                            rows={5}  // Set the number of visible rows
                         />
                         <TextField
-                            margin="normal"
                             required
                             fullWidth
                             id="doctorId"
@@ -274,80 +296,106 @@ const PatientManagement = () => {
                     </Box>
                 </Container>
             </Modal>
-            
-        <Modal
-            open={openViewDialog}
-            onClose={handleCloseViewDialog}
-            aria-labelledby="view-dialog-title"
-            aria-describedby="view-dialog-description"
-        >
-            <Container maxWidth="md" sx={{
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%)',
-                bgcolor: 'background.paper',
-                borderRadius: '8px',
-                boxShadow: 24,
-                p: 4,
-                display: 'flex',
-                flexDirection: 'column',
-                maxHeight: '80vh',
-                overflowY: 'auto',
-            }}>
-                <Typography id="view-dialog-title" variant="h6" sx={{ mb: 2 }}>
-                    Hồ sơ bệnh án của bệnh nhân {medicalNotebooks[activeTab]?.patientName}
-                </Typography>
 
-                <Tabs
-                    value={activeTab}
-                    onChange={handleTabChange}
-                    aria-label="medical notebooks tabs"
-                    sx={{ mb: 2 }}
-                >
-                    {medicalNotebooks.map((notebook) => (
-                        <Tab key={notebook.$id} label={`Notebook ${notebook.$id}`} />
-                    ))}
-                </Tabs>
+            <Modal
+                open={openViewDialog}
+                onClose={handleCloseViewDialog}
+                aria-labelledby="view-dialog-title"
+                aria-describedby="view-dialog-description"
+            >
+                <Container maxWidth="md" sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    bgcolor: 'background.paper',
+                    borderRadius: '8px',
+                    boxShadow: 24,
+                    p: 4,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    maxHeight: '80vh',
+                    overflowY: 'auto',
+                }}>
+                    <Typography id="view-dialog-title" variant="h6" sx={{ mb: 2 }}>
+                        Hồ sơ bệnh án của bệnh nhân {medicalNotebooks[activeTab]?.patientName}
+                    </Typography>
 
-                <Box>
-                    {medicalNotebooks.map((notebook, index) => (
-                        <TabPanel key={notebook.$id} value={activeTab} index={index}>
-                            <Card sx={{ mb: 2 }}>
-                                <CardContent>
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                                Toa thuốc:
-                                            </Typography>
-                                            <Typography variant="body1">
-                                                {notebook.prescription}
-                                            </Typography>
+                    <Tabs
+                        value={activeTab}
+                        onChange={handleTabChange}
+                        aria-label="medical notebooks tabs"
+                        sx={{ mb: 2 }}
+                    >
+                        {medicalNotebooks.map((notebook) => (
+                            <Tab key={notebook.$id} label={`Notebook ${notebook.$id}`} />
+                        ))}
+                    </Tabs>
+
+                    <Box>
+                        {medicalNotebooks.map((notebook, index) => (
+                            <TabPanel key={notebook.$id} value={activeTab} index={index}>
+                                <Card sx={{ mb: 2 }}>
+                                    <CardContent>
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={12} sm={6}>
+                                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                                    Toa thuốc:
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {notebook.prescription}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                                    Chỉ định:
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {notebook.diagnostic}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid item xs={12} sm={6}>
+                                                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                                    Bác sĩ chỉ định:
+                                                </Typography>
+                                                <Typography variant="body1">
+                                                    {notebook.doctorName}
+                                                </Typography>
+                                            </Grid>
+                                            {/* Add a button to display image */}
+                                            {notebook.imgUrls && notebook.imgUrls.length > 0 && (
+                                                <Grid item xs={12}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        onClick={() => handleOpenImageDialog(notebook.imgUrls[0])}
+                                                    >
+                                                        Xem hình ảnh
+                                                    </Button>
+                                                </Grid>
+                                            )}
                                         </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                                Chỉ định:
-                                            </Typography>
-                                            <Typography variant="body1">
-                                                {notebook.diagnostic}
-                                            </Typography>
-                                        </Grid>
-                                        <Grid item xs={12} sm={6}>
-                                            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                                Bác sĩ chỉ định:
-                                            </Typography>
-                                            <Typography variant="body1">
-                                                {notebook.doctorName}
-                                            </Typography>
-                                        </Grid>
-                                    </Grid>
-                                </CardContent>
-                            </Card>
-                        </TabPanel>
-                    ))}
-                </Box>
-            </Container>
-        </Modal>
+                                    </CardContent>
+                                </Card>
+                            </TabPanel>
+                        ))}
+                    </Box>
+                </Container>
+            </Modal>
+
+            <Dialog
+                open={openImageDialog}
+                onClose={handleCloseImageDialog}
+                maxWidth="md"
+                fullWidth
+            >
+                <DialogTitle>Hình ảnh</DialogTitle>
+                <DialogContent>
+                    {selectedImage && (
+                        <img src={selectedImage} alt="Medical notebook" style={{ width: '100%', height: 'auto' }} />
+                    )}
+                </DialogContent>
+            </Dialog>
 
             <Snackbar
                 open={openSnackbar}
