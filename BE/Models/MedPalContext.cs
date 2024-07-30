@@ -489,8 +489,48 @@ public partial class MedPalContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Patient_Account");
         });
+        // Configure Conversation entity
+        modelBuilder.Entity<Conversation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
 
-        modelBuilder.Entity<Question>(entity =>
+            entity.Property(e => e.Conversation_Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(e => e.CreatedAt)
+                .IsRequired();
+
+            entity.HasMany(e => e.Messages)
+                .WithOne(e => e.Conversation)
+                .HasForeignKey(e => e.ConversationId);
+        });
+
+        // Configure Message entity
+        modelBuilder.Entity<Message>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+
+            entity.Property(e => e.MessageText)
+                .HasMaxLength(1000);
+
+            entity.Property(e => e.ImageUrl)
+                .HasMaxLength(2000);
+
+            entity.Property(e => e.SentAt)
+                .IsRequired();
+
+            entity.Property(e => e.IsRead)
+                .IsRequired();
+
+            entity.HasOne(e => e.Conversation)
+                .WithMany(e => e.Messages)
+                .HasForeignKey(e => e.ConversationId);
+        });
+
+       
+    
+    modelBuilder.Entity<Question>(entity =>
         {
             entity.HasKey(e => e.QuesId);
 

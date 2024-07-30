@@ -12,7 +12,7 @@ function DoctorDash() {
             <div style={{ width: '100%', padding: '20px' }}>
                 <Outlet />
             </div>
-           <ChatPopup_ForDoctor/>
+           {/* <ChatPopup_ForDoctor/> */}
         </div>
     );
 }
