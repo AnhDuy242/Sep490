@@ -114,6 +114,7 @@ public class AuthService
                 new Claim(ClaimTypes.Role, user.Role?.RoleName ?? "User"),
                  new Claim("AccId", user.AccId.ToString()),
                  new Claim("Name", user.Patient.Name),
+                 new Claim("Check", user.Patient.Check.ToString()),
             }),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),

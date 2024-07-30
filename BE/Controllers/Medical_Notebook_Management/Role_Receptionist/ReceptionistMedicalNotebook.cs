@@ -90,7 +90,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
                 var a = _context.Appointments.Where(x => x.PatientId == p.PatientId).FirstOrDefault(x => x.Date == DateTime.Now);
                 a.Status = "Đã khám";
                 _context.Appointments.Update(a);
-                p.Check = null;
+                p.Check = 3;
                 _context.Patients.Update(p);
                 _context.SaveChanges();
                 return Ok();
