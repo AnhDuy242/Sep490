@@ -7,6 +7,7 @@ import io from 'socket.io-client';
 import { login } from '../../services/Authentication';
 import LoginForm from '../LoginForm';
 import notificationSound from '../../assets/sound/notification_sound.mp3'; // Import the notification sound
+import './ChatPopup_ForPatient.css'; // Import the CSS file for animation
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
@@ -25,6 +26,7 @@ const ChatPopup_ForPatient = () => {
     const nameId = localStorage.getItem('nameId');
     const socketRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference to the audio object
+    const imageInputRef = useRef(null); // Create a reference for the image input
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -78,6 +80,23 @@ const ChatPopup_ForPatient = () => {
         }
     }, [currentConversation.id]);
 
+    // Add this useEffect to handle beforeunload event
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            if (dialogOpen) {
+                const message = 'Bạn có chắc chắn muốn rời khỏi trang? Cuộc hội thoại hiện tại sẽ bị mất.';
+                event.returnValue = message; // Standard for most browsers
+                return message; // For some older browsers
+            }
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, [dialogOpen]);
+
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
         if (!nameId) {
@@ -126,6 +145,7 @@ const ChatPopup_ForPatient = () => {
             // Reset input and selected image
             setInputMessage('');
             setSelectedImage(null);
+            imageInputRef.current.value = ''; // Reset the input field
         }
     };
 
@@ -166,6 +186,67 @@ const ChatPopup_ForPatient = () => {
         position: 'fixed',
         bottom: 16,
         right: 16,
+        zIndex: 1000, // Ensure the button is above other elements
+    };
+
+    const textStyle = {
+        position: 'fixed',
+        bottom: 50,
+        right: 90, // Adjust as needed to position the text next to the Fab button
+        zIndex: 1000, // Ensure the text is above other elements
+        fontSize: '14px',
+        fontWeight: 'bold',
+        color: '#FFF',
+        backgroundColor: '#1E93E3',
+        padding: '8px 12px',
+        borderRadius: '20px',
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+        animation: 'moveText 2s ease-in-out infinite',
+    };
+
+    const dialogStyle = {
+        backgroundColor: '#f5f5f5',
+        padding: '16px',
+        borderRadius: '8px',
+    };
+
+    const messageBoxStyle = {
+        borderRadius: '12px',
+        padding: '10px',
+        maxWidth: '70%',
+        wordBreak: 'break-word',
+        marginBottom: '8px',
+    };
+
+    const messageFromMeStyle = {
+        backgroundColor: '#1976d2',
+        alignSelf: 'flex-end',
+    };
+
+    const messageFromOthersStyle = {
+        backgroundColor: '#9e9e9e',
+        alignSelf: 'flex-start',
+    };
+
+    const imagePreviewStyle = {
+        cursor: 'pointer',
+        borderRadius: '4px',
+        marginTop: '4px',
+        border: '1px solid #ddd',
+        maxWidth: '100px', // Set a max width for the preview
+    };
+
+    const fullscreenDialogStyle = {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '0',
+    };
+
+    const fullscreenImageStyle = {
+        maxWidth: '90%',
+        maxHeight: '80vh',
+        objectFit: 'contain',
     };
 
     const selectReceptionistAndJoinRoom = (receptionistId) => {
@@ -190,7 +271,9 @@ const ChatPopup_ForPatient = () => {
                         </Badge>
                     </Fab>
 
-                    <Dialog open={dialogOpen} onClose={handleToggleDialog} fullWidth maxWidth="md">
+                    <Typography style={textStyle}>Nhận tư vấn ngay</Typography> {/* Add animated text here */}
+
+                    <Dialog open={dialogOpen} onClose={handleToggleDialog} fullWidth maxWidth="md" PaperProps={{ style: dialogStyle }}>
                         <Box display="flex" justifyContent="space-between" alignItems="center" p={2}>
                             <Typography variant="h6">Chat</Typography>
                             <IconButton edge="end" color="inherit" onClick={handleToggleDialog} aria-label="close">
@@ -200,11 +283,6 @@ const ChatPopup_ForPatient = () => {
                         <Box p={2}>
                             {showChat ? (
                                 <>
-                                    <Box mb={2}>
-                                        <Typography variant="body1">
-                                            Current Conversation: {currentConversation.id}
-                                        </Typography>
-                                    </Box>
                                     <Box mb={2} height="400px" overflow="auto">
                                         {currentConversation.messages.map((msg, index) => (
                                             <Box
@@ -216,10 +294,8 @@ const ChatPopup_ForPatient = () => {
                                                 <Box
                                                     p={1}
                                                     style={{
-                                                        backgroundColor: msg.from === 'Me' ? '#d1e7dd' : '#e9ecef',
-                                                        borderRadius: '8px',
-                                                        maxWidth: '70%',
-                                                        wordBreak: 'break-word'
+                                                        ...messageBoxStyle,
+                                                        ...(msg.from === 'Me' ? messageFromMeStyle : messageFromOthersStyle),
                                                     }}
                                                 >
                                                     <Typography variant="body2">
@@ -230,7 +306,7 @@ const ChatPopup_ForPatient = () => {
                                                             src={msg.image}
                                                             alt="attachment"
                                                             width="100"
-                                                            style={{ cursor: 'pointer', borderRadius: '4px', marginTop: '4px' }}
+                                                            style={imagePreviewStyle}
                                                             onClick={() => setFullscreenImage(msg.image)}
                                                         />
                                                     )}
@@ -238,13 +314,12 @@ const ChatPopup_ForPatient = () => {
                                             </Box>
                                         ))}
                                     </Box>
-                                    <Box display="flex" alignItems="center" style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '8px' }}>
+                                    <Box display="flex" alignItems="center">
                                         <TextField
+                                            fullWidth
+                                            variant="outlined"
                                             value={inputMessage}
                                             onChange={(e) => setInputMessage(e.target.value)}
-                                            variant="outlined"
-                                            fullWidth
-                                            placeholder="Type your message..."
                                             multiline
                                             rows={2}
                                             InputProps={{
@@ -255,6 +330,7 @@ const ChatPopup_ForPatient = () => {
                                                         type="file"
                                                         style={{ display: 'none' }}
                                                         onChange={handleSelectImage}
+                                                        ref={imageInputRef} // Set ref for the input field
                                                     />
                                                 ),
                                             }}
@@ -264,14 +340,21 @@ const ChatPopup_ForPatient = () => {
                                                 <ImageIcon />
                                             </IconButton>
                                         </label>
+                                        {selectedImage && (
+                                            <img
+                                                src={selectedImage}
+                                                alt="selected"
+                                                style={imagePreviewStyle}
+                                            />
+                                        )}
                                         <Button onClick={handleSendMessage} color="primary" variant="contained">
-                                            Send
+                                            Gửi
                                         </Button>
                                     </Box>
                                 </>
                             ) : (
                                 <Box>
-                                    <Typography variant="h6">Select a Receptionist</Typography>
+                                    <Typography variant="h6">Tư vấn viên đang hoạt động</Typography>
                                     <Box mt={2}>
                                         {availableReceptionists.map((receptionist) => (
                                             <Button
@@ -296,13 +379,7 @@ const ChatPopup_ForPatient = () => {
                         onClose={handleCloseFullscreenImage}
                         maxWidth="md"
                         fullWidth
-                        PaperProps={{
-                            style: {
-                                display: 'flex',
-                                justifyContent: 'center',
-                                alignItems: 'center'
-                            }
-                        }}
+                        PaperProps={{ style: fullscreenDialogStyle }}
                     >
                         <Box
                             display="flex"
@@ -324,11 +401,7 @@ const ChatPopup_ForPatient = () => {
                             <img
                                 src={fullscreenImage}
                                 alt="fullscreen"
-                                style={{
-                                    maxWidth: '100%',
-                                    maxHeight: '80vh',
-                                    objectFit: 'contain'
-                                }}
+                                style={fullscreenImageStyle}
                             />
                         </Box>
                     </Dialog>

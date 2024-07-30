@@ -108,8 +108,9 @@ const AuthProvider = ({ children }) => {
     setRole(decoded.role);
     setNameId(decoded.nameId);
     setCheck(decoded.Check); // Đảm bảo bạn sử dụng đúng key từ token
-
-    localStorage.setItem('nameId', decoded.nameId);
+    localStorage.setItem('accountId',decoded.AccId);
+    localStorage.setItem('name',decoded.Name);
+    localStorage.setItem('nameId', decoded.AccId);
     localStorage.setItem('token', newToken);
     localStorage.setItem('tokenTimestamp', new Date().getTime().toString());
     localStorage.setItem('check', decoded.Check); // Đảm bảo bạn lưu đúng key vào localStorage

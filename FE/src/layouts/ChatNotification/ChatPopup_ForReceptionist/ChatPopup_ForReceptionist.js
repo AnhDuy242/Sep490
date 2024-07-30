@@ -81,7 +81,10 @@ const Chatpopup_ForReceptionist = () => {
                 }, 0);
                 setUnreadCount(count);
 
-                audioRef.current.play(); // Play the notification sound when a new message is received
+                // Play notification sound only if the message is from someone other than the current user
+                if (message.from !== currentUserId) {
+                    audioRef.current.play();
+                }
 
                 return updatedConversations;
             });
@@ -199,9 +202,10 @@ const Chatpopup_ForReceptionist = () => {
                     bottom: 16,
                     right: 16,
                     zIndex: 1000,
-                    backgroundColor: '#f5f5f5', // Set background color
+                    backgroundColor: '#f5f5f5',
                     borderRadius: '50%',
-                    padding: 8
+                    padding: 8,
+                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)' // Add shadow effect
                 }}
                 onClick={handleOpenDialog}
             >
@@ -217,13 +221,15 @@ const Chatpopup_ForReceptionist = () => {
                 maxWidth="md"
                 PaperProps={{
                     sx: {
-                        bgcolor: 'background.paper',
+                        bgcolor: '',
+                        borderRadius: 2,
+                        boxShadow: 24,
                     }
                 }}
             >
                 <DialogTitle>
                     <Box display="flex" justifyContent="space-between" alignItems="center">
-                        <Typography variant="h6">Receptionist Chat</Typography>
+                        <Typography variant="h6">Chat</Typography>
                         <IconButton onClick={() => setDialogOpen(false)}>
                             <CloseIcon />
                         </IconButton>
@@ -232,18 +238,21 @@ const Chatpopup_ForReceptionist = () => {
                 <DialogContent>
                     {isLoggedIn ? (
                         <Box display="flex" flexDirection="column" height="60vh">
-                            <Box display="flex" flexGrow={1}>
-                                <Box flex="0 0 200px" bgcolor="grey.200" p={2}>
-                                    <Typography variant="h6">Conversations</Typography>
+                            <Box display="flex" flexGrow={1} borderRadius={1} border="1px solid #ddd">
+                                <Box flex="0 0 200px" bgcolor="grey.100" p={2} borderRight="1px solid #ddd">
+                                    <Typography variant="h6">Danh sách cuộc hội thoại</Typography>
                                     <Box>
                                         {conversations.map(conversation => (
                                             <Box
                                                 key={conversation.id}
                                                 p={1}
-                                                bgcolor={currentConversation?.id === conversation.id ? 'grey.400' : 'grey.300'}
+                                                mb={1}
+                                                bgcolor={currentConversation?.id === conversation.id ? 'primary.light' : 'grey.100'}
+                                                borderRadius={1}
                                                 onClick={() => handleConversationClick(conversation.id)}
+                                                style={{ cursor: 'pointer' }}
                                             >
-                                                <Typography variant="body2">User: {conversation.nameId}</Typography>
+                                                <Typography variant="body2" noWrap>User: {conversation.nameId}</Typography>
                                             </Box>
                                         ))}
                                     </Box>
@@ -251,7 +260,7 @@ const Chatpopup_ForReceptionist = () => {
                                 <Box flexGrow={1} p={2} display="flex" flexDirection="column">
                                     {currentConversation ? (
                                         <>
-                                            <Box flexGrow={1} overflow="auto">
+                                            <Box flexGrow={1} overflow="auto" mb={2} border="1px solid #ddd" borderRadius={1} p={2}>
                                                 {currentConversation.messages.map((message, index) => (
                                                     <Box
                                                         key={index}
@@ -261,17 +270,17 @@ const Chatpopup_ForReceptionist = () => {
                                                     >
                                                         <Box
                                                             p={1}
-                                                            bgcolor={message.from === currentUserId ? 'primary.main' : 'grey.300'}
+                                                            bgcolor={message.from === currentUserId ? 'primary.main' : 'grey.500'}
                                                             borderRadius={1}
                                                             maxWidth="70%"
                                                             color="white"
                                                         >
-                                                            <Typography variant="body2">{message.text}</Typography>
+                                                            <Typography variant="body3">{message.text}</Typography>
                                                             {message.image && (
                                                                 <img
                                                                     src={message.image}
                                                                     alt="Attached"
-                                                                    style={{ maxWidth: '100%', cursor: 'pointer' }}
+                                                                    style={{ maxWidth: '100%', cursor: 'pointer', borderRadius: 4, marginTop: 4 }}
                                                                     onClick={() => window.open(message.image, '_blank')}
                                                                 />
                                                             )}
@@ -280,7 +289,7 @@ const Chatpopup_ForReceptionist = () => {
                                                 ))}
                                                 <div ref={messagesEndRef} />
                                             </Box>
-                                            <Box display="flex" alignItems="center">
+                                            <Box display="flex" alignItems="center" p={1} borderTop="1px solid #ddd" bgcolor="background.paper">
                                                 <TextField
                                                     variant="outlined"
                                                     size="small"
@@ -288,6 +297,8 @@ const Chatpopup_ForReceptionist = () => {
                                                     value={inputMessage}
                                                     onChange={(e) => setInputMessage(e.target.value)}
                                                     placeholder="Type a message"
+                                                    multiline
+                                                    minRows={2}
                                                 />
                                                 <input
                                                     accept="image/*"
@@ -311,7 +322,7 @@ const Chatpopup_ForReceptionist = () => {
                                             </Box>
                                         </>
                                     ) : (
-                                        <Typography>Select a conversation to start chatting</Typography>
+                                        <Typography>Chọn cuộc hội thoại</Typography>
                                     )}
                                 </Box>
                             </Box>
@@ -321,7 +332,7 @@ const Chatpopup_ForReceptionist = () => {
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setDialogOpen(false)} color="primary">Close</Button>
+                    <Button onClick={() => setDialogOpen(false)} color="primary">Đóng</Button>
                 </DialogActions>
             </Dialog>
         </>

@@ -37,7 +37,7 @@ function Home() {
       <Article/>
       <Service/>
       <FeedBack/>
-      {role === 'Patient' ? <ChatPopup_ForPatient_Doctor /> :''}
+      {role === 'Patient' ? <ChatPopup_ForPatient></ChatPopup_ForPatient> :''}
       {role === 'Receptionist' ? <Chatpopup_ForReceptionist /> :''}
 
       <Footer></Footer>
