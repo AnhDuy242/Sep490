@@ -35,7 +35,7 @@ namespace BE.Controllers.Feedback.Role_Patient
             {
                 Content = feedbackCreate.Content,
                 Date = DateTime.Now,
-                PatientId = feedbackCreate.PatientId,
+                PatientId = pid,
                 Star = feedbackCreate.Star,
             };
             _context.Feedbacks.Add(f);

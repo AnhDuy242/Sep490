@@ -3,7 +3,7 @@
     public class FeedbackCreate
     {
 
-        public int PatientId { get; set; }
+        //public int PatientId { get; set; }
 
         public string? Content { get; set; }
 
