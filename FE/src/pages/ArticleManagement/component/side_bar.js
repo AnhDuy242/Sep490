@@ -77,9 +77,9 @@ const Sidebar = () => {
         </ListItem>
         <Collapse in={openAccount} timeout="auto" unmountOnExit>
           <List component="div" disablePadding>
-            <ListItem button className={classes.nested} component={Link} to="/article/dashboard/list_article">
+            {/* <ListItem button className={classes.nested} component={Link} to="/article/dashboard/list_article">
               <ListItemText primary="Danh sách tác giả" />
-            </ListItem>
+            </ListItem> */}
             <ListItem button className={classes.nested} component={Link} to="/article/dashboard/list_blog">
               <ListItemText primary="Danh sách bài viết" />
             </ListItem>

@@ -32,6 +32,7 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
     const accountId = localStorage.getItem('accountId');
 
     const messagesEndRef = useRef(null);
+    const pollingInterval = useRef(null);
 
     const fetchMessages = async () => {
         try {
@@ -49,12 +50,19 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
 
     useEffect(() => {
         if (open) {
-            fetchMessages();
+            fetchMessages(); // Fetch messages immediately when chat opens
+            pollingInterval.current = setInterval(fetchMessages, 3000); // Poll every 3 seconds
+        } else {
+            clearInterval(pollingInterval.current); // Clear the interval if chat is closed
         }
+
+        return () => {
+            clearInterval(pollingInterval.current); // Clear interval on component unmount
+        };
     }, [open, conversationId]);
 
     useEffect(() => {
-        // Cuộn xuống dưới cùng khi tin nhắn thay đổi
+        // Scroll to bottom when messages change
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
@@ -127,7 +135,6 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
             setNewMessage('');
             setSelectedImage(null);
             setSelectedImagePreview('');
-            fetchMessages();
             setSnackbarMessage('Message sent successfully!');
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
@@ -184,7 +191,7 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
         <>
             <Dialog open={open} onClose={handleCloseChat} maxWidth="lg" fullWidth>
                 <DialogTitle>Chat với bệnh nhân</DialogTitle>
-                <DialogContent dividers sx={{ height:10000 }}>
+                <DialogContent dividers sx={{ height: 10000 }}>
                     <Box display="flex" flexDirection="column" height="100%" overflow="hidden">
                         <Box flex={1} overflow="auto" sx={{ padding: 2, bgcolor: '#f0f0f0' }}>
                             <List sx={{ padding: 0 }}>
@@ -247,7 +254,7 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%',height:'100%' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', height: '100%' }}>
                         <input
                             type="file"
                             accept="image/*"

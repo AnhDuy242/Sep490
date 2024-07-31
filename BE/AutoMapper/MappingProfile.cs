@@ -14,6 +14,8 @@ using BE.DTOs.TestResultDto;
 using BE.DTOs.PatientDto;
 using BE.DTOs.MessageDto; // Cập nhật namespace
 using BE.DTOs.ConversationDto; // Cập nhật namespace
+using BE.DTOs.ArticleManagerDto;
+using BE.DTOs.BlogDto;
 
 public class MappingProfile : Profile
 {
@@ -97,5 +99,20 @@ public class MappingProfile : Profile
 
         CreateMap<CreateConversationDto, Conversation>();
         CreateMap<Conversation, ConversationDto>();
+
+        CreateMap<Blog,BlogDto>()
+          .ForMember(dest => dest.ArticleManager, opt => opt.MapFrom(src => src.AIdNavigation));
+
+        CreateMap<ArticleManager, ArticleManagerDTO>();
+        CreateMap<BlogDto, Blog>();
+        CreateMap<ArticleManagerDTO, ArticleManager>();
+        CreateMap<BlogDto, Blog>()
+    .ForMember(dest => dest.AId, opt => opt.MapFrom(src => src.AId));
+        CreateMap<EditBlogDto, Blog>()
+           .ForMember(dest => dest.AId, opt => opt.Ignore()); // Ignore if the field does not match
+        CreateMap<BlogDto, Blog>()
+            .ForMember(dest => dest.AId, opt => opt.Ignore()); // Ignore if the field does not match
+
+
     }
 }

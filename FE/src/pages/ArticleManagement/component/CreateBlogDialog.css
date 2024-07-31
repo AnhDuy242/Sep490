@@ -1,0 +1,9 @@
+/* src/pages/ArticleManagement/component/CreateBlogDialog.css */
+.draggable-image {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+    cursor: move;
+    /* Add any other styles as needed */
+  }
+  

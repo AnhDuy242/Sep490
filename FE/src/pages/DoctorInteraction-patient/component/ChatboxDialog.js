@@ -31,6 +31,7 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
     const accountId = localStorage.getItem('accountId');
 
     const messagesEndRef = useRef(null);
+    const pollingInterval = useRef(null);
 
     const fetchMessages = async () => {
         try {
@@ -48,8 +49,19 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
 
     useEffect(() => {
         if (open) {
-            fetchMessages();
+            fetchMessages(); // Fetch messages immediately when chat opens
+
+            // Set up polling interval
+            pollingInterval.current = setInterval(() => {
+                fetchMessages();
+            }, 3000); // Poll every 3 seconds
         }
+
+        return () => {
+            if (pollingInterval.current) {
+                clearInterval(pollingInterval.current); // Clear the interval when chat is closed or component unmounts
+            }
+        };
     }, [open, conversationId]);
 
     useEffect(() => {
