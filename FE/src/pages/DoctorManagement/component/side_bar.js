@@ -96,31 +96,31 @@ const Sidebar = () => {
           <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> {/**sua o cho nay */}
+          {/* <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
             <ListItemText primary="Tạo sổ tay khám bệnh" />
-          </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/viewweeklyschedule"> {/**sua o cho nay */}
+          </ListItem> */}
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/viewweeklyschedule"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
             <ListItemText primary="Xem lịch làm việc hàng tuần" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/doctor-answer-question"> {/**sua o cho nay */}
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/doctor-answer-question"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
             <ListItemText primary="Trả lời câu hỏi bệnh nhân" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/view-online-patient"> {/**sua o cho nay */}
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/view-online-patient"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
             <ListItemText primary="Xem bệnh nhân đang hoạt động" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/examinatedpatients"> {/**sua o cho nay */}
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/examinatedpatients"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
