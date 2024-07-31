@@ -31,7 +31,7 @@
         public async Task CheckAppointmentsAsync()
         {
             var appointments = await _context.Appointments
-                .Where(a => a.Status == "Tái khám" && a.Date.Date == DateTime.Today.AddDays(3).Date)
+                .Where(a => a.Status == "Tái khám" && a.Date.Date <= DateTime.Today.AddDays(3).Date && a.Date.Date > DateTime.Today.AddDays(1).Date)
                 .ToListAsync();
 
             foreach (var appointment in appointments)
