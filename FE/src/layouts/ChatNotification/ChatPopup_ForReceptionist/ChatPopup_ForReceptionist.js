@@ -24,6 +24,7 @@ const Chatpopup_ForReceptionist = () => {
     const socketRef = useRef(null);
     const messagesEndRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference for the audio object
+    const [userName, setUserName] = useState('');
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -31,6 +32,10 @@ const Chatpopup_ForReceptionist = () => {
         if (storedToken && storedTokenTimestamp) {
             const currentTime = new Date().getTime();
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
+            const storedUserName = localStorage.getItem('name');
+            if (storedUserName) {
+                setUserName(storedUserName);
+            }
             if (tokenAge < tokenTimeout) {
                 setIsLoggedIn(true);
                 setToken(storedToken);
@@ -252,7 +257,7 @@ const Chatpopup_ForReceptionist = () => {
                                                 onClick={() => handleConversationClick(conversation.id)}
                                                 style={{ cursor: 'pointer' }}
                                             >
-                                                <Typography variant="body2" noWrap>User: {conversation.nameId}</Typography>
+                                                <Typography variant="body2" noWrap>User: {conversation.name}</Typography>
                                             </Box>
                                         ))}
                                     </Box>
@@ -275,7 +280,7 @@ const Chatpopup_ForReceptionist = () => {
                                                             maxWidth="70%"
                                                             color="white"
                                                         >
-                                                            <Typography variant="body3">{message.text}</Typography>
+                                                            <Typography variant="body3">{message.from === currentUserId ? userName : message.name}: {message.text}</Typography>
                                                             {message.image && (
                                                                 <img
                                                                     src={message.image}

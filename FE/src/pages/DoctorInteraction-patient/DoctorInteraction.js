@@ -13,7 +13,8 @@ import {
     Container,
     Grid,
     Paper,
-    Button
+    Button,
+    Badge // Import Badge for unread count
 } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import axios from 'axios';
@@ -53,6 +54,17 @@ const ListItemContent = styled('div')(({ theme }) => ({
     width: '100%',
 }));
 
+// Flex container for the main content and footer
+const MainContainer = styled('div')({
+    display: 'flex',
+    flexDirection: 'column',
+    minHeight: '100vh',
+});
+
+const Content = styled(Container)({
+    flex: 1,
+});
+
 const DoctorAndMedicalNotebooks = () => {
     const [doctors, setDoctors] = useState([]);
     const [medicalNotebooks, setMedicalNotebooks] = useState([]);
@@ -61,6 +73,7 @@ const DoctorAndMedicalNotebooks = () => {
     const [chatBoxOpen, setChatBoxOpen] = useState(false);
     const [selectedDoctorId, setSelectedDoctorId] = useState(null);
     const [conversationId, setConversationId] = useState(null);
+    const [unreadCounts, setUnreadCounts] = useState({}); // State for unread message counts
     const patientId = localStorage.getItem('accountId');
 
     useEffect(() => {
@@ -68,6 +81,20 @@ const DoctorAndMedicalNotebooks = () => {
         axios.get(`https://localhost:7240/api/DoctorCustomerCare/GetListDoctorByPatientId?pid=${patientId}`)
             .then(response => {
                 setDoctors(response.data.$values);
+                // Fetch unread counts for each doctor
+                response.data.$values.forEach(doctor => {
+                    axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${patientId}&conversationId=${doctor.docId}`)
+                        .then(response => {
+                            setUnreadCounts(prevCounts => ({
+                                ...prevCounts,
+                                [doctor.docId]: response.data // Store unread count for this doctor
+                            }));
+                        })
+                        .catch(error => {
+                            setSnackbarMessage('Failed to load unread counts');
+                            setSnackbarOpen(true);
+                        });
+                });
             })
             .catch(error => {
                 setSnackbarMessage('Failed to load doctors');
@@ -115,10 +142,10 @@ const DoctorAndMedicalNotebooks = () => {
     };
 
     return (
-        <>
+        <MainContainer>
             <Header />
             <Navbar />
-            <Container sx={{ marginTop: 5, marginBottom: 5 }}>
+            <Content>
                 <Grid container spacing={3}>
                     {/* Doctor List Section */}
                     <Grid item xs={12} md={4}>
@@ -138,12 +165,15 @@ const DoctorAndMedicalNotebooks = () => {
                                                     secondary={`Tuổi: ${doctor.age}, Giới tính: ${doctor.gender ? 'Nam' : 'Nữ'}`}
                                                     style={{ flex: 1 }}
                                                 />
+                                                
                                                 <Button
                                                     variant="contained"
                                                     color="primary"
                                                     startIcon={<ChatIcon />}
                                                     onClick={(event) => handleChatClick(doctor.docId, event)}
-                                                >
+                                                                                    
+                                                                                    >
+                                                
                                                     Chat
                                                 </Button>
                                             </ListItemContent>
@@ -203,10 +233,9 @@ const DoctorAndMedicalNotebooks = () => {
                     conversationId={conversationId}
                     doctorIdSelected={selectedDoctorId} // Pass the selected doctor ID to ChatBox
                 />
-            </Container>
-
+            </Content>
             <Footer />
-        </>
+        </MainContainer>
     );
 };
 

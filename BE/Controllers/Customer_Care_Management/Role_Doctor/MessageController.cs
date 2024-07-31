@@ -4,6 +4,7 @@ using BE.DTOs.MessageDto; // Cập nhật namespace
 using BE.DTOs.ConversationDto; // Cập nhật namespace
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using NuGet.Protocol.Plugins;
 
 namespace BE.Controllers.Customer_Care_Management
 {
@@ -55,7 +56,7 @@ namespace BE.Controllers.Customer_Care_Management
                 return BadRequest(ModelState);
             }
 
-            var message = _mapper.Map<Message>(createMessageDto);
+            var message = _mapper.Map<Models.Message>(createMessageDto);
             _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
@@ -131,6 +132,49 @@ namespace BE.Controllers.Customer_Care_Management
             var result = _mapper.Map<List<MessageDto>>(messages);
             return Ok(result);
         }
+        [HttpGet("GetUnreadCount")]
+        public async Task<IActionResult> GetUnreadCount([FromQuery] int receiverId, [FromQuery] int senderId)
+        {
+            Console.WriteLine(receiverId + "" + senderId);
+            if (receiverId <= 0 || senderId <= 0)
+            {
+                return BadRequest("Invalid receiverId or conversationId");
+            }
+
+            var unreadCount = await _context.Messages   
+                .CountAsync(m => m.ReceiverId == receiverId
+                                 && m.SenderId == senderId
+                                 && !m.IsRead);
+
+            return Ok(unreadCount);
+        }
+        [HttpPatch("MarkMessagesAsRead")]
+        public async Task<IActionResult> MarkMessagesAsRead([FromQuery] int senderid, [FromQuery] int receiverId)
+        {
+            if (senderid <= 0 || receiverId <= 0)
+            {
+                return BadRequest("Invalid conversationId or senderId.");
+            }
+
+            var messages = await _context.Messages
+                .Where(m => m.SenderId == senderid && m.ReceiverId != receiverId && m.IsRead == false)
+                .ToListAsync();
+
+            if (messages.Count == 0)
+            {
+                return Ok("No unread messages found.");
+            }
+
+            foreach (var message in messages)
+            {
+                message.IsRead = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Messages marked as read.");
+        }
 
     }
+
 }

@@ -27,6 +27,7 @@ const ChatPopup_ForPatient = () => {
     const socketRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference to the audio object
     const imageInputRef = useRef(null); // Create a reference for the image input
+    const [userName, setUserName] = useState('');
 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
@@ -34,22 +35,29 @@ const ChatPopup_ForPatient = () => {
         if (storedToken && storedTokenTimestamp) {
             const currentTime = new Date().getTime();
             const tokenAge = currentTime - parseInt(storedTokenTimestamp);
-            if (tokenAge < tokenTimeout) {
-                setIsLoggedIn(true);
-                setToken(storedToken);
-                connectSocket(storedToken);
-            } else {
-                localStorage.removeItem('token');
-                localStorage.removeItem('tokenTimestamp');
+            if (storedToken && storedTokenTimestamp) {
+                const storedUserName = localStorage.getItem('name');
+                if (storedUserName) {
+                    setUserName(storedUserName);
+                }
+                if (tokenAge < tokenTimeout) {
+                    setIsLoggedIn(true);
+                    setToken(storedToken);
+                    connectSocket(storedToken);
+                } else {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('tokenTimestamp');
+                }
+            }
+
+
+            return () => {
+                if (socketRef.current) {
+                    socketRef.current.disconnect();
+                }
             }
         }
-
-        return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
-        };
-    }, []);
+        }, []);
 
     useEffect(() => {
         if (socketRef.current) {
@@ -299,7 +307,7 @@ const ChatPopup_ForPatient = () => {
                                                     }}
                                                 >
                                                     <Typography variant="body2">
-                                                        {msg.from}: {msg.text}
+                                                        {msg.from === 'Me' ? userName : msg.name}: {msg.text}
                                                     </Typography>
                                                     {msg.image && (
                                                         <img
@@ -358,14 +366,14 @@ const ChatPopup_ForPatient = () => {
                                     <Box mt={2}>
                                         {availableReceptionists.map((receptionist) => (
                                             <Button
-                                                key={receptionist}
-                                                onClick={() => selectReceptionistAndJoinRoom(receptionist)}
+                                                key={receptionist.nameId}
+                                                onClick={() => selectReceptionistAndJoinRoom(receptionist.nameId)}
                                                 variant="contained"
                                                 color="primary"
                                                 fullWidth
                                                 style={{ marginBottom: '8px' }}
                                             >
-                                                {receptionist}
+                                                {receptionist.name}
                                             </Button>
                                         ))}
                                     </Box>
