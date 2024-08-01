@@ -112,3 +112,47 @@ export const fetchDepartments = async (docId) => {
   }
 };
 
+//lấy câu hỏi theo id patient
+// Định nghĩa hàm fetch
+export const getPatientQuestions = async (patientId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientQuestionGetQuestionByPatientId?patientId=${patientId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error fetching patient questions: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data.$values;
+  } catch (error) {
+    console.error("Error fetching patient questions:", error);
+    throw error;
+  }
+};
+//Chỉnh sửa câu hỏi
+// services/QuestionService.js
+export const editPatientQuestion = async (questionId, updatedQuestion) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/PatientQuestionUpdateQuestion?pid=${questionId}&question=${encodeURIComponent(updatedQuestion)}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error editing patient question: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error editing patient question:", error);
+    throw error;
+  }
+};
+

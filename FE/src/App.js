@@ -33,6 +33,7 @@ import About from './pages/Article/index'
 import AdminViewAppointment from './pages/AdminDashBoard/view_appointment';
 import ExaminatedPatients from './pages/DoctorManagement/ExaminatedPatient_Doctor/ExaminatedPatient_Doctor';
 import DoctorAndMedicalNotebooks from './pages/DoctorInteraction-patient/DoctorInteraction';
+import ListPatientQuestion from './pages/PatientAskQuestion/patient_question_list'
 function App() {
   return (
     <Routes>
@@ -96,6 +97,8 @@ function App() {
       <Route path="/GetListQuestion" element={<ProtectedRoute requiredRole="Patient"><PatientViewQuestion /></ProtectedRoute>}>
       </Route>
       <Route path="/getMedicalNotebook" element={<ProtectedRoute requiredRole="Patient"><MedicalNotebook_ForPatient /></ProtectedRoute>}>
+      </Route>
+      <Route path="/GetListQuestionOfPatient" element={<ProtectedRoute requiredRole="Patient"><ListPatientQuestion /></ProtectedRoute>}>
       </Route>
     </Routes>
   );
