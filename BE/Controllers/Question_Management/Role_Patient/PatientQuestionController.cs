@@ -51,5 +51,13 @@ namespace BE.Controllers.Question_Management.Role_Patient
             var qu = _mapper.Map<List<QuestionView>>(q);
             return Ok(qu);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetQuestionByPatientId(int patientId)
+        {
+            var q = _context.Questions.Include(x => x.Doc).Include(x => x.Patient).Include(x => x.Dep).Where(x => x.PatientId == patientId).ToList();
+            var qu = _mapper.Map<List<QuestionView>>(q);
+            return Ok(qu);
+        }
     }
 }

@@ -6,6 +6,7 @@ import Footer from '../../layouts/Footer';
 import { fetchQuestionsByDepId } from './../../services/QuestionService'; // Cập nhật đường dẫn đúng với vị trí của hàm
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem } from '@mui/material';
 import { getListDepartment, createPatientQuestion } from './../../services/QuestionService'; // Thay đổi đường dẫn nếu cần
+import { NavLink } from 'react-router-dom';
 
 const PatientViewQuestion = () => {
     const [departments, setDepartments] = useState([]);
@@ -14,7 +15,7 @@ const PatientViewQuestion = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [newQuestion, setNewQuestion] = useState('');
     const [departmentForQuestion, setDepartmentForQuestion] = useState('');
-    
+
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
@@ -72,7 +73,7 @@ const PatientViewQuestion = () => {
                 const data = await fetchQuestionsByDepId(selectedDepartment);
                 setQuestions(data.$values); // Đảm bảo cấu trúc dữ liệu đúng
             }
-    
+
         } catch (error) {
             console.error('Error creating question:', error);
         }
@@ -147,13 +148,17 @@ const PatientViewQuestion = () => {
                         )}
                     </div>
                 </div>
-                <div style={{ justifyContent: 'flex-end', alignItems: 'center', width: '10%', paddingLeft: '20px' }}>
+                <div style={{ justifyContent: 'flex-end', alignItems: 'center', width: '10%', paddingLeft: '30px' }}>
                     <Button
                         style={{ backgroundColor: '#3498db', color: 'white' }}
                         onClick={handleOpenDialog}
                     >
                         Đặt câu hỏi
                     </Button>
+                    <Button
+                        style={{ backgroundColor: '#3498db', color: 'white', marginTop: '20px' }}
+                        component={NavLink} to="/GetListQuestionOfPatient"
+                    >Xem câu hỏi</Button>
                 </div>
             </div>
             <Footer />
