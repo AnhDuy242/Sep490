@@ -53,6 +53,7 @@ function App() {
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
         <Route path="admin-profile" element={<AdminProfile />} />
+        <Route path="receptionist-account" element={<ReceptionistAccount />} />
 
         <Route path="/admin/dashboard/schedule" element={<ScheduleAdmin />} />
         <Route path="/admin/dashboard/ViewAppointment" element={<AdminViewAppointment />} />
