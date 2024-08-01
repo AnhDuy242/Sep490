@@ -46,38 +46,46 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
 
         // PUT: api/Admin/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAdmin(int id, AdminAccountDTO adminDto)
+        public async Task<IActionResult> UpdateAdmin(int id, [FromBody] AdminAccountDTO adminDto)
         {
-            if (id != adminDto.Id)
-            {
-                return BadRequest();
-            }
-
-            var admin = await _context.Admins.FindAsync(id);
+            // Find the admin by ID from the URL
+            var admin = await _context.Admins.Include(a => a.AdminNavigation).FirstOrDefaultAsync(a => a.AdminId == id);
             if (admin == null)
             {
-                return NotFound();
+                return NotFound(new { Error = "Admin not found" });
             }
 
-            _mapper.Map(adminDto, admin);
+            // Ensure AdminNavigation is not null
+            if (admin.AdminNavigation == null)
+            {
+                // Initialize AdminNavigation if needed, or handle this case accordingly
+                admin.AdminNavigation = new Account();
+            }
 
-            _context.Entry(admin).State = EntityState.Modified;
+            // Update the admin properties
+            admin.Name = adminDto.Name;
+            admin.AdminNavigation.Email = adminDto.Email;
+            admin.AdminNavigation.Phone = adminDto.Phone;
+            // Note: Update password only if it's provided
+            if (!string.IsNullOrWhiteSpace(adminDto.Password))
+            {
+                admin.AdminNavigation.Password = adminDto.Password;
+            }
 
             try
             {
+                _context.Admins.Update(admin);
                 await _context.SaveChangesAsync();
+                return Ok(new { Message = "Admin updated successfully" });
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception)
             {
-                if (!AdminExists(id))
-                {
-                    return NotFound();
-                }
-                throw;
+                return StatusCode(500, new { Error = "An error occurred while updating the admin" });
             }
-
-            return NoContent();
         }
+
+
+
 
         private bool AdminExists(int id)
         {

@@ -147,20 +147,21 @@ public class MappingProfile : Profile
              .ReverseMap();
         //admin
         CreateMap<Admin, AdminAccountDTO>()
-         .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AdminId))
-         .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-         .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.AdminNavigation.Email))
-         .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.AdminNavigation.Phone))
-         .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
-         .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.AdminNavigation.Password));
+       .ForMember(dest => dest.Id, opt => opt.Ignore())
+       .ForMember(dest => dest.Name, opt => opt.Ignore())
+       .ForMember(dest => dest.Email, opt => opt.Ignore())
+       .ForMember(dest => dest.Phone, opt => opt.Ignore())
+       .ForMember(dest => dest.IsActive, opt => opt.Ignore())
+       .ForMember(dest => dest.Password, opt => opt.Ignore());
 
         CreateMap<Account, AdminAccountDTO>()
-            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccId))
-            .ForMember(dest => dest.Name, opt => opt.Ignore()) // Assuming Account does not have Name
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
-            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
-            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
-            .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.Name, opt => opt.Ignore())
+            .ForMember(dest => dest.Email, opt => opt.Ignore())
+            .ForMember(dest => dest.Phone, opt => opt.Ignore())
+            .ForMember(dest => dest.IsActive, opt => opt.Ignore())
+            .ForMember(dest => dest.Password, opt => opt.Ignore());
+
 
     }
 }
