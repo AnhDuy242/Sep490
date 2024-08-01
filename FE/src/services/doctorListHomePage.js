@@ -12,3 +12,4 @@ export const fetchDoctors = async () => {
     throw error;
   }
 };
+

@@ -34,6 +34,11 @@ import AdminViewAppointment from './pages/AdminDashBoard/view_appointment';
 import ExaminatedPatients from './pages/DoctorManagement/ExaminatedPatient_Doctor/ExaminatedPatient_Doctor';
 import DoctorAndMedicalNotebooks from './pages/DoctorInteraction-patient/DoctorInteraction';
 import ListPatientQuestion from './pages/PatientAskQuestion/patient_question_list'
+import MedicalNotebookList from './pages/DoctorManagement/Medicalnotebook_save_Doctor/Medicalnotebook_save';
+import DoctorProfile from './pages/DoctorManagement/Profile/DoctorProfile';
+import Profile from './pages/Appointment-patient/PatientProfile';
+import ReceptionistProfile from './pages/ReceptionistManagement/component/ReceptionistProfile';
+import AdminProfile from './pages/AdminDashBoard/component/admin_profile';
 function App() {
   return (
     <Routes>
@@ -47,6 +52,8 @@ function App() {
       {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
+        <Route path="admin-profile" element={<AdminProfile />} />
+
         <Route path="/admin/dashboard/schedule" element={<ScheduleAdmin />} />
         <Route path="/admin/dashboard/ViewAppointment" element={<AdminViewAppointment />} />
       </Route>
@@ -64,7 +71,9 @@ function App() {
       <Route path="/receptionist/dashboard/" element={<ProtectedRoute requiredRole="Receptionist"><ReceptionistDash /></ProtectedRoute>}>
         <Route path="create_patient_account" element={<CreatePatientAccount />} />
         <Route path="Approve_appointment" element={<ApproveAppointment />} />
-        <Route path="ViewAllPatientMedicalNotebooks" element={<ViewAllNotebooks />} />
+        <Route path="ViewAllPatientMedicalNotebooks" element={<ViewAllNotebooks/>} />
+        <Route path="receptionist-profile" element={<ReceptionistProfile />} />
+
       </Route>
       {/**Route article */}
       <Route path="/article/dashboard/" element={<ProtectedRoute requiredRole="ArticleManager"><ArticleDash /></ProtectedRoute>}>
@@ -81,6 +90,8 @@ function App() {
       </Route>
       <Route path="/getDoctorInteraction" element={<ProtectedRoute requiredRole="Patient"><DoctorAndMedicalNotebooks/></ProtectedRoute>}>
       </Route>
+      <Route path="/patient-profile" element={<ProtectedRoute requiredRole="Patient"><Profile/></ProtectedRoute>}>
+      </Route>
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
       <Route path="/about-us" element={<About />} />
@@ -91,6 +102,9 @@ function App() {
         <Route path="view-online-patient" element={<ViewOnlinePatient_forDoctor />} />
         <Route path="viewweeklyschedule" element={<ViewWeeklySchedule_Doctor />} />
         <Route path="examinatedpatients" element={<ExaminatedPatients/>} />
+        <Route path="medical-notebook-save" element={<MedicalNotebookList />} />
+        <Route path="doctor-profile" element={<DoctorProfile />} />
+
 
       </Route>
       {/**Hỏi đáp và các service khác */}

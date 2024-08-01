@@ -96,12 +96,19 @@ const Sidebar = () => {
           <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
+
           {/* <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/create-mdeical-notebook"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
             <ListItemText primary="Tạo sổ tay khám bệnh" />
           </ListItem> */}
+            <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/doctor-profile"> 
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Thông tin cá nhân" />
+          </ListItem>
           <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/viewweeklyschedule"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
@@ -126,6 +133,13 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Tương tác với các bệnh nhân đã khám" />
           </ListItem>
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/medical-notebook-save"> 
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Kho lưu trữ bệnh án" />
+          </ListItem>
+        
         </List>
         <Box width="100%" display="flex" justifyContent="center">
           <Button variant="contained" className={classes.logoutButton} onClick={handleLogoutClick}>

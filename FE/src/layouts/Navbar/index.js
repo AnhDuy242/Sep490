@@ -50,7 +50,7 @@ const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [services, setServices] = useState([]);
   const [searchValue, setSearchValue] = useState('');
-
+  const patientCheck=localStorage.getItem('role')==='Patient'?true:false;
   useEffect(() => {
     const loadServices = async () => {
       try {
@@ -132,13 +132,20 @@ const Navbar = () => {
           </Menu>
           <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
           <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
-          <Button color="inherit" component={NavLink} to="/listDoctorView">Tin tức y khoa</Button>
+          <Button color="inherit" component={NavLink} to="/listBlog">Tin tức y khoa</Button>
 
           {isLoggedIn && (
             <>
               <Button color="inherit" component={NavLink} to="/getAppointment">Xem lịch khám</Button>
               <Button color="inherit" component={NavLink} to="/getMedicalNotebook">Tra cứu kết quả</Button>
               <Button color="inherit" component={NavLink} to="/getDoctorInteraction">Tư vấn online</Button>
+              {patientCheck && (
+                <>
+              <Button color="inherit" component={NavLink} to="/patient-profile">Thông tin cá nhấn</Button>
+
+                </>
+              )}
+
             </>
           )}
         </Box>

@@ -16,6 +16,9 @@ using BE.DTOs.MessageDto; // Cập nhật namespace
 using BE.DTOs.ConversationDto; // Cập nhật namespace
 using BE.DTOs.ArticleManagerDto;
 using BE.DTOs.BlogDto;
+using BE.DTOs.EmployeeDto;
+using CloudinaryDotNet.Core;
+using BE.DTOs.AdminAccountDto;
 
 public class MappingProfile : Profile
 {
@@ -56,6 +59,8 @@ public class MappingProfile : Profile
             .ReverseMap();
 
         //doctor
+        CreateMap<UpdateDoctorAndAccountDto, Doctor>();
+        CreateMap<UpdateDoctorAndAccountDto, Account>();
         CreateMap<Doctor, DoctorAppointment>().ReverseMap();
         CreateMap<Doctor, DoctorMarketing>()
                     .ForMember(dest => dest.AllServiceName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Name))))
@@ -71,6 +76,17 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.RoleId, otp => otp.MapFrom(src => src.PatientNavigation.RoleId))
 
             .ReverseMap();
+        CreateMap<UpdatePatientProfile, Patient>()
+            .ForMember(dest => dest.PatientId, opt => opt.Ignore()) // Ignore PatientId since it's not in the DTO
+            .ForMember(dest => dest.Gender, opt => opt.Ignore()) // Ignore Gender since it's not in the DTO
+            .ForMember(dest => dest.Dob, opt => opt.Ignore()) // Ignore Dob since it's not in the DTO
+            .ForMember(dest => dest.IsActive, opt => opt.Ignore()) // Ignore IsActive since it's not in the DTO
+            .ForMember(dest => dest.Check, opt => opt.Ignore()) // Ignore Check since it's not in the DTO
+            .ForMember(dest => dest.Appointments, opt => opt.Ignore()) // Ignore related entities
+            .ForMember(dest => dest.Feedbacks, opt => opt.Ignore()) // Ignore related entities
+            .ForMember(dest => dest.MedicalNotebooks, opt => opt.Ignore()) // Ignore related entities
+            .ForMember(dest => dest.PatientNavigation, opt => opt.Ignore()) // Ignore related entity
+            .ForMember(dest => dest.Questions, opt => opt.Ignore()); // Ignore related entities
 
         //feedback
         CreateMap<Feedback, FeedbackCreate>().ReverseMap();
@@ -113,6 +129,38 @@ public class MappingProfile : Profile
         CreateMap<BlogDto, Blog>()
             .ForMember(dest => dest.AId, opt => opt.Ignore()); // Ignore if the field does not match
 
+        CreateMap<MedicalNotebook, MedicalNotebookPatient>()
+          .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.Name))
+          .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name));
+        // employee account
+        CreateMap<Doctor, BE.DTOs.DoctorDto.DoctorDto>();
+        CreateMap<Receptionist, ReceptionistDto>();
+        CreateMap<BE.DTOs.DoctorDto.DoctorDto, Doctor>();
+        CreateMap<ReceptionistDto, Receptionist>();
+        CreateMap<Receptionist, ReceptionistAccount>()
+             .ForMember(dest => dest.AccId, opt => opt.MapFrom(src => src.RecepId))
+             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Recep.Email))
+             .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Recep.Phone))
+             .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Recep.Password))
+             .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Recep.RoleId))
+             .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Recep.IsActive))
+             .ReverseMap();
+        //admin
+        CreateMap<Admin, AdminAccountDTO>()
+         .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AdminId))
+         .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+         .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.AdminNavigation.Email))
+         .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.AdminNavigation.Phone))
+         .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
+         .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.AdminNavigation.Password));
+
+        CreateMap<Account, AdminAccountDTO>()
+            .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.AccId))
+            .ForMember(dest => dest.Name, opt => opt.Ignore()) // Assuming Account does not have Name
+            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email))
+            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Phone))
+            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.IsActive))
+            .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Password));
 
     }
 }

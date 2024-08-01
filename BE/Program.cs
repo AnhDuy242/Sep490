@@ -78,6 +78,7 @@ builder.Services.AddDbContext<MedPalContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddScoped<AuthService>(); // Change to Scoped
+builder.Services.AddScoped<IValidateService, ValidateService>();
 
 // Cấu hình JWT
 var key = Encoding.ASCII.GetBytes(builder.Configuration["Jwt:Key"]);
@@ -155,6 +156,7 @@ app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+builder.Services.AddControllers();
 
 app.MapControllers();
 //app.MapHub<ChatHub>("/chatHub");

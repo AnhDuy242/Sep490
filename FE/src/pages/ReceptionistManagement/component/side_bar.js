@@ -96,6 +96,12 @@ const Sidebar = () => {
           <b>Quản lý</b>
         </Typography>
         <List className={classes.list}>
+        <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/receptionist-profile">
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Thông tin cá nhân" />
+          </ListItem>
           <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/create_patient_account">
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />

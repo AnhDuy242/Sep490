@@ -95,6 +95,12 @@ const Sidebar = () => {
         <Typography variant="h6" className={classes.title}>
           <b>Quản lý</b>
         </Typography>
+        <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/admin-profile">
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText style={{ color: 'white' }} primary="Thông tin cá nhân" />{/**làm reminder vào đây */}
+          </ListItem>
         <List className={classes.list}>
           <ListItem button onClick={handleAccountClick} className={classes.listItem}>
             <ListItemIcon>

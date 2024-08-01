@@ -22,7 +22,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             _smsService = smsService;
             _context = context;
             _validateService = validateService;
-            _validateService = validateService;
+         
         }
         // GET: api/<EmployeeController>
 

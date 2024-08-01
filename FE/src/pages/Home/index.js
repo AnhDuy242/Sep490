@@ -16,6 +16,7 @@ import { Helmet } from 'react-helmet';
 import Chatpopup_ForReceptionist from '../../layouts/ChatNotification/ChatPopup_ForReceptionist/ChatPopup_ForReceptionist';
 import ChatPopup_ForPatient from '../../layouts/ChatNotification';
 import ChatPopup_ForPatient_Doctor from '../../layouts/ChatNotification/ChatPopup_ForPatient/ChatPopup_ForPatient';
+import ScrollToTopButton from '../../layouts/ScrolltoTop/ScrolltoTop';
 
 function Home() {
   const { user } = useContext(AuthContext);
@@ -39,7 +40,7 @@ function Home() {
       <FeedBack/>
       {role === 'Patient' ? <ChatPopup_ForPatient></ChatPopup_ForPatient> :''}
       {role === 'Receptionist' ? <Chatpopup_ForReceptionist /> :''}
-
+      <ScrollToTopButton/>
       <Footer></Footer>
 
     </div>

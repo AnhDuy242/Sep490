@@ -21,4 +21,13 @@
         public bool? IsActive { get; set; }
 
     }
+    public class UpdateDoctorAndAccountDto
+    {
+        public string? Img { get; set; }
+        public string? Description { get; set; }
+
+        public string? AccountPhone { get; set; }
+        public string? AccountEmail { get; set; }
+        public string? AccountPassword { get; set; }
+    }
 }
