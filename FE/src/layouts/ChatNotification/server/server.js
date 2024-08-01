@@ -40,16 +40,15 @@ io.on('connection', (socket) => {
         if (nameId) {
             const accountId = parseInt(nameId);
             if (!availableReceptionists.includes(accountId)) {
-                availableReceptionists.push(accountId); // Add only if not present
+                availableReceptionists.push(accountId);
             }
             receptionists[accountId] = { socket, name };
             socket.accountId = accountId;
-            io.emit('availableReceptionists', availableReceptionists.map(id => ({ nameId: id, name: receptionists[id].name }))); // Update all connected clients
+            io.emit('availableReceptionists', availableReceptionists.map(id => ({ nameId: id, name: receptionists[id].name })));
         } else {
             socket.disconnect();
         }
     });
-
     socket.on('loginDoctor', ({ token, nameId, name }) => {
         if (nameId) {
             const accountId = parseInt(nameId);

@@ -25,7 +25,7 @@ const Chatpopup_ForReceptionist = () => {
     const messagesEndRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference for the audio object
     const [userName, setUserName] = useState('');
-
+    const name =localStorage.getItem('name');
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
@@ -55,13 +55,13 @@ const Chatpopup_ForReceptionist = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        socketRef.current.emit('loginReceptionist', { token, nameId });
+        socketRef.current.emit('loginReceptionist', { token, nameId,name });
 
-        socketRef.current.on('newConversation', ({ roomId, nameId }) => {
+        socketRef.current.on('newConversation', ({ roomId, nameId, name }) => {
             setConversations((prevConversations) => {
                 const existingConversation = prevConversations.find(c => c.id === roomId);
                 if (existingConversation) return prevConversations;
-                return [...prevConversations, { id: roomId, nameId, messages: [] }];
+                return [...prevConversations, { id: roomId, nameId, name, messages: [] }];
             });
         });
 

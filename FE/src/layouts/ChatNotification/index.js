@@ -57,7 +57,7 @@ const ChatPopup_ForPatient = () => {
                 }
             }
         }
-        }, []);
+    }, []);
 
     useEffect(() => {
         if (socketRef.current) {
@@ -257,11 +257,11 @@ const ChatPopup_ForPatient = () => {
         objectFit: 'contain',
     };
 
-    const selectReceptionistAndJoinRoom = (receptionistId) => {
+    const selectReceptionistAndJoinRoom = (receptionistId, receptionistName) => {
         const roomId = `${[nameId, receptionistId].sort().join('_')}`;
         socketRef.current.emit('joinRoom', { receiverId: receptionistId });
-        setCurrentConversation({ id: roomId, userId: receptionistId, messages: [] });
-        setUnreadMessages(0); // Reset unread messages count on starting a new conversation
+        setCurrentConversation({ id: roomId, userId: receptionistId, name: receptionistName, messages: [] });
+        setUnreadMessages(0);
         setShowChat(true);
     };
 
@@ -367,7 +367,7 @@ const ChatPopup_ForPatient = () => {
                                         {availableReceptionists.map((receptionist) => (
                                             <Button
                                                 key={receptionist.nameId}
-                                                onClick={() => selectReceptionistAndJoinRoom(receptionist.nameId)}
+                                                onClick={() => selectReceptionistAndJoinRoom(receptionist.nameId, receptionist.name)}
                                                 variant="contained"
                                                 color="primary"
                                                 fullWidth
