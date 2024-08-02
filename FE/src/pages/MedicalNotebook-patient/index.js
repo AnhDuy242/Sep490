@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Container, Button, Typography, Snackbar, Card, CardContent, Grid, Dialog, DialogTitle, DialogContent, DialogActions,CardActions
+    Container, Button, Typography, Snackbar, Card, CardContent, Grid, Dialog, DialogTitle, DialogContent, DialogActions, CardActions
 } from '@mui/material';
 import { Font } from '@react-pdf/renderer';
 import ArialUnicodeMS from '../../assets/font/arial-unicode-ms.ttf';
@@ -10,6 +10,8 @@ import { makeStyles } from '@mui/styles';
 import { fetchMedicalNotebooksByPatientId } from '../../services/Medicalnotebook';
 import Footer from '../../layouts/Footer';
 import { Helmet } from 'react-helmet';
+import Breadcrumbs from '@mui/material/Breadcrumbs';
+import Link from '@mui/material/Link';
 
 Font.register({
     family: 'ArialUnicodeMS',
@@ -206,7 +208,13 @@ const MedicalNotebook = () => {
             </Helmet>
             <Header />
             <Navbar />
-            <Container className={classes.container}>
+            <Container className={classes.container} style={{marginTop:'20px'}}>
+                <Breadcrumbs aria-label="breadcrumb" style={{ marginBottom: '20px' }}>
+                    <Link color="inherit" href="/">
+                        Trang chủ
+                    </Link>
+                    <Typography color="textPrimary">Tra cứu kết quả bệnh án</Typography>
+                </Breadcrumbs>
                 <Typography variant="h4" className={classes.title}>
                     Tra cứu kết quả bệnh án
                 </Typography>

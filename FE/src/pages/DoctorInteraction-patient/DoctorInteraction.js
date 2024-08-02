@@ -14,7 +14,9 @@ import {
     Grid,
     Paper,
     Button,
-    Badge // Import Badge for unread count
+    Badge, // Import Badge for unread count
+    Breadcrumbs,
+    Link
 } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import axios from 'axios';
@@ -146,6 +148,14 @@ const DoctorAndMedicalNotebooks = () => {
             <Header />
             <Navbar />
             <Content>
+                <Breadcrumbs aria-label="breadcrumb" style={{ margin: '20px 0' }}>
+                    <Link color="inherit" href="/">
+                        Home
+                    </Link>
+                 
+                    <Typography color="textPrimary">Tư vấn online</Typography>
+                </Breadcrumbs>
+
                 <Grid container spacing={3}>
                     {/* Doctor List Section */}
                     <Grid item xs={12} md={4}>

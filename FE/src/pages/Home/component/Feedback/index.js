@@ -116,7 +116,7 @@ const CustomerFeedback = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ mt: 5 }}>
+    <Container maxWidth="md" sx={{ mt: 5,mb:10 }}>
       <Typography variant="h4" gutterBottom align="center">
         KHÁCH HÀNG NÓI GÌ VỀ <b style={{ color: '#1d93e3' }}>68A</b>
       </Typography>

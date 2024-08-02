@@ -144,7 +144,7 @@ export const RegisterCompleteForm = async (registrationDetails) => {
         Dob: registrationDetails.dob,
         Gender: registrationDetails.Gender,
         Address: registrationDetails.address,
-        Phone: '01261322112', // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
+        Phone: registrationDetails.Phone, // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
         Password: registrationDetails.password,
       }),
     });

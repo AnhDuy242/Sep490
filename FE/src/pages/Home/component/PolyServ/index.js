@@ -54,7 +54,7 @@ const DepartmentSlider = () => {
 
   return (
     <Container>
-      <Typography variant="h4" component="h1" gutterBottom>
+      <Typography variant="h4" component="h1" gutterBottom sx={{textAlign:'center'}}>
         Các Khoa Y Tế
       </Typography>
       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -85,8 +85,7 @@ const DepartmentSlider = () => {
                     component="div"
                     sx={{ color: '#1E93E3', cursor: 'pointer' }}
                     onClick={() => handleDepartmentClick(department.depId)}
-                  >
-                    
+                  >    
                     {department.name}
                   </Typography>
                 </CardContent>
