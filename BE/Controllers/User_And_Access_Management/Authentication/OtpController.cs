@@ -111,7 +111,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
 
             try
             {
-                await _smsService.SendSmsAsync(PhoneNumber, message);
+                await _smsService.SendSmsAsync(_smsService.ConvertPhoneNumberToInternationalFormat(PhoneNumber), message);
                 return Ok("OTP sent successfully.");
             }
             catch (Exception ex)

@@ -15,6 +15,15 @@ namespace BE.Service.ImplService
             _fromPhoneNumber = fromPhoneNumber;
         }
 
+        public string ConvertPhoneNumberToInternationalFormat(string phoneNumber)
+        {
+            if (phoneNumber.StartsWith("0"))
+            {
+                return "+84" + phoneNumber.Substring(1);
+            }
+            return phoneNumber;
+        }
+
         public async Task SendSmsAsync(string phoneNumber, string message)
         {
             TwilioClient.Init(_accountSid, _authToken);

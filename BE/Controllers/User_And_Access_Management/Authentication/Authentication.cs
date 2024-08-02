@@ -45,51 +45,34 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         [HttpPost]
         public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
-            // Check if phone number or email already exists
-          
-            if (CheckPhoneExist(registerDto.Phone))
+            // Create a new Account entity
+
+            var account = new Account
             {
-                return BadRequest(new { Message = "Số điện thoại đã tồn tại." });
-            }
+                Email = registerDto.Email,
+                Password = registerDto.Password,
+                RoleId = 3,
+                IsActive = true,
+            };
 
+            await _alo2Context.Accounts.AddAsync(account);
+            await _alo2Context.SaveChangesAsync();
 
-
-
-            else if (CheckEmailExist(registerDto.Email))
+            var patient = new Patient
             {
-                return BadRequest(new { Message = "Email đã tồn tại." });
-            }
-            else
-            {
-                // Create a new Account entity
+                IsActive = true,
+                Address = registerDto.Address,
+                Dob = registerDto.Dob,
+                Gender = registerDto.Gender,
+                Name = registerDto.Name,
+                PatientId = account.AccId,
+            };
 
-                var account = new Account
-                {
-                    Phone = registerDto.Phone,
-                    Email = registerDto.Email,
-                    Password = registerDto.Password,
-                    RoleId = 3,
-                    IsActive = true,
-                };
+            await _alo2Context.Patients.AddAsync(patient);
+            await _alo2Context.SaveChangesAsync();
 
-                await _alo2Context.Accounts.AddAsync(account);
-                await _alo2Context.SaveChangesAsync();
+            return Ok(new { message = "Đăng ký thành công" });
 
-                var patient = new Patient
-                {
-                    IsActive = true,
-                    Address = registerDto.Address,
-                    Dob = registerDto.Dob,
-                    Gender = registerDto.Gender,
-                    Name = registerDto.Name,
-                    PatientId = account.AccId,
-                };
-
-                await _alo2Context.Patients.AddAsync(patient);
-                await _alo2Context.SaveChangesAsync();
-
-                return Ok(new { message = "Đăng ký thành công" });
-            }
 
         }
 
