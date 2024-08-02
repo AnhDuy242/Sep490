@@ -20,4 +20,6 @@ public partial class Service
     public virtual Department Dep { get; set; } = null!;
 
     public virtual ICollection<Doctor> Docs { get; set; } = new List<Doctor>();
+    public virtual ICollection<ServiceDetail> ServiceDetails { get; set; } = new List<ServiceDetail>();
+
 }

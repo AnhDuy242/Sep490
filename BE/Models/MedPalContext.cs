@@ -68,6 +68,7 @@ public partial class MedPalContext : DbContext
     public virtual DbSet<Server> Servers { get; set; }
 
     public virtual DbSet<Service> Services { get; set; }
+    public virtual DbSet<ServiceDetail> ServiceDetail { get; set; }
 
     public virtual DbSet<Set> Sets { get; set; }
 
@@ -654,7 +655,10 @@ public partial class MedPalContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_Service_Department");
         });
-
+        modelBuilder.Entity<ServiceDetail>()
+              .HasOne(sd => sd.Service)
+              .WithMany(s => s.ServiceDetails) // Assuming Service has a collection of ServiceDetails
+              .HasForeignKey(sd => sd.ServiceId);
         modelBuilder.Entity<Set>(entity =>
         {
             entity.HasKey(e => new { e.Key, e.Value }).HasName("PK_HangFire_Set");

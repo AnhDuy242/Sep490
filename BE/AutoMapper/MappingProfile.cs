@@ -19,6 +19,7 @@ using BE.DTOs.BlogDto;
 using BE.DTOs.EmployeeDto;
 using CloudinaryDotNet.Core;
 using BE.DTOs.AdminAccountDto;
+using BE.DTOs.ServiceDto.BE.DTOs;
 
 public class MappingProfile : Profile
 {
@@ -134,6 +135,14 @@ public class MappingProfile : Profile
           .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name));
         // employee account
         CreateMap<Doctor, BE.DTOs.DoctorDto.DoctorDto>();
+        CreateMap<Doctor, BE.DTOs.EmployeeDto.DoctorDto>()
+                  .ForMember(dest => dest.AccId, opt => opt.Ignore()) // Ignoring properties not present in Doctor
+                  .ForMember(dest => dest.Email, opt => opt.Ignore())
+                  .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Doc.Phone))
+                  .ForMember(dest => dest.Password, opt => opt.Ignore())
+                  .ForMember(dest => dest.RoleId, opt => opt.Ignore())
+                  .ForMember(dest => dest.DepartmentName, opt => opt.MapFrom(src => src.Dep.Name))
+                  .ForMember(dest => dest.DepId, opt => opt.MapFrom(src => src.Dep.DepId));
         CreateMap<Receptionist, ReceptionistDto>();
         CreateMap<BE.DTOs.DoctorDto.DoctorDto, Doctor>();
         CreateMap<ReceptionistDto, Receptionist>();
@@ -161,7 +170,22 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Phone, opt => opt.Ignore())
             .ForMember(dest => dest.IsActive, opt => opt.Ignore())
             .ForMember(dest => dest.Password, opt => opt.Ignore());
+        //service and service detail
+        CreateMap<ServiceDetail, ServiceDetailDto>()
+         .ReverseMap();
 
+        //service and department
+        CreateMap<Department, DepartmentDTO>()
+        .ReverseMap(); // Allows mapping from DepartmentDto back to Department
 
+        // Mapping for Service
+        CreateMap<Service, ServiceDTO>()
+            .ReverseMap(); // Allows mapping from ServiceDto back to Service
+
+        // Mapping for DepartmentWithServicesDto
+        CreateMap<Department, DepartmentWithServicesDto>()
+            .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src))
+            .ForMember(dest => dest.Services, opt => opt.MapFrom(src => src.Services))
+            .ReverseMap();
     }
 }

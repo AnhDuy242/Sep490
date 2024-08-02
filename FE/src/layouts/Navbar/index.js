@@ -1,12 +1,12 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, InputBase, Button, Menu, MenuItem, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, InputBase, Button, Menu, MenuItem, Box, Typography } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
 import MenuIcon from '@mui/icons-material/Menu';
 import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
-import { fetchServices } from '../../services/department_service'; // Adjust this path as needed
-
+import { fetchDepartments } from '../../services/department_service'; // Adjust this path as needed
+import axios from 'axios';
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
@@ -45,23 +45,41 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
   },
 }));
 
+const MenuTitle = styled(Typography)(({ theme }) => ({
+  fontWeight: 'bold',
+  color: theme.palette.primary.main,
+  padding: theme.spacing(1),
+}));
+
+const MenuItemStyled = styled(MenuItem)(({ theme }) => ({
+  fontSize: '16px',
+  color: '#333',
+  padding: '10px 15px',
+  borderRadius: '4px',
+  transition: 'background-color 0.3s ease',
+  '&:hover': {
+    backgroundColor: '#f5f5f5',
+  },
+}));
+
 const Navbar = () => {
   const { isLoggedIn } = useContext(AuthContext);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [services, setServices] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [searchValue, setSearchValue] = useState('');
-  const patientCheck=localStorage.getItem('role')==='Patient'?true:false;
+  const patientCheck = localStorage.getItem('role') === 'Patient' ? true : false;
+
   useEffect(() => {
-    const loadServices = async () => {
+    const loadDepartments = async () => {
       try {
-        const data = await fetchServices();
-        setServices(data.$values || []); // Adjust based on actual response structure
+        const data = await fetchDepartments();
+        setDepartments(data.$values || []); // Adjust based on actual response structure
       } catch (error) {
-        console.error('Error loading services:', error);
+        console.error('Error loading departments:', error);
       }
     };
 
-    loadServices();
+    loadDepartments();
   }, []);
 
   const handleDropdownToggle = (event) => {
@@ -90,49 +108,44 @@ const Navbar = () => {
           <Button color="inherit" component={NavLink} to="/">Trang chủ</Button>
           <Button
             color="inherit"
-            aria-controls="simple-menu"
+            aria-controls="department-menu"
             aria-haspopup="true"
             onClick={handleDropdownToggle}
           >
             Chuyên khoa & Dịch vụ
           </Button>
           <Menu
-            id="simple-menu"
+            id="department-menu"
             anchorEl={anchorEl}
             keepMounted
             open={Boolean(anchorEl)}
             onClose={handleDropdownClose}
             sx={{
               '& .MuiMenu-paper': {
-                borderRadius: '8px', /* Rounded corners */
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)', /* Shadow for depth */
-                backgroundColor: '#fff', /* Background color */
-                padding: '10px', /* Padding inside the menu */
-                width: '400px', /* Wider dropdown */
-                maxHeight: '600px', /* Longer dropdown */
-                overflowY: 'auto', /* Add scrollbar if content exceeds maxHeight */
-              },
-              '& .MuiMenuItem-root': {
-                fontSize: '16px', /* Font size */
-                color: '#333', /* Text color */
-                padding: '10px 15px', /* Padding for items */
-                borderRadius: '4px', /* Rounded corners for items */
-                transition: 'background-color 0.3s ease', /* Smooth background color transition */
-              },
-              '& .MuiMenuItem-root:hover': {
-                backgroundColor: '#f5f5f5', /* Hover background color */
+                borderRadius: '8px',
+                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                backgroundColor: '#fff',
+                padding: '10px',
+                width: '400px',
+                maxHeight: '600px',
+                overflowY: 'auto',
               },
             }}
           >
-            {services.map((service, index) => (
-              <MenuItem key={index} onClick={handleDropdownClose} component={NavLink} to={`/service/${service.serviceId}`}>
-                {service.name}
-              </MenuItem>
+            <MenuTitle variant="h6">Chuyên khoa</MenuTitle>
+            {departments.map((department, index) => (
+              <React.Fragment key={index}>
+                <MenuTitle variant="h6" sx={{ mt: 2 }}>
+                  {department.name}
+                </MenuTitle>
+                {/* Fetch services for this department */}
+                <FetchServicesMenu departmentId={department.depId} />
+              </React.Fragment>
             ))}
           </Menu>
           <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
           <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
-          <Button color="inherit" component={NavLink} to="/listBlog">Tin tức y khoa</Button>
+          <Button color="inherit" component={NavLink} to="/viewAllBlogs">Tin tức y khoa</Button>
 
           {isLoggedIn && (
             <>
@@ -140,12 +153,8 @@ const Navbar = () => {
               <Button color="inherit" component={NavLink} to="/getMedicalNotebook">Tra cứu kết quả</Button>
               <Button color="inherit" component={NavLink} to="/getDoctorInteraction">Tư vấn online</Button>
               {patientCheck && (
-                <>
-              <Button color="inherit" component={NavLink} to="/patient-profile">Thông tin cá nhấn</Button>
-
-                </>
+                <Button color="inherit" component={NavLink} to="/patient-profile">Thông tin cá nhấn</Button>
               )}
-
             </>
           )}
         </Box>
@@ -164,6 +173,34 @@ const Navbar = () => {
         </Button>
       </Toolbar>
     </AppBar>
+  );
+};
+
+// Component to fetch and display services for a department
+const FetchServicesMenu = ({ departmentId }) => {
+  const [services, setServices] = useState([]);
+
+  useEffect(() => {
+    const loadServices = async () => {
+      try {
+        const response = await axios.get(`https://localhost:7240/api/Department/GetServicesAndDetailsByDepartmentId/GetServicesByDepartment/${departmentId}`);
+        setServices(response.data.$values || []);
+      } catch (error) {
+        console.error('Error fetching services:', error);
+      }
+    };
+
+    loadServices();
+  }, [departmentId]);
+
+  return (
+    <>
+      {services.map((service) => (
+        <MenuItemStyled key={service.serviceId} component={NavLink} to={`/servicesByDepartment/${service.serviceId}`}>
+          {service.name}
+        </MenuItemStyled>
+      ))}
+    </>
   );
 };
 

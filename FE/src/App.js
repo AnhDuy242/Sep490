@@ -39,6 +39,10 @@ import DoctorProfile from './pages/DoctorManagement/Profile/DoctorProfile';
 import Profile from './pages/Appointment-patient/PatientProfile';
 import ReceptionistProfile from './pages/ReceptionistManagement/component/ReceptionistProfile';
 import AdminProfile from './pages/AdminDashBoard/component/admin_profile';
+import BlogList from './pages/Blog';
+import BlogDetail from './pages/Blog/BlogDetails';
+import DoctorDetail from './pages/DoctorList/DoctorDetail';
+import ServiceList from './pages/Home/component/PolyServ/ServiceList';
 function App() {
   return (
     <Routes>
@@ -49,6 +53,11 @@ function App() {
       <Route path="/about-clinic" element={<About1 />} />
       <Route path="/about" element={<About />} />
       <Route path="/trang-thiet-bi-tai-phong-kham" element={<About3 />} />
+      <Route path="/viewAllBlogs" element={<BlogList />} />
+      <Route path="/viewDetailBlog/:id" element={<BlogDetail />} />
+      <Route path="/viewDoctorDetail/:id" element={<DoctorDetail />} />
+      <Route path="/servicesByDepartment/:depId" element={<ServiceList />} />
+
       {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
         <Route path="doctor-account" element={<DoctorAccount />} />
