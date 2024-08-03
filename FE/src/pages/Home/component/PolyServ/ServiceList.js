@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,RouterLink } from 'react';
 import { Container, Typography, Grid, Card, CardContent, Box, Breadcrumbs, Link } from '@mui/material';
 import axios from 'axios';
-import { useParams, Link as RouterLink } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import Navbar from '../../../../layouts/Navbar';
 import Footer from '../../../../layouts/Footer';
 import Header from '../../../../layouts/Header';
@@ -9,6 +9,7 @@ import Header from '../../../../layouts/Header';
 const ServiceList = () => {
   const [services, setServices] = useState([]);
   const { depId } = useParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (depId) {
@@ -25,11 +26,15 @@ const ServiceList = () => {
     }
   }, [depId]);
 
+  const handleServiceClick = (serviceId) => {
+    navigate(`/servicesDetail/${serviceId}`);
+  };
+
   return (
     <>
       <Header />
       <Navbar />
-      <Container sx={{ minHeight: '80vh',mt:10, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Container sx={{ minHeight: '80vh', mt: 10, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
         <div>
           <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: 3 }}>
             <Link component={RouterLink} to="/" color="inherit">
@@ -53,7 +58,9 @@ const ServiceList = () => {
                       backgroundColor: '#e0f7fa',
                       boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
                     },
+                    cursor: 'pointer',
                   }}
+                  onClick={() => handleServiceClick(service.serviceId)}
                 >
                   <CardContent>
                     <Box display="flex" flexDirection="column" alignItems="center">
@@ -64,7 +71,7 @@ const ServiceList = () => {
                         {service.serviceDetails?.$values?.[0]?.description || 'No description available'}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'center' }}>
-                      Giá dịch vụ:   {service.price}
+                        Giá dịch vụ: {service.price}
                       </Typography>
                     </Box>
                   </CardContent>
@@ -75,7 +82,6 @@ const ServiceList = () => {
         </div>
       </Container>
       <Footer />
-
     </>
   );
 };

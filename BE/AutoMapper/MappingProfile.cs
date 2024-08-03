@@ -61,7 +61,11 @@ public class MappingProfile : Profile
 
         //doctor
         CreateMap<UpdateDoctorAndAccountDto, Doctor>();
+        CreateMap<BE.DTOs.EmployeeDto.DoctorDto, Doctor>();
+
         CreateMap<UpdateDoctorAndAccountDto, Account>();
+        CreateMap<BE.DTOs.EmployeeDto.DoctorDto, Account>();
+
         CreateMap<Doctor, DoctorAppointment>().ReverseMap();
         CreateMap<Doctor, DoctorMarketing>()
                     .ForMember(dest => dest.AllServiceName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Name))))
@@ -223,5 +227,9 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src))
             .ForMember(dest => dest.Services, opt => opt.MapFrom(src => src.Services))
             .ReverseMap();
+        CreateMap<Account, Doctor>()
+    .ForMember(dest => dest.DocId, opt => opt.MapFrom(src => src.AccId))
+    .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Doctor.Name)) // Ví dụ về ánh xạ thuộc tính
+    .ReverseMap();
     }
 }

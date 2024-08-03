@@ -702,7 +702,6 @@ public partial class MedPalContext : DbContext
                 .HasForeignKey(d => d.JobId)
                 .HasConstraintName("FK_HangFire_State_Job");
         });
-
         modelBuilder.Entity<TestResult>(entity =>
         {
             entity.HasKey(e => e.ImgId);

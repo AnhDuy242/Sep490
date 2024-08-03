@@ -97,3 +97,26 @@ export const deleteEmployee = async (id) => {
         throw new Error('Failed to delete employee');
     }
 };
+const API_URL = 'https://localhost:7240/api/Employee'; // Đổi URL cho phù hợp
+
+export const updateEmployeeStatus = async (accId, isActive) => {
+    try {
+        const response = await axios.post(`https://localhost:7240/api/Employee/UpdateStatus?accId=${accId}`, {
+            IsActive: isActive
+        });
+        return response.data;
+    } catch (error) {
+        console.error('Error updating employee status:', error);
+        throw error;
+    }
+};
+
+export const updateDoctorStatus = async (docId, isActive) => {
+    try {
+        const response = await axios.patch(`http://localhost:5000/api/doctors/${docId}/status`, { isActive });
+        return response.data; // Response from the API
+    } catch (error) {
+        console.error('Error updating doctor status:', error);
+        throw error;
+    }
+};

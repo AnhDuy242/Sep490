@@ -69,6 +69,29 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
             return services;
         }
         [HttpGet]
+        public async Task<List<ServiceDTO>> GetAllServicesAndDetails()
+        {
+            var services = await _context.Services
+                .Select(s => new ServiceDTO
+                {
+                    ServiceId = s.ServiceId,
+                    Name = s.Name,
+                    Price = s.Price,
+                    IsActive = s.IsActive ?? true,
+                    ServiceDetails = s.ServiceDetails.Select(sd => new ServiceDetailDto
+                    {
+                        ServiceDetailId = sd.ServiceDetailId,
+                        ServiceId = sd.ServiceId,
+                        Description = sd.Description,
+                        Duration = sd.Duration,
+                        AdditionalInfo = sd.AdditionalInfo,
+                        IsActive = sd.IsActive
+                    }).ToList()
+                }).ToListAsync();
+
+            return services;
+        }
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<DepartmentDTO>>> GetDepartments()
         {
             var departments = await _context.Departments.ToListAsync();

@@ -279,6 +279,67 @@ namespace BE.Controllers
 
             return Ok(allPersons);
         }
+        [HttpPost("")]
+        public async Task<IActionResult> UpdateStatus(int accId, bool isActive)
+        {
+            // Fetch the account from the database
+            var account = await _context.Accounts.FindAsync(accId);
+
+            if (account == null)
+            {
+                return NotFound("Account not found.");
+            }
+
+            // Update the IsActive status
+            account.IsActive = isActive;
+
+            // Save changes to the database
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok("Status updated successfully.");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpPost("UpdateDoctorStatus")]
+        public async Task<IActionResult> UpdateDoctorStatus(int accId, bool isActive)
+        {
+            // Fetch the account from the database
+            var account = await _context.Accounts.FindAsync(accId);
+
+            if (account == null)
+            {
+                return NotFound("Tài khoản không tồn tại.");
+            }
+
+            // Check if the account is linked to a doctor
+            var doctor = await _context.Doctors
+                .FirstOrDefaultAsync(d => d.DocId == accId);
+
+            if (doctor == null)
+            {
+                return NotFound("Bác sĩ không tồn tại.");
+            }
+
+            // Update the IsActive status of the doctor
+            doctor.IsActive = isActive;
+
+            // Save changes to the database
+            try
+            {
+                await _context.SaveChangesAsync();
+                return Ok(new { message = "Trạng thái bác sĩ đã được cập nhật thành công." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
+            }
+        }
+
 
     }
 }

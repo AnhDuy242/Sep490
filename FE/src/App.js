@@ -45,6 +45,7 @@ import DoctorDetail from './pages/DoctorList/DoctorDetail';
 import ServiceList from './pages/Home/component/PolyServ/ServiceList';
 import FeedbackPage from './pages/ReceptionistManagement/feedback_receptionist';
 import EmployeeList from './pages/AdminDashBoard/EmployeeManagement/EmployeeManagement';
+import ServiceDetail from './pages/Home/component/PolyServ/ServiceDetail';
 function App() {
   return (
     <Routes>
@@ -59,6 +60,7 @@ function App() {
       <Route path="/viewDetailBlog/:id" element={<BlogDetail />} />
       <Route path="/viewDoctorDetail/:id" element={<DoctorDetail />} />
       <Route path="/servicesByDepartment/:depId" element={<ServiceList />} />
+      <Route path="/servicesDetail/:serviceId" element={<ServiceDetail />} />
 
       {/**Route admin */}
       <Route path="/admin/dashboard" element={<ProtectedRoute requiredRole="Admin"><AdminDash /></ProtectedRoute>}>
