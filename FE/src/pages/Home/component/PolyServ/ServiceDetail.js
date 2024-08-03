@@ -48,9 +48,7 @@ const ServiceDetail = () => {
           <Link component={RouterLink} to="/" color="inherit" sx={{ fontSize: '1.2rem' }}>
             Trang chủ
           </Link>
-          <Link component={RouterLink} to="/services" color="inherit" sx={{ fontSize: '1.2rem' }}>
-            Dịch vụ
-          </Link>
+        
           <Typography color="text.primary" sx={{ fontSize: '1.2rem' }}>
             Chi Tiết Dịch Vụ
           </Typography>
