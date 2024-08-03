@@ -43,6 +43,7 @@ import BlogList from './pages/Blog';
 import BlogDetail from './pages/Blog/BlogDetails';
 import DoctorDetail from './pages/DoctorList/DoctorDetail';
 import ServiceList from './pages/Home/component/PolyServ/ServiceList';
+import FeedbackPage from './pages/ReceptionistManagement/feedback_receptionist';
 function App() {
   return (
     <Routes>
@@ -83,6 +84,7 @@ function App() {
         <Route path="Approve_appointment" element={<ApproveAppointment />} />
         <Route path="ViewAllPatientMedicalNotebooks" element={<ViewAllNotebooks/>} />
         <Route path="receptionist-profile" element={<ReceptionistProfile />} />
+        <Route path="/receptionist/dashboard/feedback-receptionist" element={<FeedbackPage/>} />
 
       </Route>
       {/**Route article */}

@@ -344,7 +344,7 @@ public partial class MedPalContext : DbContext
             entity.ToTable("Feedback_res");
 
             entity.Property(e => e.ResId)
-                .ValueGeneratedNever()
+                .ValueGeneratedOnAdd()
                 .HasColumnName("res_id");
             entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.Date)

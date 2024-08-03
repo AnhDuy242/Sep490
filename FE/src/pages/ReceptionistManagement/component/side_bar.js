@@ -123,6 +123,14 @@ const Sidebar = () => {
             <ListItemText primary="Sổ tay khám bệnh" />
           </ListItem>
         </List>
+        <List className={classes.list}>
+          <ListItem button className={classes.listItem} component={Link} to="/receptionist/dashboard/feedback-receptionist">
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Phản hồi feedback" />
+          </ListItem>
+        </List>
         <Box width="100%" display="flex" justifyContent="center">
           <Button variant="contained" className={classes.logoutButton} onClick={handleLogoutClick}>
             Logout

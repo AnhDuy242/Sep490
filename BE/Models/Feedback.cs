@@ -14,6 +14,7 @@ public partial class Feedback
     public DateTime Date { get; set; }
 
     public int? Star { get; set; }
+    public Boolean isReply { get; set; }
 
     public virtual ICollection<FeedbackRe> FeedbackRes { get; set; } = new List<FeedbackRe>();
 

@@ -94,6 +94,15 @@ public class MappingProfile : Profile
         CreateMap<Feedback, FeedbackView>()
             .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
             .ReverseMap();
+        CreateMap<Feedback, FeedbackDto>()
+            .ForMember(dest => dest.FeedbackResponses, opt => opt.MapFrom(src => src.FeedbackRes));
+
+        CreateMap<Feedback, FeedbackDto>()
+          .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.Name))
+          .ForMember(dest => dest.FeedbackResponses, opt => opt.MapFrom(src => src.FeedbackRes));
+
+        CreateMap<FeedbackRe, FeedbackReDto>()
+            .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Feed.Patient.Name));
 
         CreateMap<Service, ServiceAppointment>().ReverseMap();
         CreateMap<Department, DepartmentAppointment>().ReverseMap();
