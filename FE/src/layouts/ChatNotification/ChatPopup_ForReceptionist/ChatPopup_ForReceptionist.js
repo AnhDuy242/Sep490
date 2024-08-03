@@ -25,7 +25,7 @@ const Chatpopup_ForReceptionist = () => {
     const messagesEndRef = useRef(null);
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference for the audio object
     const [userName, setUserName] = useState('');
-    const name =localStorage.getItem('name');
+    const name = localStorage.getItem('name');
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
@@ -55,7 +55,7 @@ const Chatpopup_ForReceptionist = () => {
 
     const connectSocket = (token) => {
         socketRef.current = io('http://localhost:3001');
-        socketRef.current.emit('loginReceptionist', { token, nameId,name });
+        socketRef.current.emit('loginReceptionist', { token, nameId, name });
 
         socketRef.current.on('newConversation', ({ roomId, nameId, name }) => {
             setConversations((prevConversations) => {
@@ -257,9 +257,10 @@ const Chatpopup_ForReceptionist = () => {
                                                 onClick={() => handleConversationClick(conversation.id)}
                                                 style={{ cursor: 'pointer' }}
                                             >
-                                                <Typography variant="body2" noWrap>User: {conversation.name}</Typography>
+                                                <Typography variant="body2" noWrap>Patient: {conversation.name}</Typography>
                                             </Box>
                                         ))}
+
                                     </Box>
                                 </Box>
                                 <Box flexGrow={1} p={2} display="flex" flexDirection="column">
@@ -280,7 +281,9 @@ const Chatpopup_ForReceptionist = () => {
                                                             maxWidth="70%"
                                                             color="white"
                                                         >
-                                                            <Typography variant="body3">{message.from === currentUserId ? userName : message.name}: {message.text}</Typography>
+                                                            <Typography variant="body3">
+                                                                {message.from === currentUserId ? userName : currentConversation.name}: {message.text}
+                                                            </Typography>
                                                             {message.image && (
                                                                 <img
                                                                     src={message.image}

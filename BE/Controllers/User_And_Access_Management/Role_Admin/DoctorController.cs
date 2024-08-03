@@ -125,7 +125,9 @@ namespace BE.Controllers.Admin
             {
                 return NotFound();
             }
-
+            var department = await _context.Departments
+     .Where(d => d.DepId == doctor.DepId)
+     .FirstOrDefaultAsync();
             //update Account
             member.Phone = model.Phone;
             member.Password = model.Password;
@@ -155,9 +157,12 @@ namespace BE.Controllers.Admin
                 Age = doctor.Age,
                 RoleId = member.RoleId,
                 DepId = doctor.DepId,
+                DepartmentName = department?.Name,
                 // Các thuộc tính khác của Account
                 IsActive = member.IsActive
             };
+            await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetDoctorAccountDetail), new { phone = newUpdate.Phone }, newUpdate);
         }
 

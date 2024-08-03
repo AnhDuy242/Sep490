@@ -259,7 +259,8 @@ const ChatPopup_ForPatient = () => {
 
     const selectReceptionistAndJoinRoom = (receptionistId, receptionistName) => {
         const roomId = `${[nameId, receptionistId].sort().join('_')}`;
-        socketRef.current.emit('joinRoom', { receiverId: receptionistId });
+        const patientName = localStorage.getItem('name'); // Lấy tên bệnh nhân từ localStorage
+        socketRef.current.emit('joinRoom', { receiverId: receptionistId, patientName: patientName });
         setCurrentConversation({ id: roomId, userId: receptionistId, name: receptionistName, messages: [] });
         setUnreadMessages(0);
         setShowChat(true);

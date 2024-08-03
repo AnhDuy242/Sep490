@@ -63,6 +63,8 @@ builder.Services.AddTransient<IDoctorService, DoctorService>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailService, EmailService>();
 //builder.Services.AddTransient<IAccountService, AccountService>();
+builder.Services.AddScoped<IValidateService, ValidateService>();
+
 //remider
 builder.Services.AddTransient<ReminderService>();
 

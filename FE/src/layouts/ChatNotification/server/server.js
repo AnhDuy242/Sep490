@@ -63,26 +63,33 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('joinRoom', async ({ receiverId }) => {
+    socket.on('joinRoom', async ({ receiverId, patientName }) => {
         if (socket.accountId) {
             const roomId = generateRoomId(socket.accountId, receiverId);
             socket.join(roomId);
             console.log(`User ${socket.accountId} joined room: ${roomId}`);
             console.log(`User ${receiverId} joined room: ${roomId}`);
-
+    
             // Notify the other participant about the new conversation
             if (receptionists[receiverId]) {
                 receptionists[receiverId].socket.join(roomId);
-                io.to(receptionists[receiverId].socket.id).emit('newConversation', { roomId, nameId: socket.accountId.toString(), name: users[socket.accountId].name });
+                io.to(receptionists[receiverId].socket.id).emit('newConversation', { 
+                    roomId, 
+                    nameId: socket.accountId.toString(), 
+                    name: patientName  // Use the patient's name sent from the client
+                });
             } else if (doctors[receiverId]) {
                 doctors[receiverId].socket.join(roomId);
-                io.to(doctors[receiverId].socket.id).emit('newConversation', { roomId, nameId: socket.accountId.toString(), name: users[socket.accountId].name });
+                io.to(doctors[receiverId].socket.id).emit('newConversation', { 
+                    roomId, 
+                    nameId: socket.accountId.toString(), 
+                    name: patientName  // Use the patient's name sent from the client
+                });
             } else {
                 console.log(`Receptionist/Doctor ${receiverId} not found`);
             }
         }
     });
-
     socket.on('message', ({ receiverId, message }) => {
         if (socket.accountId && receiverId) {
             const roomId = generateRoomId(socket.accountId, receiverId);

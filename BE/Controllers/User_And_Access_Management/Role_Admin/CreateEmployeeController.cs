@@ -17,7 +17,7 @@ namespace BE.Controllers.User_And_Access_Management.Admin
         private readonly MedPalContext _context;
         private readonly ISMSService _smsService;
         private readonly IValidateService _validateService;
-        public CreateEmployeeController(ISMSService smsService, MedPalContext context, ValidateService validateService)
+        public CreateEmployeeController(ISMSService smsService, MedPalContext context, IValidateService validateService)
         {
             _smsService = smsService;
             _context = context;
@@ -58,8 +58,10 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                 {
                     Phone = model.Phone,
                     Password = password,
+                    Email = model.Email,
                     RoleId = 2,
-                    IsActive = true
+                    IsActive = true,
+                    
                 };
                 await _context.Accounts.AddAsync(account);
                 await _context.SaveChangesAsync();
@@ -69,7 +71,8 @@ namespace BE.Controllers.User_And_Access_Management.Admin
                     Name = model.Name,
                     Gender = model.Gender,
                     Age = model.Age,
-                    IsActive = true
+                    IsActive = true,
+                    DepId=model.DepId
                 };
                 await _context.Doctors.AddAsync(doctor);
                 // Lưu thông tin bác sĩ vào database

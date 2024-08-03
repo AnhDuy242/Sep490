@@ -44,6 +44,7 @@ import BlogDetail from './pages/Blog/BlogDetails';
 import DoctorDetail from './pages/DoctorList/DoctorDetail';
 import ServiceList from './pages/Home/component/PolyServ/ServiceList';
 import FeedbackPage from './pages/ReceptionistManagement/feedback_receptionist';
+import EmployeeList from './pages/AdminDashBoard/EmployeeManagement/EmployeeManagement';
 function App() {
   return (
     <Routes>
@@ -64,6 +65,7 @@ function App() {
         <Route path="doctor-account" element={<DoctorAccount />} />
         <Route path="admin-profile" element={<AdminProfile />} />
         <Route path="receptionist-account" element={<ReceptionistAccount />} />
+        <Route path="/admin/dashboard/EmployeeManagement" element={<EmployeeList />} />
 
         <Route path="/admin/dashboard/schedule" element={<ScheduleAdmin />} />
         <Route path="/admin/dashboard/ViewAppointment" element={<AdminViewAppointment />} />

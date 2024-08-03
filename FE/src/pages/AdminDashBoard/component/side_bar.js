@@ -3,12 +3,10 @@ import { Drawer, List, ListItem, ListItemText, ListItemIcon, Collapse, Typograph
 import { makeStyles } from '@mui/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import InboxIcon from '@mui/icons-material/Inbox';
-import MailIcon from '@mui/icons-material/Mail';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import { Link, useNavigate } from 'react-router-dom';
 import backgroundImage from '../../../assets/images/background-img.jpg'; // Adjust the path accordingly
-// import { logout } from '../../../services/Authentication';
 import { AuthContext } from '../../../utils/AuthContext'; // Adjust this path as needed
 
 const drawerWidth = '300px'; // Fixed width for the sidebar
@@ -73,7 +71,14 @@ const Sidebar = () => {
 
   const handleAccountClick = () => {
     setOpenAccount(!openAccount);
+    navigate('/admin/dashboard/EmployeeManagement'); // Redirect to employee account
   };
+
+  const handleListItemClick = (path) => {
+    // Navigate to the desired path
+    navigate(path);
+  };
+
   const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
 
   const handleLogoutClick = () => {
@@ -95,13 +100,13 @@ const Sidebar = () => {
         <Typography variant="h6" className={classes.title}>
           <b>Quản lý</b>
         </Typography>
-        <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/admin-profile">
+        <List className={classes.list}>
+          <ListItem button className={classes.listItem} onClick={() => handleListItemClick("/admin/dashboard/admin-profile")}>
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText style={{ color: 'white' }} primary="Thông tin cá nhân" />{/**làm reminder vào đây */}
+            <ListItemText style={{ color: 'white' }} primary="Thông tin cá nhân" />
           </ListItem>
-        <List className={classes.list}>
           <ListItem button onClick={handleAccountClick} className={classes.listItem}>
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
@@ -111,25 +116,28 @@ const Sidebar = () => {
           </ListItem>
           <Collapse in={openAccount} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
-              <ListItem button className={classes.nested} component={Link} to="/admin/dashboard/doctor-account">
+              <ListItem button className={classes.nested} onClick={() => handleListItemClick("/admin/dashboard/doctor-account")}>
                 <ListItemText primary="Tài khoản bác sĩ" />
               </ListItem>
-              <ListItem button className={classes.nested} component={Link} to="/admin/dashboard/receptionist-account">
+              <ListItem button className={classes.nested} onClick={() => handleListItemClick("/admin/dashboard/receptionist-account")}>
                 <ListItemText primary="Tài khoản lễ tân" />
+              </ListItem>
+              <ListItem button className={classes.nested} onClick={() => handleListItemClick("/admin/dashboard/EmployeeManagement")}>
+                <ListItemText primary="Tài khoản nhân viên" />
               </ListItem>
             </List>
           </Collapse>
-          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/schedule">
+          <ListItem button className={classes.listItem} onClick={() => handleListItemClick("/admin/dashboard/schedule")}>
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
             <ListItemText primary="Xem lịch làm việc" />
           </ListItem>
-          <ListItem button className={classes.listItem} component={Link} to="/admin/dashboard/ViewAppointment">
+          <ListItem button className={classes.listItem} onClick={() => handleListItemClick("/admin/dashboard/ViewAppointment")}>
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />
             </ListItemIcon>
-            <ListItemText primary="Xem lịch khám" />{/**làm reminder vào đây */}
+            <ListItemText primary="Xem lịch khám" />
           </ListItem>
         </List>
         <Box width="100%" display="flex" justifyContent="center">
