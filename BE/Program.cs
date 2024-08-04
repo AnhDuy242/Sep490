@@ -55,6 +55,7 @@ builder.Services.AddSingleton<ISMSService>(provider =>
 
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<CloudinaryService>();
+builder.Services.AddMemoryCache();
 
 //Validate Service Configure
 builder.Services.AddTransient<IValidateService, ValidateService>();

@@ -4,6 +4,7 @@ using BE.Service.ImplService;
 using BE.Service.IService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Twilio.Types;
 
 namespace BE.Controllers.User_And_Access_Management.Authentication
 {
@@ -60,7 +61,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             }
         }
         [HttpPost]
-        public async Task<IActionResult> ReceiveOtp(string Email)
+        public async Task<IActionResult> ReceiveOtpEmail(string Email)
         {
             if (string.IsNullOrEmpty(Email))
             {
@@ -79,7 +80,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         }
 
         [HttpPost]
-        public IActionResult VerifyOtp([FromBody] OtpRequest request)
+        public IActionResult VerifyOtpEmail([FromBody] OtpRequestEmail request)
         {
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Otp))
             {
@@ -97,7 +98,24 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             }
         }
 
+        [HttpPost]
+        public IActionResult VerifyOtpSMS([FromBody] OtpRequestSMS request)
+        {
+            // Get stored OTP using OtpService
+            var storedOtp = _otpService.GetStoredOtp(request.PhoneNumber);
 
+            if (storedOtp == request.Otp)
+            {
+                // Xác thực thành công, xóa OTP khỏi cache
+                _otpService.RemoveOtp(request.PhoneNumber);
+                return Ok(new { Status = "Verified" });
+            }
+            else
+            {
+                // OTP không hợp lệ
+                return BadRequest(new { Status = "Invalid OTP" });
+            }
+        }
         [HttpPost]
         public async Task<IActionResult> SendOtpSms(string PhoneNumber)
         {
@@ -107,6 +125,8 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             }
 
             var otp = new Random().Next(100000, 999999).ToString();
+            _otpService.StoreOtp(PhoneNumber, otp);
+
             var message = $"Your OTP code is {otp}";
 
             try
@@ -123,7 +143,12 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
        
     }
 
-    public class OtpRequest
+    public class OtpRequestSMS
+    {
+        public string PhoneNumber { get; set; }
+        public string Otp { get; set; }
+    }
+    public class OtpRequestEmail
     {
         public string Email { get; set; }
         public string Otp { get; set; }

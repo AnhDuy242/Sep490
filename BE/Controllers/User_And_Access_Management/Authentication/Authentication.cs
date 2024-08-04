@@ -45,7 +45,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
 
         //}
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto, string phone)
         {
             // Kiểm tra xem email đã tồn tại trong bảng Account chưa
             var existingAccount = await _medPalContext.Accounts
@@ -57,13 +57,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             }
 
             // Kiểm tra xem số điện thoại đã tồn tại trong bảng Account chưa
-            var existingAccountPhone = await _medPalContext.Accounts
-                .FirstOrDefaultAsync(a => a.Phone == registerDto.Phone);
-
-            if (existingAccountPhone != null)
-            {
-                return BadRequest(new { message = "Số điện thoại đã tồn tại" });
-            }
+         
 
             // Tạo mới Account
             var account = new Account
@@ -72,7 +66,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 Password = registerDto.Password,
                 RoleId = 3,
                 IsActive = true,
-                Phone = registerDto.Phone
+                Phone = phone
             };
 
             await _medPalContext.Accounts.AddAsync(account);
