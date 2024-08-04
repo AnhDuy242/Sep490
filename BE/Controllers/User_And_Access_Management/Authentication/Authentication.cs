@@ -1,6 +1,7 @@
 ﻿using BE.DTOs;
 using BE.Models;
 using BE.Service;
+using BE.Service.ImplService;
 using BE.Service.IService;
 using CloudinaryDotNet.Core;
 using Microsoft.AspNetCore.Http;
@@ -17,12 +18,14 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         private readonly AuthService _authService;
         private readonly MedPalContext _medPalContext;
         private readonly ISMSService _sMSService;
+        private readonly AccountService _accountService;
 
-        public Authentication(AuthService authService, MedPalContext medPalContext, ISMSService sMSService)
+        public Authentication(AuthService authService, MedPalContext medPalContext, ISMSService sMSService, AccountService accountService)
         {
             _authService = authService;
             _medPalContext = medPalContext;
             _sMSService = sMSService;
+            _accountService = accountService;
         }
 
         [HttpPost]
@@ -119,6 +122,56 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 return BadRequest(new { message = "Định dạng không hợp lệ" });
             }
         }
+
+        [HttpPost("ForgotPassword")]
+        public async Task<IActionResult> ForgotPassword(string phoneNumber)
+        {
+            if (string.IsNullOrEmpty(phoneNumber))
+            {
+                return BadRequest(new { Status = "Phone number is required." });
+            }
+
+            // Lấy tài khoản từ database
+            var account = await _accountService.GetAccountByPhoneAsync(phoneNumber);
+            if (account == null)
+            {
+                return NotFound(new { Status = "Account not found." });
+            }
+
+            // Tạo mật khẩu mới
+            var newPassword = GenerateRandomPassword();
+
+            // Cập nhật mật khẩu mới trong cơ sở dữ liệu
+            await _accountService.UpdatePasswordAsync(account, newPassword);
+
+            // Gửi mật khẩu mới qua SMS
+            try
+            {
+                _sMSService.SendSmsAsync(phoneNumber, $"Your new password is: {newPassword}");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { Status = "Failed to send the new password.", Error = ex.Message });
+            }
+
+            return Ok(new { Status = "A new password has been sent to your phone number." });
+        }
+
+        private string GenerateRandomPassword()
+        {
+            // Tạo mật khẩu ngẫu nhiên, ví dụ: 8 ký tự bao gồm chữ và số
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var stringChars = new char[8];
+            var random = new Random();
+
+            for (int i = 0; i < stringChars.Length; i++)
+            {
+                stringChars[i] = chars[random.Next(chars.Length)];
+            }
+
+            return new String(stringChars);
+        }
+
 
         private bool IsValidEmail(string email)
         {
