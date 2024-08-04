@@ -113,7 +113,7 @@ export const fetchOrCreateConversation = async (doctorId, patientId) => {
   try {
     // Check for existing conversation
     let conversation = await getConversationsByPatientAndDoctor(doctorId, patientId);
-
+    console.log(conversation);
     if (!conversation) {
       // Fetch names of the patient and doctor
       const patientName = await getPatientNameById(patientId);

@@ -148,6 +148,20 @@ namespace BE.Controllers.Customer_Care_Management
 
             return Ok(unreadCount);
         }
+        [HttpGet("GetUnreadCount")]
+        public async Task<IActionResult> GetAllUnreadCount([FromQuery] int receiverId   )
+        {
+            Console.WriteLine(receiverId);
+            if (receiverId <= 0)
+            {
+                return BadRequest("Invalid receiverId or conversationId");
+            }
+
+            var unreadCount = await _context.Messages
+                .CountAsync(m => m.ReceiverId == receiverId&& !m.IsRead);
+
+            return Ok(unreadCount);
+        }
         [HttpPatch("MarkMessagesAsRead")]
         public async Task<IActionResult> MarkMessagesAsRead([FromQuery] int senderid, [FromQuery] int receiverId)
         {
@@ -157,7 +171,7 @@ namespace BE.Controllers.Customer_Care_Management
             }
 
             var messages = await _context.Messages
-                .Where(m => m.SenderId == senderid && m.ReceiverId != receiverId && m.IsRead == false)
+                .Where(m => m.SenderId == senderid && m.ReceiverId == receiverId && m.IsRead == false)
                 .ToListAsync();
 
             if (messages.Count == 0)

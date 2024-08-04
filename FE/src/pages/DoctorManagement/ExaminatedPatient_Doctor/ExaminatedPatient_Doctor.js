@@ -1,8 +1,23 @@
 import React, { useState, useEffect } from 'react';
+import { Helmet } from 'react-helmet';
 import { Button, Card, CardContent, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider } from '@mui/material';
 import { getPatientsByDoctorId, fetchOrCreateConversation } from '../../../services/doctor_service';
 import ChatBoxDialog from '../component/ChatboxDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+
+// Function to mark messages as read
+const markMessagesAsRead = async (doctorId, patientId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/Messages/MarkMessagesAsRead/MarkMessagesAsRead?senderid=${patientId}&receiverId=${doctorId}`, {
+      method: 'PATCH'
+    });
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+  }
+};
 
 const ExaminatedPatients = () => {
   const [patients, setPatients] = useState([]);
@@ -11,14 +26,37 @@ const ExaminatedPatients = () => {
   const [patientIdSelected, setPatientIdSelected] = useState(null);
   const [notebooks, setNotebooks] = useState([]);
   const [expanded, setExpanded] = useState(null);
+  const [unreadCounts, setUnreadCounts] = useState({});
+  const [totalUnreadCount, setTotalUnreadCount] = useState(0);
+  const [pageTitle, setPageTitle] = useState('');
   const doctorId = localStorage.getItem('accountId');
 
+  // Fetch unread counts
+  const fetchUnreadCounts = async (doctorId, patientId) => {
+    try {
+      const response = await fetch(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?receiverId=${doctorId}&senderId=${patientId}`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const unreadCount = await response.json();
+      setUnreadCounts(prevCounts => ({
+        ...prevCounts,
+        [patientId]: unreadCount
+      }));
+    } catch (error) {
+      console.error('Error fetching unread count:', error);
+    }
+  };
+
+  // Fetch patients
   useEffect(() => {
     const fetchPatients = async () => {
       try {
         const patientsData = await getPatientsByDoctorId(doctorId);
-        console.log('Patients Data:', patientsData);
         setPatients(patientsData);
+        patientsData.forEach(patient => {
+          fetchUnreadCounts(doctorId, patient.patientId);
+        });
       } catch (error) {
         console.error('Error fetching patients:', error);
       }
@@ -27,17 +65,68 @@ const ExaminatedPatients = () => {
     fetchPatients();
   }, [doctorId]);
 
+  // Update total unread count
+  useEffect(() => {
+    const total = Object.values(unreadCounts).reduce((acc, count) => acc + count, 0);
+    setTotalUnreadCount(total);
+  }, [unreadCounts]);
+
+  // Set the initial page title
+  useEffect(() => {
+    setPageTitle(document.title);
+  }, []);
+
+  // Mark messages as read every 5 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      patients.forEach(patient => {
+        if (unreadCounts[patient.patientId] > 0) {
+          markMessagesAsRead(doctorId, patient.patientId);
+        }
+      });
+    }, 5000); // Adjust the interval as needed (e.g., every 5 seconds)
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [patients, unreadCounts, doctorId]);
+
+  // Fetch unread counts every 3 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      patients.forEach(patient => {
+        fetchUnreadCounts(doctorId, patient.patientId);
+      });
+    }, 3000); // Fetch unread counts every 3 seconds
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount
+  }, [patients, doctorId]);
+
+  // Mark messages as read continuously while chat is open
+  useEffect(() => {
+    let interval;
+    if (openChat && conversationId) {
+      interval = setInterval(() => {
+        if (patientIdSelected) {
+          markMessagesAsRead(doctorId, patientIdSelected);
+        }
+      }, 3000); // Mark as read every 3 seconds
+    }
+
+    return () => clearInterval(interval); // Cleanup interval on component unmount or when chat closes
+  }, [openChat, conversationId, doctorId, patientIdSelected]);
+
   const handleChatStart = async (patientId) => {
     try {
       const conversation = await fetchOrCreateConversation(doctorId, patientId);
-      console.log('Fetched or Created Conversation:', conversation);
-
       if (conversation.$values && conversation.$values.length > 0) {
         const conversationData = conversation.$values[0];
         if (conversationData.id) {
           setConversationId(conversationData.id);
           setPatientIdSelected(patientId);
           setOpenChat(true);
+          // Fetch unread count when chat is started
+          fetchUnreadCounts(doctorId, patientId);
+          // Mark messages as read
+          markMessagesAsRead(doctorId, patientId);
         } else {
           console.error('No valid conversation id found');
         }
@@ -70,11 +159,16 @@ const ExaminatedPatients = () => {
 
   return (
     <Box display="flex" flexDirection="row" p={2} height="100vh">
+      <Helmet>
+        <title>
+          {totalUnreadCount > 0 ? ` ${totalUnreadCount} tin nhắn mới` : pageTitle}
+        </title>
+      </Helmet>
       <Box flex={1} mr={2} overflow="auto">
         {patients.map((patient) => (
-          <Card 
-            key={patient.patientId} 
-            sx={{ 
+          <Card
+            key={patient.patientId}
+            sx={{
               marginBottom: '10px',
               '&:hover': {
                 backgroundColor: '#e3f2fd', // Light blue background color
@@ -97,6 +191,23 @@ const ExaminatedPatients = () => {
                   >
                     Xem hồ sơ bệnh án
                   </Button>
+                  {unreadCounts[patient.patientId] > 0 && (
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: 'white',
+                        fontWeight: 'bold',
+                        ml: 1,
+                        width: 25,
+                        fontSize: 15,
+                        borderRadius: '50%',
+                        textAlign: 'center',
+                        backgroundColor: 'red'
+                      }}
+                    >
+                      {unreadCounts[patient.patientId]}
+                    </Typography>
+                  )}
                   <Button
                     variant="contained"
                     color="primary"

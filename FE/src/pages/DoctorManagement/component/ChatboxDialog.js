@@ -19,7 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
+const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
@@ -111,7 +111,7 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
         const message = {
             conversationId,
             senderId: parseInt(accountId),
-            receiverId: doctorIdSelected,
+            receiverId:  patientIdSelected,
             messageText: newMessage,
             imageUrl: imageUrl || null,
             sentAt

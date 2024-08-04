@@ -14,7 +14,6 @@ import {
     Grid,
     Paper,
     Button,
-    Badge, // Import Badge for unread count
     Breadcrumbs,
     Link
 } from '@mui/material';
@@ -25,6 +24,7 @@ import Header from '../../layouts/Header';
 import Navbar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
 import ChatBox from './component/ChatboxDialog';
+import { Helmet } from 'react-helmet';
 
 // Styled component for ListItem with border and hover effect
 const StyledListItem = styled(ListItem)(({ theme }) => ({
@@ -76,21 +76,29 @@ const DoctorAndMedicalNotebooks = () => {
     const [selectedDoctorId, setSelectedDoctorId] = useState(null);
     const [conversationId, setConversationId] = useState(null);
     const [unreadCounts, setUnreadCounts] = useState({}); // State for unread message counts
+    const [totalUnreadCount, setTotalUnreadCount] = useState(0); // State for total unread messages count
     const patientId = localStorage.getItem('accountId');
+    const [intervalId, setIntervalId] = useState(null); // State to keep track of the interval
+    const [pageTitle, setPageTitle] = useState('');
 
     useEffect(() => {
         // Fetch doctors list
         axios.get(`https://localhost:7240/api/DoctorCustomerCare/GetListDoctorByPatientId?pid=${patientId}`)
             .then(response => {
                 setDoctors(response.data.$values);
+
                 // Fetch unread counts for each doctor
+                let totalUnread = 0;
                 response.data.$values.forEach(doctor => {
-                    axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${patientId}&conversationId=${doctor.docId}`)
+                    axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${doctor.docId}&receiverId=${patientId}`)
                         .then(response => {
+                            const unreadCount = response.data;
                             setUnreadCounts(prevCounts => ({
                                 ...prevCounts,
-                                [doctor.docId]: response.data // Store unread count for this doctor
+                                [doctor.docId]: unreadCount // Store unread count for this doctor
                             }));
+                            totalUnread += unreadCount;
+                            setTotalUnreadCount(totalUnread); // Update total unread count
                         })
                         .catch(error => {
                             setSnackbarMessage('Failed to load unread counts');
@@ -102,7 +110,51 @@ const DoctorAndMedicalNotebooks = () => {
                 setSnackbarMessage('Failed to load doctors');
                 setSnackbarOpen(true);
             });
-    }, [patientId]);
+
+        // Cleanup interval on unmount
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [patientId, intervalId]);
+
+    useEffect(() => {
+        setPageTitle(document.title);
+    }, []);
+
+    useEffect(() => {
+        // Set up interval to fetch unread message counts every 4 seconds
+        const id = setInterval(() => {
+            // Fetch unread counts for each doctor
+            doctors.forEach(doctor => {
+                axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${doctor.docId}&receiverId=${patientId}`)
+                    .then(response => {
+                        const unreadCount = response.data;
+                        setUnreadCounts(prevCounts => ({
+                            ...prevCounts,
+                            [doctor.docId]: unreadCount // Store unread count for this doctor
+                        }));
+                        // Calculate total unread messages count
+                        const totalUnread = Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
+                        setTotalUnreadCount(totalUnread);
+                    })
+                    .catch(error => {
+                        setSnackbarMessage('Failed to fetch unread message counts');
+                        setSnackbarOpen(true);
+                    });
+            });
+        }, 4000);
+
+        setIntervalId(id);
+
+        // Cleanup interval on unmount
+        return () => {
+            if (id) {
+                clearInterval(id);
+            }
+        };
+    }, [doctors, patientId, unreadCounts]);
 
     const handleDoctorClick = (doctorId) => {
         // Fetch medical notebooks for selected doctor
@@ -121,20 +173,38 @@ const DoctorAndMedicalNotebooks = () => {
         event.stopPropagation(); // Prevent the ListItem click event from firing
         setSelectedDoctorId(doctorId);
 
-        // Fetch conversation ID
-        axios.get(`https://localhost:7240/api/Conversations/GetByDoctorIdAndPatientID?doctorId=${doctorId}&patientId=${patientId}`)
-            .then(response => {
-                const conversation = response.data.$values[0]; // Assuming you need the first conversation
-                if (conversation) {
-                    setConversationId(conversation.id);
-                    setChatBoxOpen(true);
-                } else {
-                    setSnackbarMessage('No conversation found');
-                    setSnackbarOpen(true);
-                }
+        // Mark messages as read
+        axios.patch(`https://localhost:7240/api/Messages/MarkMessagesAsRead/MarkMessagesAsRead?senderid=${doctorId}&receiverId=${patientId}`)
+            .then(() => {
+                // Fetch conversation ID after marking messages as read
+                axios.get(`https://localhost:7240/api/Conversations/GetByDoctorIdAndPatientID?doctorId=${doctorId}&patientId=${patientId}`)
+                    .then(response => {
+                        const conversation = response.data.$values[0]; // Assuming you need the first conversation
+                        if (conversation) {
+                            setConversationId(conversation.id);
+                            setChatBoxOpen(true);
+
+                            // Start interval to mark messages as read every 3 seconds
+                            const id = setInterval(() => {
+                                axios.patch(`https://localhost:7240/api/Messages/MarkMessagesAsRead/MarkMessagesAsRead?senderid=${doctorId}&receiverId=${patientId}`)
+                                    .catch(() => {
+                                        setSnackbarMessage('Failed to mark messages as read');
+                                        setSnackbarOpen(true);
+                                    });
+                            }, 3000);
+                            setIntervalId(id);
+                        } else {
+                            setSnackbarMessage('No conversation found');
+                            setSnackbarOpen(true);
+                        }
+                    })
+                    .catch(error => {
+                        setSnackbarMessage('Failed to load conversation');
+                        setSnackbarOpen(true);
+                    });
             })
             .catch(error => {
-                setSnackbarMessage('Failed to load conversation');
+                setSnackbarMessage('Failed to mark messages as read');
                 setSnackbarOpen(true);
             });
     };
@@ -143,16 +213,28 @@ const DoctorAndMedicalNotebooks = () => {
         setSnackbarOpen(false);
     };
 
+    const handleCloseChatBox = () => {
+        setChatBoxOpen(false);
+        if (intervalId) {
+            clearInterval(intervalId);
+            setIntervalId(null);
+        }
+    };
+
     return (
         <MainContainer>
             <Header />
             <Navbar />
             <Content>
+                <Helmet>
+                    <title>
+                        {totalUnreadCount > 0 ? ` ${totalUnreadCount} tin nhắn mới` : pageTitle}
+                    </title>
+                </Helmet>
                 <Breadcrumbs aria-label="breadcrumb" style={{ margin: '20px 0' }}>
                     <Link color="inherit" href="/">
                         Home
                     </Link>
-                 
                     <Typography color="textPrimary">Tư vấn online</Typography>
                 </Breadcrumbs>
 
@@ -175,15 +257,31 @@ const DoctorAndMedicalNotebooks = () => {
                                                     secondary={`Tuổi: ${doctor.age}, Giới tính: ${doctor.gender ? 'Nam' : 'Nữ'}`}
                                                     style={{ flex: 1 }}
                                                 />
-                                                
+                                                {unreadCounts[doctor.docId] > 0 && (
+                                                    <Typography
+                                                        variant="caption"
+                                                        sx={{
+                                                            color: 'white',
+                                                            fontWeight: 'bold',
+                                                            ml: 1,
+                                                            ml: 5,
+                                                            width: 25,
+                                                            fontSize: 15,
+                                                            borderRadius: '50%',
+                                                            textAlign: 'center',
+                                                            backgroundColor: 'red'
+                                                        }}
+                                                    >
+                                                        {unreadCounts[doctor.docId]}
+                                                    </Typography>
+                                                )}
                                                 <Button
                                                     variant="contained"
                                                     color="primary"
+                                                    sx={{ ml: 5 }}
                                                     startIcon={<ChatIcon />}
                                                     onClick={(event) => handleChatClick(doctor.docId, event)}
-                                                                                    
-                                                                                    >
-                                                
+                                                >
                                                     Chat
                                                 </Button>
                                             </ListItemContent>
@@ -239,7 +337,7 @@ const DoctorAndMedicalNotebooks = () => {
                 {/* ChatBox Component */}
                 <ChatBox
                     open={chatBoxOpen}
-                    onClose={() => setChatBoxOpen(false)}
+                    onClose={handleCloseChatBox}
                     conversationId={conversationId}
                     doctorIdSelected={selectedDoctorId} // Pass the selected doctor ID to ChatBox
                 />
