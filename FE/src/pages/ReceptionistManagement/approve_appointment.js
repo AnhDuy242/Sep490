@@ -1,5 +1,3 @@
-// src/components/AppointmentApproval.js
-
 import React, { useState, useEffect } from 'react';
 import { 
   Container, 
@@ -17,7 +15,7 @@ import {
   DialogTitle,
   Button
 } from '@mui/material';
-import { fetchAppointments, approveAppointment, getListDoctor } from '../../services/receptionist_management'; // Adjust the import path according to your project structure
+import { fetchAppointments, approveAppointment, cancelAppointment, getListDoctor } from '../../services/receptionist_management'; // Adjust the import path according to your project structure
 
 const AppointmentApproval = () => {
   const [appointments, setAppointments] = useState([]); // Initialize as an empty array
@@ -44,7 +42,12 @@ const AppointmentApproval = () => {
   const handleConfirmStatusChange = async () => {
     if (selectedAppointment) {
       try {
-        await approveAppointment(selectedAppointment.id, newStatus);
+        if (newStatus === 'Hủy') {
+          await cancelAppointment(selectedAppointment.id);
+        } else if (newStatus === 'Phê Duyệt') {
+          await approveAppointment(selectedAppointment.id);
+        }
+
         const updatedAppointments = appointments.map(app =>
           app.id === selectedAppointment.id ? { ...app, status: newStatus } : app
         );
@@ -74,6 +77,7 @@ const AppointmentApproval = () => {
               <TableCell>Patient ID</TableCell>
               <TableCell>Doctor ID</TableCell>
               <TableCell>Slot ID</TableCell>
+              <TableCell>Date</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -85,6 +89,8 @@ const AppointmentApproval = () => {
                 <TableCell>{appointment.patientName}</TableCell>
                 <TableCell>{appointment.doctorName}</TableCell>
                 <TableCell>{appointment.time}</TableCell>
+                <TableCell>{appointment.date}</TableCell>
+
                 <TableCell>{appointment.status}</TableCell>
                 <TableCell>
                   <Button

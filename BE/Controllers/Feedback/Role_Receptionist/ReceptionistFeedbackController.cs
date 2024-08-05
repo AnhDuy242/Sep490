@@ -20,14 +20,16 @@ namespace BE.Controllers.Feedback.Role_Receptionist
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResponseFeedback(int fId, int reId, string content)
+        public async Task<IActionResult> ResponseFeedback(int fId, int reId,int pid, string content)
         {
             var feedbackRe = new FeedbackRe
             {
                 Content = content,
                 FeedId = fId,
                 Date = DateTime.Now,
-                RecepId = reId
+                RecepId = reId,
+                PatientId=pid
+                
             };
             _context.FeedbackRes.Add(feedbackRe);
             await _context.SaveChangesAsync();

@@ -107,8 +107,16 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             try
             {
                 var p = _context.Patients.FirstOrDefault(x => x.PatientId == pid);
-                p.Check = 1;
-                _context.Patients.Update(p);
+                if (p.Check == 3)
+                {
+                    p.Check = 1;
+                }else if(p.Check==1)
+                {
+                    p.Check = 3;
+                }
+                
+
+                    _context.Patients.Update(p);
                 _context.SaveChanges();
                 return Ok();
             }

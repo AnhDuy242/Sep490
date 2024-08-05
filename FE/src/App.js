@@ -46,6 +46,8 @@ import ServiceList from './pages/Home/component/PolyServ/ServiceList';
 import FeedbackPage from './pages/ReceptionistManagement/feedback_receptionist';
 import EmployeeList from './pages/AdminDashBoard/EmployeeManagement/EmployeeManagement';
 import ServiceDetail from './pages/Home/component/PolyServ/ServiceDetail';
+import ForgotPasswordForm from './layouts/ForgotPassword';
+import PasswordSent from './layouts/ForgotPassword/PasswordSent';
 function App() {
   return (
     <Routes>
@@ -111,6 +113,9 @@ function App() {
       {/**Điều hướng navbar */}
       <Route path="/listDoctorView" element={<ListDoctorView />} />
       <Route path="/about-us" element={<About />} />
+      <Route path="/forgotPassword" element={<ForgotPasswordForm />} />
+      <Route path="/password-sent" element={<PasswordSent />} />
+
       {/*Doctor*/}
       <Route path="/doctor/dasboard/" element={<ProtectedRoute requiredRole="Doctor"><DoctorDash /></ProtectedRoute>}>
         <Route path="create-mdeical-notebook" element={<CreateNoteBook />} />

@@ -12,6 +12,7 @@ namespace BE.DTOs.AppointmentDto
         public int DoctorId { get; set; }
         [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateTime Date { get; set; }
+        public string Status { get; set; } = null!;
 
         public int SlotId { get; set; }
 

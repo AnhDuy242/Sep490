@@ -117,6 +117,24 @@ export const approveAppointment = async (appId, status) => {
     console.error('There was a problem with the fetch operation:', error);
   }
 };
+export const cancelAppointment = async (appointmentId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/ReceptionistAppointment/CancelAppointment?appId=${appointmentId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+
+    const data = await response.text(); // Hoặc response.json() nếu API trả về JSON
+    console.log(data); // Xem phản hồi từ server
+    return data;
+  } catch (error) {
+    console.error('Failed to cancel appointment:', error.message);
+    throw error;
+  }
+};
 
 //hàm get notebooks bệnh nhân
 export const getMedicalNotebooks = async () => {

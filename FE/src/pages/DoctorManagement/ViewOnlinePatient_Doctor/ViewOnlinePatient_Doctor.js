@@ -113,24 +113,35 @@ const PatientManagement = () => {
             const notebooksResponse = await fetch(`https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientId?pid=${patientId}`);
             const notebooksData = await notebooksResponse.json();
             setMedicalNotebooks(notebooksData.$values || []);
-            
+    
             // Fetch test results to get image URLs
             const imgUrlsResponse = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${patientId}`);
             const imgUrlsData = await imgUrlsResponse.json();
             const imgUrls = imgUrlsData.$values.map(result => result.imgUrl);
             
+            // Check if there's no data
+            if ((notebooksData.$values.length === 0) && (imgUrls.length === 0)) {
+                setSnackbarMessage('Không có hồ sơ hoặc kết quả xét nghiệm cho bệnh nhân này.');
+                setSnackbarSeverity('warning');
+                setOpenSnackbar(true);
+                return; // Stop further execution if no data
+            }
+    
             // Add image URLs to medical notebooks (if needed)
             setMedicalNotebooks(prevNotebooks => prevNotebooks.map(notebook => ({
                 ...notebook,
                 imgUrls // Attach imgUrls here if needed
             })));
-
+    
             setOpenViewDialog(true);
         } catch (error) {
             console.error('Failed to fetch medical notebooks or test results:', error);
+            setSnackbarMessage('Không có hồ kết quả xét nghiệm cho bệnh nhân này.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
         }
     };
-
+    
     const handleCloseViewDialog = () => {
         setOpenViewDialog(false);
     };

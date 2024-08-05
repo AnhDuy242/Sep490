@@ -58,7 +58,7 @@ export const handleReceiveOTPForEmail = async (email) => {
   try {
     const encodedEmail = encodeURIComponent(email); // Encode the email address
 
-    const response = await fetch(`${SECONDARY_URL}/ReceiveOtp?Email=${encodedEmail}`, {
+    const response = await fetch(`${SECONDARY_URL}/ReceiveOtpEmail?Email=${encodedEmail}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -79,9 +79,9 @@ export const handleReceiveOTPForEmail = async (email) => {
     console.error('Error sending OTP:', error);
   }
 };
-export const handleSentOTPConfirm = async (email, otp) => {
+export const handleSentOTPConfirmForEmail = async (email, otp) => {
 
-  const response = await fetch(`${SECONDARY_URL}/VerifyOtp`, {
+  const response = await fetch(`${SECONDARY_URL}/VerifyOtpEmail`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -131,9 +131,9 @@ export const logout = () => {
   localStorage.removeItem('token');
 };
 
-export const RegisterCompleteForm = async (registrationDetails) => {
+export const RegisterCompleteForm = async (registrationDetails,getPhone) => {
   try {
-    const response = await fetch(`${BASE_URL}/Register`, {
+    const response = await fetch(`${BASE_URL}/Register?phone=${getPhone}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -144,7 +144,7 @@ export const RegisterCompleteForm = async (registrationDetails) => {
         Dob: registrationDetails.dob,
         Gender: registrationDetails.Gender,
         Address: registrationDetails.address,
-        Phone: registrationDetails.Phone, // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
+        // Phone: registrationDetails.Phone, // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
         Password: registrationDetails.password,
       }),
     });

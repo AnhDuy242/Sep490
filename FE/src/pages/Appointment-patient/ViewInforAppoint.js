@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAppointments, updateAppointment, fetchDoctors, fetchSlots, cancelAppointment } from '../../services/AppointmentPatient';
+import { fetchAppointments, updateAppointment, fetchDoctors, fetchSlots, cancelAppointment, fetchAvailableSlots } from '../../services/AppointmentPatient';
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, Button, Snackbar } from '@mui/material';
 import './../../assets/css/GetAppointment.css';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,7 +18,7 @@ const GetAppointment = () => {
     const [selectedAppointment, setSelectedAppointment] = useState(null);
     const [doctors, setDoctors] = useState([]);
     const [open, setOpen] = useState(false);
-    const [slot, setSlot] = useState([]);
+    const [slots, setSlots] = useState([]); // Add state for slots
     const [deleteAppointmentId, setDeleteAppointmentId] = useState(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -54,14 +54,6 @@ const GetAppointment = () => {
             })
             .catch(error => {
                 console.error('Failed to fetch doctors:', error);
-            });
-
-        fetchSlots()
-            .then(data => {
-                setSlot(data.$values);
-            })
-            .catch(error => {
-                console.error('Failed to fetch slots:', error);
             });
     }, []);
 
@@ -175,6 +167,41 @@ const GetAppointment = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setSelectedAppointment({ ...selectedAppointment, [name]: value });
+
+        if (name === 'accId' || name === 'date') {
+            fetchAvailableSlotsData(); // Fetch slots whenever doctor or date is changed
+        }
+    };
+
+    const fetchAvailableSlotsData = async () => {
+        try {
+            // Convert selected date to 'dd-MM-yyyy' format
+            const formattedDate = format(new Date(selectedAppointment.date), 'dd-MM-yyyy');
+            const accId = selectedAppointment.accId;
+            console.log(selectedAppointment);
+            if (accId && formattedDate) {
+                const response = await fetch(`https://localhost:7240/api/PatientAppointment/GetListSlot?docid=${accId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ date: formattedDate }), // Use 'dd-MM-yyyy' format for Date
+                });
+                console.log(response);
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result && result.$values) {
+                        setSlots(result.$values);
+                    } else {
+                        setSlots([]);
+                    }
+                } else {
+                    console.error('Failed to fetch slots:', response.statusText);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to fetch slots:', error);
+        }
     };
 
     const handleDeleteConfirmationOpen = (appointmentId) => {
@@ -228,146 +255,127 @@ const GetAppointment = () => {
                             <Select
                                 value={statusFilter}
                                 onChange={handleStatusFilterChange}
-                                sx={{ 
-                                    width: '200px', // Thay đổi chiều ngang
-                                    height: '40px', // Thay đổi chiều cao
-                                    '& .MuiSelect-select': {
-                                        height: '40px', // Đảm bảo chiều cao của phần tử chọn
-                                        display: 'flex',
-                                        alignItems: 'center', // Căn giữa chữ theo chiều dọc
-                                        justifyContent: 'left', // Căn giữa chữ theo chiều ngang
-                                        padding: '10px', // Thay đổi khoảng cách bên trong
-                                    },
-                                    '& .MuiOutlinedInput-notchedOutline': {
-                                        borderRadius: '4px', // Thay đổi đường viền
-                                    },
-                                }}
+                                displayEmpty
+                                inputProps={{ 'aria-label': 'Status Filter' }}
+                                style={{ marginRight: '16px' }}
                             >
                                 <MenuItem value="Tất cả">Tất cả</MenuItem>
-                                <MenuItem value="Đã phê duyệt">Đã phê duyệt</MenuItem>
-                                <MenuItem value="Đang chờ phê duyệt">Đang chờ phê duyệt</MenuItem>
-                                <MenuItem value="Đã hủy">Đã hủy</MenuItem>
-                                <MenuItem value="Tái khám">Tái khám</MenuItem>
+                                <MenuItem value="Chưa khám">Chưa khám</MenuItem>
                                 <MenuItem value="Đã khám">Đã khám</MenuItem>
+                                <MenuItem value="Hủy">Hủy</MenuItem>
                             </Select>
                         </div>
                     </div>
-                </div>
-                <TableContainer component={Paper}>
-                    <Table className="appointment-table" aria-label="Danh sách cuộc hẹn">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell><strong>Thời gian</strong></TableCell>
-                                <TableCell><strong>Ngày</strong></TableCell>
-                                <TableCell><strong>Bác sĩ</strong></TableCell>
-                                <TableCell><strong>Dịch vụ</strong></TableCell>
-                                <TableCell><strong>Trạng thái</strong></TableCell>
-                                <TableCell><strong>Ghi chú</strong></TableCell>
-                                <TableCell><strong>Hành động</strong></TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredAppointments.length > 0 ? (
-                                filteredAppointments
-                                    .map(appointment => (
-                                        <TableRow key={appointment.id}>
-                                            <TableCell>{appointment.time}</TableCell>
-                                            <TableCell>{appointment.date}</TableCell>
-                                            <TableCell>{appointment.doctorName}</TableCell>
-                                            <TableCell>{appointment.serviceName}</TableCell>
-                                            <TableCell>{appointment.status}</TableCell>
-                                            <TableCell>{appointment.note}</TableCell>
-                                            <TableCell>
-                                                <IconButton title="Chỉnh sửa" color="primary" onClick={() => handleEditClick(appointment)}>
-                                                    <EditIcon />
-                                                </IconButton>
-                                                <IconButton title="Xóa lịch hẹn" sx={{ color: '#ff0000' }} onClick={() => handleDeleteConfirmationOpen(appointment.id)}>
-                                                    <DeleteIcon />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))
-                            ) : (
+                    <TableContainer component={Paper}>
+                        <Table>
+                            <TableHead>
                                 <TableRow>
-                                    <TableCell colSpan={7}>Không có cuộc hẹn nào.</TableCell>
+                                    <TableCell>Ngày</TableCell>
+                                    <TableCell>Bác sĩ</TableCell>
+                                    <TableCell>Thời gian</TableCell>
+                                    <TableCell>Trạng thái</TableCell>
+                                    <TableCell>Hành động</TableCell>
                                 </TableRow>
-                            )}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-                {selectedAppointment && (
-                    <Dialog open={open} onClose={handleClose} fullWidth maxWidth="sm">
-                        <DialogTitle>Chỉnh sửa cuộc hẹn</DialogTitle>
-                        <DialogContent>
+                            </TableHead>
+                            <TableBody>
+                                {filteredAppointments.map((appointment) => (
+                                    <TableRow key={appointment.id}>
+                                        <TableCell>{appointment.date}</TableCell>
+                                        <TableCell>{appointment.doctorName}</TableCell>
+                                        <TableCell>{appointment.time}</TableCell>
+                                        <TableCell>{appointment.status}</TableCell>
+                                        <TableCell>
+                                            <IconButton onClick={() => handleEditClick(appointment)}>
+                                                <EditIcon />
+                                            </IconButton>
+                                            <IconButton onClick={() => handleDeleteConfirmationOpen(appointment.id)}>
+                                                <DeleteIcon />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                </div>
+            </div>
+            <Dialog open={open} onClose={handleClose}>
+                <DialogTitle>Sửa cuộc hẹn</DialogTitle>
+                <DialogContent>
+                    {selectedAppointment && (
+                        <>
                             <TextField
+                                autoFocus
                                 margin="dense"
                                 name="date"
                                 label="Ngày"
                                 type="date"
                                 fullWidth
+                                variant="standard"
                                 value={selectedAppointment.date}
                                 onChange={handleChange}
+                                InputLabelProps={{ shrink: true }}
                             />
                             <Select
-                                margin="dense"
-                                name="doctorId"
-                                labelId="doctor-select-label"
-                                id="doctor-select"
-                                fullWidth
-                                value={selectedAppointment.doctorId || ''}
+                                name="accId"
+                                value={selectedAppointment.accId || ''}
                                 onChange={handleChange}
+                                fullWidth
+                                variant="standard"
                             >
-                                {doctors.map(doctor => (
-                                    <MenuItem key={doctor.accId} value={doctor.accId}>{doctor.name}</MenuItem>
+                                {doctors.map((doctor) => (
+                                    <MenuItem key={doctor.accId} value={doctor.accId}>
+                                        {doctor.name}
+                                    </MenuItem>
                                 ))}
                             </Select>
                             <Select
-                                margin="dense"
                                 name="slotId"
-                                labelId="slot-select-label"
-                                id="slot-select"
-                                fullWidth
-                                value={selectedAppointment.slotId || ''}
+                                value={selectedAppointment.slotId}
                                 onChange={handleChange}
+                                fullWidth
+                                variant="standard"
                             >
-                                {slot.map(slot => (
-                                    <MenuItem key={slot.slotId} value={slot.slotId}>{slot.time}</MenuItem>
+                                {slots.map((slot) => (
+                                    <MenuItem key={slot.slotId} value={slot.slotId}>
+                                        {slot.time}
+                                    </MenuItem>
                                 ))}
                             </Select>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={handleClose} color="primary">Hủy</Button>
-                            <Button onClick={handleSave} color="primary">Lưu</Button>
-                        </DialogActions>
-                    </Dialog>
-                )}
-                <Dialog
-                    open={!!deleteAppointmentId}
-                    onClose={handleDeleteConfirmationClose}
-                    aria-labelledby="alert-dialog-title"
-                    aria-describedby="alert-dialog-description"
-                >
-                    <DialogTitle id="alert-dialog-title">Xác nhận xóa cuộc hẹn</DialogTitle>
-                    <DialogActions>
-                        <Button onClick={handleDeleteConfirmationClose} color="primary">
-                            Hủy
-                        </Button>
-                        <Button onClick={handleConfirmDelete} color="primary" autoFocus>
-                            Đồng ý
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-                <Snackbar
-                    anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-                    open={snackbarOpen}
-                    autoHideDuration={3000} // 3 seconds
-                    onClose={handleSnackbarClose}
-                >
-                    <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
-                        {snackbarMessage}
-                    </Alert>
-                </Snackbar>
-            </div>
+                        </>
+                    )}
+                </DialogContent>
+
+                <DialogActions>
+                    <Button onClick={handleClose}>Hủy</Button>
+                    <Button onClick={handleSave}>Lưu</Button>
+                </DialogActions>
+            </Dialog>
+            <Dialog
+                open={deleteAppointmentId !== null}
+                onClose={handleDeleteConfirmationClose}
+            >
+                <DialogTitle>Xác nhận</DialogTitle>
+                <DialogContent>Bạn có chắc chắn muốn xóa cuộc hẹn này?</DialogContent>
+                <DialogActions>
+                    <Button onClick={handleDeleteConfirmationClose}>Hủy</Button>
+                    <Button
+                        onClick={handleConfirmDelete}
+                        color="error"
+                    >
+                        Xóa
+                    </Button>
+                </DialogActions>
+            </Dialog>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+            >
+                <Alert onClose={handleSnackbarClose} severity={snackbarSeverity}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
             <Footer />
         </>
     );

@@ -116,7 +116,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 return BadRequest(new { Status = "Invalid OTP" });
             }
         }
-        [HttpPost]
+        [HttpPost]  
         public async Task<IActionResult> SendOtpSms(string PhoneNumber)
         {
             if (string.IsNullOrEmpty(PhoneNumber))

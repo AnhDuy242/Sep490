@@ -18,7 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { handleReceiveOTPForEmail, handleRegisterForEmail, handleSentOTPConfirm, RegisterCompleteForm } from '../../services/Authentication';
+import { handleReceiveOTPForEmail, handleRegisterForEmail, handleSentOTPConfirmForEmail, RegisterCompleteForm } from '../../services/Authentication';
 
 // Schema validation for OTP form
 const otpValidationSchema = yup.object({
@@ -173,7 +173,7 @@ const RegisterForm = ({ show, handleClose }) => {
   const handleSentOtpConfirm = () => {
     const otp = formikOTP.values.otp;
     const contact = formikOTP.values.contact;
-    handleSentOTPConfirm(contact, otp);
+    handleSentOTPConfirmForEmail(contact, otp);
   };
 
   const handleCloseDialog = () => {
@@ -210,12 +210,14 @@ const RegisterForm = ({ show, handleClose }) => {
         dob: values.dob,
         Gender: values.gender,
         address: values.address,
-       Phone: values.phone,
+      phone: values.phone,
         password: values.password,
       };
+      const getPhone=values.phone;
+
       console.log('Thông tin đăng ký hoàn tất:', registrationDetails);
       setRegistrationData(registrationDetails);
-      RegisterCompleteForm(registrationDetails)
+      RegisterCompleteForm(registrationDetails,getPhone)
         .then(() => {
           handleCloseDialog();
           handleSnackbarOpen('Đăng ký thành công!', 'success');

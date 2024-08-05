@@ -38,6 +38,14 @@ namespace BE.Controllers.Appointment
              _context.Appointments.Remove(appointment);
             return Ok("Appointment cancel successfully.");
         }
+        [HttpDelete]
+        public async Task<IActionResult> DeclineAppointment(int appId)
+        {
+            var appointment = _context.Appointments.FirstOrDefault(x => x.Id == appId);
+            appointment.Status = "Không đặt được lịch hẹn";
+            await _context.SaveChangesAsync();
+            return Ok("Appointment cancel successfully.");
+        }
         [HttpPost]
         public async Task<IActionResult> CreateAppointment([FromBody] AppointmentCreate appointmentDto)
         {

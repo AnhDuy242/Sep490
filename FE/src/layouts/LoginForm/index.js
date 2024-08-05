@@ -410,6 +410,7 @@ import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../utils/AuthContext';
 import { createFeedback } from '../../services/Authentication';
 import { Rating } from '@mui/material';
+import RegisterForm from '../RegisterForm/index'; // Import RegisterForm
 
 const validationSchema = yup.object({
   identifier: yup
@@ -426,9 +427,10 @@ const validationSchema = yup.object({
     .required('Mật khẩu là bắt buộc')
 });
 
-const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
+const LoginForm = ({ show, handleClose, handleLogin }) => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showRegisterForm, setShowRegisterForm] = useState(false); // Add state for RegisterForm visibility
   const navigate = useNavigate();
   const { isLoggedIn, token, updateToken, logout, role } = useContext(AuthContext);
 
@@ -528,10 +530,14 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
     }
   };
 
-
-
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
+  };
+
+  // Handler to open RegisterForm dialog
+  const handleRegisterClick = () => {
+    setShowRegisterForm(true);
+    handleClose(); // Close LoginForm when RegisterForm opens
   };
 
   return (
@@ -555,8 +561,11 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
             </IconButton>
           </Box>
           <Typography variant="body2" gutterBottom>
-            Bạn chưa có tài khoản? <a href="/register">Đăng ký ngay</a>
+            Bạn chưa có tài khoản? <Button onClick={handleRegisterClick} color="primary">Đăng ký ngay</Button>
           </Typography>
+          <a variant="body2" style={{textDecoration:'none',textAlign:'center'}} gutterBottom href='/forgotPassword' >
+           Quên mật khẩu
+          </a>
           <form onSubmit={formik.handleSubmit}>
             <TextField
               label="Nhập số điện thoại hoặc email"
@@ -602,6 +611,7 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           </form>
         </Box>
       </Modal>
+
       <Snackbar
         anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
         open={snackbar.open}
@@ -612,58 +622,35 @@ const LoginForm = ({ show, handleClose, handleLogin, handleRegister }) => {
           {snackbar.message}
         </Alert>
       </Snackbar>
-      {/* <Dialog open={showFeedbackDialog} onClose={() => {}} aria-labelledby="feedback-dialog-title">
-        <DialogTitle id="feedback-dialog-title">Gửi phản hồi</DialogTitle>
+
+      <Dialog open={showFeedbackDialog} onClose={() => setShowFeedbackDialog(false)}>
+        <DialogTitle>Gửi phản hồi</DialogTitle>
         <DialogContent>
           <TextField
-            autoFocus
-            margin="dense"
-            label="Nội dung"
-            type="text"
+            label="Nội dung phản hồi"
+            multiline
+            rows={4}
             fullWidth
+            variant="outlined"
             value={feedback.content}
             onChange={(e) => setFeedback({ ...feedback, content: e.target.value })}
+            sx={{ mb: 2 }}
           />
-          <TextField
-            margin="dense"
-            label="Số sao"
-            type="number"
-            fullWidth
+          <Rating
+            name="feedback-star"
             value={feedback.star}
-            onChange={(e) => setFeedback({ ...feedback, star: Number(e.target.value) })}
+            onChange={(e, newValue) => setFeedback({ ...feedback, star: newValue })}
+            sx={{ mb: 2 }}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleFeedbackSubmit} color="primary">Gửi</Button>
-        </DialogActions>
-      </Dialog> */}
-      <Dialog open={showFeedbackDialog} onClose={() => { }} aria-labelledby="feedback-dialog-title">
-        <DialogTitle id="feedback-dialog-title">Gửi phản hồi</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Nội dung"
-            type="text"
-            fullWidth
-            value={feedback.content}
-            onChange={(e) => setFeedback({ ...feedback, content: e.target.value })}
-          />
-          <Box sx={{ display: 'flex', alignItems: 'center', mt: 2 }}>
-            <Typography variant="body2" sx={{ mr: 2 }}>Chọn số sao:</Typography>
-            <Rating
-              name="rating"
-              value={feedback.star}
-              onChange={(event, newValue) => setFeedback({ ...feedback, star: newValue })}
-              size="large"
-              max={5}
-            />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleFeedbackSubmit} color="primary">Gửi</Button>
+          <Button onClick={() => setShowFeedbackDialog(false)}>Hủy</Button>
+          <Button onClick={handleFeedbackSubmit}>Gửi</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Add RegisterForm component */}
+      <RegisterForm show={showRegisterForm} handleClose={() => setShowRegisterForm(false)} />
     </>
   );
 };

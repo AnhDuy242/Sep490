@@ -86,7 +86,7 @@ namespace BE.Controllers.Appointment_Management
             appointment.Date = appointmentDto.Date;
             appointment.SlotId = appointmentDto.SlotId;
             appointment.Note = appointmentDto.Note;
-
+            appointment.Status = "Đang chờ phê duyệt";
             try
             {
                 await _alo2Context.SaveChangesAsync();
