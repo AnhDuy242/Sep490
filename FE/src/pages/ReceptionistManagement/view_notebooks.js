@@ -37,7 +37,7 @@ const ViewAllNoteBooks = () => {
     const handleSave = async () => {
         if (file && selectedNotebook) {
             try {
-                await uploadFile(selectedNotebook.$id, file);
+                await uploadFile(selectedNotebook.id, file);
                 // Lấy lại dữ liệu sổ tay y tế sau khi tải lên
                 getMedicalNotebooks()
                     .then(data => {

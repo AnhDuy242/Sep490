@@ -44,8 +44,15 @@ const PatientManagement = () => {
     useEffect(() => {
         if (filter === 'All') {
             setFilteredPatients(patients);
-        } else {
-            setFilteredPatients(patients.filter(patient => (filter === 'Online') === patient.check !== null));
+        } else if(filter ==='1') {
+            setFilteredPatients(patients.filter(patient => patient.check === parseInt(filter)));
+            console.log(patients);
+        } else if(filter ==='2') {
+            setFilteredPatients(patients.filter(patient => patient.check === parseInt(filter)));
+        }
+        else if(filter ==='3') {
+            setFilteredPatients(patients.filter(patient => patient.check === parseInt(filter)));
+
         }
     }, [filter, patients]);
 
@@ -166,8 +173,10 @@ const PatientManagement = () => {
                 <Typography variant="h6">Lọc theo trạng thái</Typography>
                 <Select value={filter} onChange={handleFilterChange}>
                     <MenuItem value="All">Tất cả</MenuItem>
-                    <MenuItem value="Online">Hoạt động</MenuItem>
-                    <MenuItem value="Offline">Không hoạt động</MenuItem>
+                    <MenuItem value="1">Hoạt động</MenuItem>
+                    <MenuItem value="2">Chưa đánh giá</MenuItem>
+                    <MenuItem value="3">Đã đánh giá</MenuItem>
+
                 </Select>
             </Box>
 

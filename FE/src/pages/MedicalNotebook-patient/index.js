@@ -77,8 +77,8 @@ const useStyles = makeStyles({
         overflowY: 'hidden',
     },
     dialogPaper: {
-        minWidth: '1500px',
-        minHeight: '1200px',
+        minWidth: '1000px',
+        minHeight: '800px',
     },
     closeButton: {
         position: 'absolute',

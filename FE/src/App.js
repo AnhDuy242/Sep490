@@ -48,6 +48,7 @@ import EmployeeList from './pages/AdminDashBoard/EmployeeManagement/EmployeeMana
 import ServiceDetail from './pages/Home/component/PolyServ/ServiceDetail';
 import ForgotPasswordForm from './layouts/ForgotPassword';
 import PasswordSent from './layouts/ForgotPassword/PasswordSent';
+import AppointmentsDoctor from './pages/DoctorManagement/getAppointment_Doctor/Appointment_Doctor';
 function App() {
   return (
     <Routes>
@@ -125,6 +126,8 @@ function App() {
         <Route path="examinatedpatients" element={<ExaminatedPatients/>} />
         <Route path="medical-notebook-save" element={<MedicalNotebookList />} />
         <Route path="doctor-profile" element={<DoctorProfile />} />
+        <Route path="getAppointment-doctor" element={<AppointmentsDoctor/>} />
+
 
 
       </Route>

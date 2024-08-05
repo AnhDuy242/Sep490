@@ -115,6 +115,12 @@ const Sidebar = () => {
             </ListItemIcon>
             <ListItemText primary="Xem lịch làm việc hàng tuần" />
           </ListItem>
+          <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/getAppointment-doctor"> 
+            <ListItemIcon>
+              <InboxIcon style={{ color: 'white' }} />
+            </ListItemIcon>
+            <ListItemText primary="Xem các cuộc hẹn" />
+          </ListItem>
           <ListItem button className={classes.listItem} component={Link} to="/doctor/dasboard/doctor-answer-question"> 
             <ListItemIcon>
               <InboxIcon style={{ color: 'white' }} />

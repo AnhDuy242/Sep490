@@ -231,13 +231,15 @@ const FeedbackPage = () => {
                                     </Typography>
                                     <Typography variant="body2">Tên bệnh nhân: {feedback.patientName}</Typography> {/* Display patient name */}
                                     <Divider style={{ margin: '10px 0' }} />
-                                    <Button
-                                        variant="contained"
-                                        color="primary"
-                                        onClick={() => handleRespondClick(feedback.feedId)}
-                                    >
-                                        Phản hồi
-                                    </Button>
+                                    {!feedback.isReply && ( // Show button only if feedback is not replied
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={() => handleRespondClick(feedback.feedId)}
+                                        >
+                                            Phản hồi
+                                        </Button>
+                                    )}
                                     <FeedbackResponseDropdown feedbackId={feedback.feedId} />
                                 </CardContent>
                             </Card>

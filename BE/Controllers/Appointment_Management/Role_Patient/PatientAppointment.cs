@@ -34,6 +34,14 @@ namespace BE.Controllers.Appointment_Management
             var list = _mapper.Map<List<AppointmentPatient>>(appointments);
             return Ok(list);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAppointmentForDoctor(int did)
+        {
+            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Include(x => x.Service).ThenInclude(x => x.Dep).Where(x => x.DoctorId == did).ToList();
+            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            return Ok(list);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> BookAppointment([FromBody] AppointmentCreate appointmentDto)
