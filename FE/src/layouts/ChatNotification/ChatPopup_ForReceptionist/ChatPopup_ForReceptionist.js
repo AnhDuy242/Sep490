@@ -7,6 +7,7 @@ import io from 'socket.io-client';
 import LoginForm from '../../LoginForm';
 import { login } from '../../../services/Authentication';
 import notificationSound from '../../../assets/sound/notification_sound.mp3'; // Import the notification sound
+import { Helmet } from 'react-helmet';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
@@ -26,6 +27,9 @@ const Chatpopup_ForReceptionist = () => {
     const audioRef = useRef(new Audio(notificationSound)); // Create a reference for the audio object
     const [userName, setUserName] = useState('');
     const name = localStorage.getItem('name');
+    const [totalUnreadMessages, setTotalUnreadMessages] = useState(0);
+
+
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedTokenTimestamp = localStorage.getItem('tokenTimestamp');
@@ -71,7 +75,10 @@ const Chatpopup_ForReceptionist = () => {
                     if (conversation.id === message.roomId) {
                         const messageExists = conversation.messages.some(msg => msg.id === message.id);
                         if (!messageExists) {
-                            return { ...conversation, messages: [...conversation.messages, message] };
+                            return {
+                                ...conversation, messages: [...conversation.messages, message],
+                                unreadCount: conversation.unreadCount ? conversation.unreadCount + 1 : 1
+                            };
                         }
                     }
                     return conversation;
@@ -81,11 +88,13 @@ const Chatpopup_ForReceptionist = () => {
                     updatedConversations.push({ id: message.roomId, messages: [message] });
                 }
 
+
                 const count = updatedConversations.reduce((acc, conversation) => {
                     return acc + conversation.messages.filter(msg => !msg.read && msg.from !== currentUserId).length;
                 }, 0);
                 setUnreadCount(count);
-
+                const totalUnread = updatedConversations.reduce((acc, conversation) => acc + (conversation.unreadCount || 0), 0);
+                setTotalUnreadMessages(totalUnread);
                 // Play notification sound only if the message is from someone other than the current user
                 if (message.from !== currentUserId) {
                     audioRef.current.play();
@@ -156,6 +165,8 @@ const Chatpopup_ForReceptionist = () => {
         const conversation = conversations.find(c => c.id === conversationId);
         if (conversation) {
             setCurrentConversation(conversation);
+            setTotalUnreadMessages(prevTotal => prevTotal - (conversation.unreadCount || 0));
+
         }
     };
 
@@ -200,6 +211,9 @@ const Chatpopup_ForReceptionist = () => {
 
     return (
         <>
+            <Helmet>
+            <title>{totalUnreadMessages > 0 ? `(${totalUnreadMessages}) tin nhắn mới` : 'Phòng khám 68A'}</title>
+        </Helmet>
             <IconButton
                 color="primary"
                 style={{

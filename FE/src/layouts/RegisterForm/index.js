@@ -18,7 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { handleReceiveOTPForEmail, handleRegisterForEmail, handleSentOTPConfirmForEmail, RegisterCompleteForm } from '../../services/Authentication';
+import { handleReceiveOTPForEmail, handleRegisterForEmail, handleRegisterForPhone, handleSentOTPConfirmForEmail, RegisterCompleteForm } from '../../services/Authentication';
 
 // Schema validation for OTP form
 const otpValidationSchema = yup.object({
@@ -143,18 +143,20 @@ const RegisterForm = ({ show, handleClose }) => {
   
       if (isEmail) {
         setSavedEmail(contact); // Set savedEmail
-        console.log("La email")
         const otp = await handleReceiveOTPForEmail(contact);
         setOtpReceived(otp);
         setEmail(contact);
         setSnackbarMessage('Đã gửi thành công mã OTP');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
-      } else {
-        console.log("La email111")
-
+      } else if (isPhoneNumber) {
         setSavedPhone(contact); // Set savedPhone
         console.log('Gửi OTP đến số điện thoại:', contact);
+        const otp = await handleRegisterForPhone(contact); // Call the function to send OTP
+        setOtpReceived(otp);
+        setSnackbarMessage('Đã gửi thành công mã OTP đến số điện thoại');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
       }
   
       setOtpSent(true);

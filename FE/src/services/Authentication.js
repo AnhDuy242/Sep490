@@ -79,6 +79,30 @@ export const handleReceiveOTPForEmail = async (email) => {
     console.error('Error sending OTP:', error);
   }
 };
+export const handleRegisterForPhone  = async (phone) => {
+  try {
+
+    const response = await fetch(`https://localhost:7240/api/Otp/SendOtpSms?PhoneNumber?PhoneNumber=${phone}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      console.log('OTP sent to the email', data);
+      // Handle successful OTP send
+      return data.otp;
+    } else {
+      const errorData = await response.json();
+      console.log('OTP could not be sent:', errorData);
+      // Handle failed OTP send
+    }
+  } catch (error) {
+    console.error('Error sending OTP:', error);
+  }
+};
 export const handleSentOTPConfirmForEmail = async (email, otp) => {
 
   const response = await fetch(`${SECONDARY_URL}/VerifyOtpEmail`, {

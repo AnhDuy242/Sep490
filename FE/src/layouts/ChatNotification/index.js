@@ -8,6 +8,7 @@ import { login } from '../../services/Authentication';
 import LoginForm from '../LoginForm';
 import notificationSound from '../../assets/sound/notification_sound.mp3'; // Import the notification sound
 import './ChatPopup_ForPatient.css'; // Import the CSS file for animation
+import { Helmet } from 'react-helmet';
 
 const tokenTimeout = 3600000; // 1 hour in milliseconds
 
@@ -269,6 +270,13 @@ const ChatPopup_ForPatient = () => {
     const handleCloseFullscreenImage = () => setFullscreenImage(null);
 
     return (
+        <>
+        <div>
+        <Helmet>
+            <title>{unreadMessages > 0 ? `(${unreadMessages}) New Messages` : 'Phòng khám đa khoa 68A'}</title>
+        </Helmet>
+        {/* Rest of the component */}
+    </div>
         <div>
             {!isLoggedIn ? (
                 <LoginForm onLogin={handleLogin} />
@@ -417,6 +425,7 @@ const ChatPopup_ForPatient = () => {
                 </>
             )}
         </div>
+        </>
     );
 };
 

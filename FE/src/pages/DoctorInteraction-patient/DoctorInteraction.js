@@ -170,45 +170,54 @@ const DoctorAndMedicalNotebooks = () => {
     };
 
     const handleChatClick = (doctorId, event) => {
-        event.stopPropagation(); // Prevent the ListItem click event from firing
+        event.stopPropagation();
         setSelectedDoctorId(doctorId);
-
-        // Mark messages as read
+    
         axios.patch(`https://localhost:7240/api/Messages/MarkMessagesAsRead/MarkMessagesAsRead?senderid=${doctorId}&receiverId=${patientId}`)
             .then(() => {
-                // Fetch conversation ID after marking messages as read
-                axios.get(`https://localhost:7240/api/Conversations/GetByDoctorIdAndPatientID?doctorId=${doctorId}&patientId=${patientId}`)
+                const conversationData = {
+                    "doctorId": doctorId,
+                    "patientId": patientId,
+                    "createdAt": new Date().toISOString(),
+                    "conversation_Name": `Cuộc hội thoại của bác sĩ và bệnh nhân`
+                };
+    
+                // Ưu tiên gọi CreateIfNotExist trước
+                axios.post('https://localhost:7240/api/Conversations/CreateIfNotExist', conversationData)
                     .then(response => {
-                        const conversation = response.data.$values[0]; // Assuming you need the first conversation
-                        if (conversation) {
-                            setConversationId(conversation.id);
-                            setChatBoxOpen(true);
-
-                            // Start interval to mark messages as read every 3 seconds
-                            const id = setInterval(() => {
-                                axios.patch(`https://localhost:7240/api/Messages/MarkMessagesAsRead/MarkMessagesAsRead?senderid=${doctorId}&receiverId=${patientId}`)
-                                    .catch(() => {
-                                        setSnackbarMessage('Failed to mark messages as read');
-                                        setSnackbarOpen(true);
-                                    });
-                            }, 3000);
-                            setIntervalId(id);
-                        } else {
-                            setSnackbarMessage('No conversation found');
-                            setSnackbarOpen(true);
-                        }
+                        // Nếu tạo thành công hoặc đã tồn tại, sử dụng ID từ response
+                        setConversationId(response.data.id);
+                        setChatBoxOpen(true);
                     })
                     .catch(error => {
-                        setSnackbarMessage('Failed to load conversation');
-                        setSnackbarOpen(true);
+                        console.error('Error creating/getting conversation:', error);
+                        
+                        // Nếu có lỗi khi tạo, thử lấy cuộc hội thoại hiện có
+                        axios.get(`https://localhost:7240/api/Conversations/GetByDoctorIdAndPatientID?doctorId=${doctorId}&patientId=${patientId}`)
+                            .then(response => {
+                                const conversation = response.data.$values[0];
+                                if (conversation) {
+                                    setConversationId(conversation.id);
+                                    setChatBoxOpen(true);
+                                } else {
+                                    // Nếu không tìm thấy cuộc hội thoại, hiển thị thông báo lỗi
+                                    setSnackbarMessage('No conversation found and unable to create one');
+                                    setSnackbarOpen(true);
+                                }
+                            })
+                            .catch(getError => {
+                                console.error('Error getting conversation:', getError);
+                                setSnackbarMessage('Failed to load or create conversation');
+                                setSnackbarOpen(true);
+                            });
                     });
             })
             .catch(error => {
+                console.error('Error marking messages as read:', error);
                 setSnackbarMessage('Failed to mark messages as read');
                 setSnackbarOpen(true);
             });
     };
-
     const handleCloseSnackbar = () => {
         setSnackbarOpen(false);
     };
