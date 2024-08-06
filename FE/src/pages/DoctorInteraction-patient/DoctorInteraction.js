@@ -144,7 +144,7 @@ const DoctorAndMedicalNotebooks = () => {
                         setSnackbarOpen(true);
                     });
             });
-        }, 4000);
+        }, 8000);
 
         setIntervalId(id);
 
@@ -242,7 +242,7 @@ const DoctorAndMedicalNotebooks = () => {
                 </Helmet>
                 <Breadcrumbs aria-label="breadcrumb" style={{ margin: '20px 0' }}>
                     <Link color="inherit" href="/">
-                        Home
+                        Trang chủ
                     </Link>
                     <Typography color="textPrimary">Dịch vụ hậu mãi</Typography>
                 </Breadcrumbs>

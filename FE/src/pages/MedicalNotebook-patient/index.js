@@ -306,9 +306,9 @@ const MedicalNotebook = () => {
                     message={snackbarMessage}
                 />
             </Container>
-            <div className={classes.footer}>
+         
                 <Footer />
-            </div>
+       
         </div>
     );
 };

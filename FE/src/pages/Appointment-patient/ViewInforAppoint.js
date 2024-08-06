@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { fetchAppointments, updateAppointment, fetchDoctors, fetchSlots, cancelAppointment } from '../../services/AppointmentPatient';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, Button, Snackbar } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Select, MenuItem, Button, Snackbar, Box } from '@mui/material';
 import './../../assets/css/GetAppointment.css';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -204,6 +204,13 @@ const GetAppointment = () => {
 
     return (
         <>
+         <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh', // Đảm bảo chiều cao tối thiểu là toàn bộ viewport
+      }}
+    >
             <Helmet>
                 <title>
                     Xem lịch thăm khám
@@ -369,6 +376,7 @@ const GetAppointment = () => {
             </Snackbar>
             </div>
             <Footer />
+        </Box>
         </>
     );
 };

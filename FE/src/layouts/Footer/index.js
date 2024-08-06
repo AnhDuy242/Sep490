@@ -1,13 +1,23 @@
 // src/components/Footer.js
 import React from "react";
-import { Box, Typography, TextField, Button, IconButton } from '@mui/material';
+import { Box, Typography, TextField, Button, IconButton, Container } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import { SocialIcon } from 'react-social-icons';
 
 function Footer() {
   return (
-    <Box sx={{ bgcolor: '#00508E', color: '#fff', py: 6, px: 4, textAlign: 'center' }}>
-      <Box sx={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <Box 
+      component="footer"
+      sx={{ 
+        bgcolor: '#00508E', 
+        color: '#fff', 
+        py: 6, 
+        px: 4, 
+        mt: 'auto', // Đẩy footer xuống dưới cùng
+        width: '100%'
+      }}
+    >
+      <Container maxWidth="lg">
         <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 4 }}>
           <Box>
             <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>
@@ -66,7 +76,7 @@ function Footer() {
             </Box>
           </Box>
         </Box>
-      </Box>
+      </Container>
     </Box>
   );
 }
