@@ -8,6 +8,7 @@ import { fetchAllEmployees, addDoctor, addReceptionist, updateEmployeeStatus, up
 import { styled } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
+import { useNavigate } from 'react-router-dom';
 
 const StyledCard = styled(Card)(({ theme, roleId }) => ({
     margin: theme.spacing(2),
@@ -29,6 +30,7 @@ const EmployeeList = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+    const navigate = useNavigate(); // Initialize useNavigate
 
     // States for dialogs
     const [openAddDoctorDialog, setOpenAddDoctorDialog] = useState(false);
@@ -43,24 +45,6 @@ const EmployeeList = () => {
     const [selectedDepartment, setSelectedDepartment] = useState('');
 
     // States for new doctor and receptionist
-    const [newDoctor, setNewDoctor] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        age: '',
-        gender: '',
-        depId: ''
-    });
-    const [newReceptionist, setNewReceptionist] = useState({
-        name: '',
-        email: '',
-        phone: '',
-        dob: '',
-        gender: '',
-        roleId: 5,
-        isActive: true
-    });
-
     const [validationError, setValidationError] = useState('');
     const [currentEmployee, setCurrentEmployee] = useState(null);
 
@@ -101,84 +85,13 @@ const EmployeeList = () => {
     };
 
     const handleOpenAddDoctorDialog = () => {
-        setOpenAddDoctorDialog(true);
-    };
-
-    const handleCloseAddDoctorDialog = () => {
-        setOpenAddDoctorDialog(false);
-        setNewDoctor({
-            name: '',
-            email: '',
-            phone: '',
-            age: '',
-            gender: '',
-            depId: ''
-        });
-        setSelectedDepartment('');
-        setValidationError('');
-    };
-
-    const handleAddDoctor = async () => {
-        try {
-            await addDoctor({ ...newDoctor, depId: selectedDepartment });
-            handleCloseAddDoctorDialog();
-            const data = await fetchAllEmployees();
-            setEmployees(data);
-            setSnackbarMessage('Thêm bác sĩ thành công.');
-            setSnackbarSeverity('success');
-        } catch (error) {
-            if (error.response && error.response.status === 500) {
-                setSnackbarMessage('Thêm bác sĩ thành công, nhưng có sự cố trong việc xử lý yêu cầu.');
-                setSnackbarSeverity('success');
-            } else {
-                setSnackbarMessage('Thêm bác sĩ mới không thành công.');
-                setSnackbarSeverity('error');
-            }
-            setValidationError('Thêm bác sĩ mới không thành công');
-        } finally {
-            setOpenSnackbar(true);
-        }
+        navigate('/admin/dashboard/receptionist-account'); // Navigate to the add doctor page
     };
 
     const handleOpenAddReceptionistDialog = () => {
-        setOpenAddReceptionistDialog(true);
+        navigate('/admin/dashboard/receptionist-account'); // Navigate to the add receptionist page
     };
 
-    const handleCloseAddReceptionistDialog = () => {
-        setOpenAddReceptionistDialog(false);
-        setNewReceptionist({
-            name: '',
-            email: '',
-            phone: '',
-            dob: '',
-            gender: '',
-            roleId: 5,
-            isActive: true
-        });
-        setValidationError('');
-    };
-
-    const handleAddReceptionist = async () => {
-        try {
-            await addReceptionist(newReceptionist);
-            handleCloseAddReceptionistDialog();
-            const data = await fetchAllEmployees();
-            setEmployees(data);
-            setSnackbarMessage('Thêm lễ tân thành công.');
-            setSnackbarSeverity('success');
-        } catch (error) {
-            if (error.response && error.response.status === 500) {
-                setSnackbarMessage('Thêm lễ tân thành công, nhưng có sự cố trong việc xử lý yêu cầu.');
-                setSnackbarSeverity('success');
-            } else {
-                setSnackbarMessage('Thêm lễ tân mới không thành công.');
-                setSnackbarSeverity('error');
-            }
-            setValidationError('Thêm lễ tân mới không thành công');
-        } finally {
-            setOpenSnackbar(true);
-        }
-    };
 
     const handleOpenStatusDialog = (employee) => {
         setCurrentEmployee(employee);
@@ -195,10 +108,12 @@ const EmployeeList = () => {
             if (currentEmployee) {
                 if (currentEmployee.roleId !== 5) {
                     // Update status for doctors
-                    await updateDoctorStatus(currentEmployee.accId, currentEmployee.isActive);
+                    await updateDoctorStatus(currentEmployee.accId, !currentEmployee.isActive);
                 } else {
                     // Update status for other employees
-                    await updateEmployeeStatus(currentEmployee.accId, currentEmployee.isActive);
+                    const response = await updateEmployeeStatus(currentEmployee.accId, !currentEmployee.isActive);
+                    // Handle the plain text response here if needed
+                    console.log(response); // Log the response if needed
                 }
                 handleCloseStatusDialog();
                 const data = await fetchAllEmployees();
@@ -214,6 +129,7 @@ const EmployeeList = () => {
             setOpenSnackbar(true);
         }
     };
+    
 
     const filteredEmployees = employees.filter(employee => {
         const matchesName = employee.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -315,138 +231,6 @@ const EmployeeList = () => {
                 </Alert>
             </Snackbar>
 
-            {/* Add Doctor Dialog */}
-            <Dialog open={openAddDoctorDialog} onClose={handleCloseAddDoctorDialog}>
-                <DialogTitle>Thêm Bác Sĩ</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Tên"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newDoctor.name}
-                        onChange={(e) => setNewDoctor({ ...newDoctor, name: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Email"
-                        type="email"
-                        fullWidth
-                        variant="outlined"
-                        value={newDoctor.email}
-                        onChange={(e) => setNewDoctor({ ...newDoctor, email: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Điện thoại"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newDoctor.phone}
-                        onChange={(e) => setNewDoctor({ ...newDoctor, phone: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Tuổi"
-                        type="number"
-                        fullWidth
-                        variant="outlined"
-                        value={newDoctor.age}
-                        onChange={(e) => setNewDoctor({ ...newDoctor, age: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Giới tính"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newDoctor.gender}
-                        onChange={(e) => setNewDoctor({ ...newDoctor, gender: e.target.value })}
-                    />
-                    <FormControl fullWidth margin="dense">
-                        <InputLabel>Phòng ban</InputLabel>
-                        <Select
-                            value={selectedDepartment}
-                            onChange={(e) => setSelectedDepartment(e.target.value)}
-                            label="Phòng ban"
-                        >
-                            {departments.map((dept) => (
-                                <MenuItem key={dept.depId} value={dept.depId}>
-                                    {dept.name}
-                                </MenuItem>
-                            ))}
-                        </Select>
-                    </FormControl>
-                </DialogContent>
-                <Button onClick={handleAddDoctor} color="primary">
-                    Thêm
-                </Button>
-                <Button onClick={handleCloseAddDoctorDialog} color="secondary">
-                    Hủy
-                </Button>
-            </Dialog>
-
-            {/* Add Receptionist Dialog */}
-            <Dialog open={openAddReceptionistDialog} onClose={handleCloseAddReceptionistDialog}>
-                <DialogTitle>Thêm Lễ Tân</DialogTitle>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Tên"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newReceptionist.name}
-                        onChange={(e) => setNewReceptionist({ ...newReceptionist, name: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Email"
-                        type="email"
-                        fullWidth
-                        variant="outlined"
-                        value={newReceptionist.email}
-                        onChange={(e) => setNewReceptionist({ ...newReceptionist, email: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Điện thoại"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newReceptionist.phone}
-                        onChange={(e) => setNewReceptionist({ ...newReceptionist, phone: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Ngày sinh"
-                        type="date"
-                        fullWidth
-                        variant="outlined"
-                        InputLabelProps={{ shrink: true }}
-                        value={newReceptionist.dob}
-                        onChange={(e) => setNewReceptionist({ ...newReceptionist, dob: e.target.value })}
-                    />
-                    <TextField
-                        margin="dense"
-                        label="Giới tính"
-                        type="text"
-                        fullWidth
-                        variant="outlined"
-                        value={newReceptionist.gender}
-                        onChange={(e) => setNewReceptionist({ ...newReceptionist, gender: e.target.value })}
-                    />
-                </DialogContent>
-                <Button onClick={handleAddReceptionist} color="primary">
-                    Thêm
-                </Button>
-                <Button onClick={handleCloseAddReceptionistDialog} color="secondary">
-                    Hủy
-                </Button>
-            </Dialog>
 
             {/* Status Dialog */}
             <Dialog open={openStatusDialog} onClose={handleCloseStatusDialog}>

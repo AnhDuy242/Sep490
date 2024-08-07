@@ -305,7 +305,7 @@ namespace BE.Controllers
             }
         }
 
-        [HttpPost("UpdateDoctorStatus")]
+        [HttpPost("")]
         public async Task<IActionResult> UpdateDoctorStatus(int accId, bool isActive)
         {
             // Fetch the account from the database
