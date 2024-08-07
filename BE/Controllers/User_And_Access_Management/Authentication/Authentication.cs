@@ -83,7 +83,8 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 Dob = registerDto.Dob,
                 Gender = registerDto.Gender,
                 Name = registerDto.Name,
-                PatientId = account.AccId
+                PatientId = account.AccId,
+                Check = 1
             };
 
             await _medPalContext.Patients.AddAsync(patient);

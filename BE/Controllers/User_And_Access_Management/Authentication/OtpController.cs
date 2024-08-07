@@ -60,6 +60,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 return StatusCode(500, $"Error sending OTP: {ex.Message}");
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> ReceiveOtpEmail(string Email)
         {
@@ -78,10 +79,39 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 return StatusCode(500, new { message = $"Error sending OTP: {ex.Message}" });
             }
         }
+        [HttpPost]
+        public async Task<IActionResult> ReceiveOtpPhone(string PhoneNumber)
+        {
+            if (string.IsNullOrEmpty(PhoneNumber))
+            {
+                return BadRequest("Phone number is required.");
+            }
+
+            var otp = new Random().Next(100000, 999999).ToString();
+            _otpService.StoreOtp(PhoneNumber, otp);
+
+            var message = $"Your OTP code is {otp}";
+
+            try
+            {
+                OtpRequestSMS otpRequestSMS = new OtpRequestSMS()
+                {
+                    Otp = otp,
+                    PhoneNumber = PhoneNumber
+                };
+                await _smsService.SendSmsAsync(_smsService.ConvertPhoneNumberToInternationalFormat(PhoneNumber), message);
+                return Ok(otpRequestSMS);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error sending OTP: {ex.Message}");
+            }
+        }
 
         [HttpPost]
         public IActionResult VerifyOtpEmail([FromBody] OtpRequestEmail request)
         {
+
             if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Otp))
             {
                 return BadRequest("Email and OTP are required.");

@@ -18,7 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { handleReceiveOTPForEmail, handleRegisterForEmail, handleRegisterForPhone, handleSentOTPConfirmForEmail, RegisterCompleteForm } from '../../services/Authentication';
+import { handleReceiveOTPForEmail, handleRegisterForEmail, handleRegisterForPhone, handleSentOTPConfirmForEmail, handleSentOTPConfirmForPhone, RegisterCompleteForm } from '../../services/Authentication';
 
 // Schema validation for OTP form
 const otpValidationSchema = yup.object({
@@ -172,11 +172,33 @@ const RegisterForm = ({ show, handleClose }) => {
   
 
 
-  const handleSentOtpConfirm = () => {
+  const handleSentOtpConfirm = async () => {
     const otp = formikOTP.values.otp;
     const contact = formikOTP.values.contact;
-    handleSentOTPConfirmForEmail(contact, otp);
+    const isPhoneNumber = /^(0\d{9,10})$/.test(contact);
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
+  
+    if (isEmail) {
+      try {
+        await handleSentOTPConfirmForEmail(contact, otp);
+        setSnackbarMessage('Xác nhận OTP cho email thành công!');
+        setSnackbarSeverity('success');
+        setSnackbarOpen(true);
+      } catch (error) {
+        console.error('Error confirming OTP for email:', error);
+        setSnackbarMessage('Xác nhận OTP cho email thất bại.');
+        setSnackbarSeverity('error');
+        setSnackbarOpen(true);
+      }
+    } else if (isPhoneNumber) {
+      await handleSentOTPConfirmForPhone(contact, otp);
+    } else {
+      setSnackbarMessage('Thông tin liên hệ không hợp lệ.');
+      setSnackbarSeverity('error');
+      setSnackbarOpen(true);
+    }
   };
+  
 
   const handleCloseDialog = () => {
     setOpen(false);

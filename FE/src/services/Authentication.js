@@ -79,28 +79,40 @@ export const handleReceiveOTPForEmail = async (email) => {
     console.error('Error sending OTP:', error);
   }
 };
-export const handleRegisterForPhone  = async (phone) => {
+export const handleRegisterForPhone = async (phone) => {
   try {
-
-    const response = await fetch(`https://localhost:7240/api/Otp/SendOtpSms?PhoneNumber?PhoneNumber=${phone}`, {
+    const response = await fetch(`https://localhost:7240/api/Otp/ReceiveOtpPhone?PhoneNumber=${phone}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
     });
 
+    // Check if the response is OK
     if (response.ok) {
-      const data = await response.json();
-      console.log('OTP sent to the email', data);
-      // Handle successful OTP send
-      return data.otp;
+      // Attempt to parse the response as JSON
+      try {
+        const data = await response.json();
+        console.log('OTP sent to the phone', data);
+        return data.otp; // Return the OTP if available
+      } catch (jsonError) {
+        console.error('Response is not valid JSON:', jsonError);
+        throw new Error('Invalid JSON response from the server.');
+      }
     } else {
-      const errorData = await response.json();
-      console.log('OTP could not be sent:', errorData);
-      // Handle failed OTP send
+      // Attempt to parse the error response as JSON
+      try {
+        const errorData = await response.json();
+        console.log('OTP could not be sent:', errorData);
+        throw new Error(errorData.message || 'OTP sending failed.');
+      } catch (jsonError) {
+        console.error('Error response is not valid JSON:', jsonError);
+        throw new Error('Failed to parse error response.');
+      }
     }
   } catch (error) {
     console.error('Error sending OTP:', error);
+    throw error; // Rethrow the error to be handled by the calling function
   }
 };
 export const handleSentOTPConfirmForEmail = async (email, otp) => {
@@ -112,6 +124,31 @@ export const handleSentOTPConfirmForEmail = async (email, otp) => {
     },
 
     body: JSON.stringify({ otp, email }),
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log('OTP confirmation response:', data);
+      // Handle successful OTP confirmation
+      // Proceed with registration or next steps
+    })
+    .catch(error => {
+      console.error('Error sending OTP:', error);
+    });
+}
+export const handleSentOTPConfirmForPhone = async (phone, otp) => {
+
+  const response = await fetch(`${SECONDARY_URL}/VerifyOtpSMS`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+
+    body: JSON.stringify({  phone, otp }),
   })
     .then(response => {
       if (!response.ok) {
@@ -155,7 +192,7 @@ export const logout = () => {
   localStorage.removeItem('token');
 };
 
-export const RegisterCompleteForm = async (registrationDetails,getPhone) => {
+export const RegisterCompleteForm = async (registrationDetails, getPhone) => {
   try {
     const response = await fetch(`${BASE_URL}/Register?phone=${getPhone}`, {
       method: 'POST',
@@ -170,6 +207,7 @@ export const RegisterCompleteForm = async (registrationDetails,getPhone) => {
         Address: registrationDetails.address,
         // Phone: registrationDetails.Phone, // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
         Password: registrationDetails.password,
+        Check:1
       }),
     });
 
