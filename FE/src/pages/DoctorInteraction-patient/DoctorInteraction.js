@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useCallback } from 'react';
 import {
     Card,
     CardContent,
@@ -75,124 +75,84 @@ const DoctorAndMedicalNotebooks = () => {
     const [chatBoxOpen, setChatBoxOpen] = useState(false);
     const [selectedDoctorId, setSelectedDoctorId] = useState(null);
     const [conversationId, setConversationId] = useState(null);
-    const [unreadCounts, setUnreadCounts] = useState({}); // State for unread message counts
-    const [totalUnreadCount, setTotalUnreadCount] = useState(0); // State for total unread messages count
+    const [unreadCounts, setUnreadCounts] = useState({});
+    const [totalUnreadCount, setTotalUnreadCount] = useState(0);
     const patientId = localStorage.getItem('accountId');
-    const [intervalId, setIntervalId] = useState(null); // State to keep track of the interval
     const [pageTitle, setPageTitle] = useState('');
 
-    useEffect(() => {
-        // Fetch doctors list
-        axios.get(`https://localhost:7240/api/DoctorCustomerCare/GetListDoctorByPatientId?pid=${patientId}`)
-            .then(response => {
-                setDoctors(response.data.$values);
+    const showSnackbar = (message) => {
+        setSnackbarMessage(message);
+        setSnackbarOpen(true);
+    };
 
-                // Fetch unread counts for each doctor
-                let totalUnread = 0;
-                response.data.$values.forEach(doctor => {
-                    axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${doctor.docId}&receiverId=${patientId}`)
-                        .then(response => {
-                            const unreadCount = response.data;
-                            setUnreadCounts(prevCounts => ({
-                                ...prevCounts,
-                                [doctor.docId]: unreadCount // Store unread count for this doctor
-                            }));
-                            totalUnread += unreadCount;
-                            setTotalUnreadCount(totalUnread); // Update total unread count
-                        })
-                        .catch(error => {
-                            setSnackbarMessage('Failed to load unread counts');
-                            setSnackbarOpen(true);
-                        });
+    const fetchUnreadCounts = useCallback((doctorList) => {
+        const promises = doctorList.map(doctor =>
+            axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${doctor.docId}&receiverId=${patientId}`)
+        );
+
+        Promise.all(promises)
+            .then(responses => {
+                let newTotalUnread = 0;
+                const newCounts = {};
+                responses.forEach((response, index) => {
+                    const unreadCount = response.data;
+                    newCounts[doctorList[index].docId] = unreadCount;
+                    newTotalUnread += unreadCount;
                 });
+                setUnreadCounts(newCounts);
+                setTotalUnreadCount(newTotalUnread);
             })
-            .catch(error => {
-                setSnackbarMessage('Failed to load doctors');
-                setSnackbarOpen(true);
-            });
-
-        // Cleanup interval on unmount
-        return () => {
-            if (intervalId) {
-                clearInterval(intervalId);
-            }
-        };
-    }, [patientId, intervalId]);
+            .catch(() => showSnackbar('Failed to load unread counts'));
+    }, [patientId]);
 
     useEffect(() => {
         setPageTitle(document.title);
-    }, []);
 
-    useEffect(() => {
-        // Set up interval to fetch unread message counts every 4 seconds
-        const id = setInterval(() => {
-            // Fetch unread counts for each doctor
-            doctors.forEach(doctor => {
-                axios.get(`https://localhost:7240/api/Messages/GetUnreadCount/GetUnreadCount?senderId=${doctor.docId}&receiverId=${patientId}`)
-                    .then(response => {
-                        const unreadCount = response.data;
-                        setUnreadCounts(prevCounts => ({
-                            ...prevCounts,
-                            [doctor.docId]: unreadCount // Store unread count for this doctor
-                        }));
-                        // Calculate total unread messages count
-                        const totalUnread = Object.values(unreadCounts).reduce((sum, count) => sum + count, 0);
-                        setTotalUnreadCount(totalUnread);
-                    })
-                    .catch(error => {
-                        setSnackbarMessage('Failed to fetch unread message counts');
-                        setSnackbarOpen(true);
-                    });
-            });
+        axios.get(`https://localhost:7240/api/DoctorCustomerCare/GetListDoctorByPatientId?pid=${patientId}`)
+            .then(response => {
+                const doctorList = response.data.$values;
+                setDoctors(doctorList);
+                fetchUnreadCounts(doctorList);
+            })
+            .catch(() => showSnackbar('Failed to load doctors'));
+
+        const intervalId = setInterval(() => {
+            if (doctors.length > 0) {
+                fetchUnreadCounts(doctors);
+            }
         }, 8000);
 
-        setIntervalId(id);
-
-        // Cleanup interval on unmount
-        return () => {
-            if (id) {
-                clearInterval(id);
-            }
-        };
-    }, [doctors, patientId, unreadCounts]);
+        return () => clearInterval(intervalId);
+    }, [patientId, fetchUnreadCounts]);
 
     const handleDoctorClick = (doctorId) => {
-        // Fetch medical notebooks for selected doctor
         axios.get(`https://localhost:7240/api/PatientMedicalNoteBook/GetMedicalNotebooksByDoctorAndPatient?doctorId=${doctorId}&patientId=${patientId}`)
             .then(response => {
                 setMedicalNotebooks(response.data.$values);
-                setSelectedDoctorId(doctorId); // Set selected doctor ID
+                setSelectedDoctorId(doctorId);
             })
-            .catch(error => {
-                setSnackbarMessage('Failed to load medical notebooks');
-                setSnackbarOpen(true);
-            });
+            .catch(() => showSnackbar('Failed to load medical notebooks'));
     };
 
     const handleChatClick = (doctorId, event) => {
         event.stopPropagation();
         setSelectedDoctorId(doctorId);
-    
+
         axios.patch(`https://localhost:7240/api/Messages/MarkMessagesAsRead/MarkMessagesAsRead?senderid=${doctorId}&receiverId=${patientId}`)
             .then(() => {
                 const conversationData = {
-                    "doctorId": doctorId,
-                    "patientId": patientId,
-                    "createdAt": new Date().toISOString(),
-                    "conversation_Name": `Cuộc hội thoại của bác sĩ và bệnh nhân`
+                    doctorId: doctorId,
+                    patientId: patientId,
+                    createdAt: new Date().toISOString(),
+                    conversation_Name: `Cuộc hội thoại của bác sĩ và bệnh nhân`
                 };
-    
-                // Ưu tiên gọi CreateIfNotExist trước
+
                 axios.post('https://localhost:7240/api/Conversations/CreateIfNotExist', conversationData)
                     .then(response => {
-                        // Nếu tạo thành công hoặc đã tồn tại, sử dụng ID từ response
                         setConversationId(response.data.id);
                         setChatBoxOpen(true);
                     })
-                    .catch(error => {
-                        console.error('Error creating/getting conversation:', error);
-                        
-                        // Nếu có lỗi khi tạo, thử lấy cuộc hội thoại hiện có
+                    .catch(() => {
                         axios.get(`https://localhost:7240/api/Conversations/GetByDoctorIdAndPatientID?doctorId=${doctorId}&patientId=${patientId}`)
                             .then(response => {
                                 const conversation = response.data.$values[0];
@@ -200,34 +160,13 @@ const DoctorAndMedicalNotebooks = () => {
                                     setConversationId(conversation.id);
                                     setChatBoxOpen(true);
                                 } else {
-                                    // Nếu không tìm thấy cuộc hội thoại, hiển thị thông báo lỗi
-                                    setSnackbarMessage('No conversation found and unable to create one');
-                                    setSnackbarOpen(true);
+                                    showSnackbar('No conversation found and unable to create one');
                                 }
                             })
-                            .catch(getError => {
-                                console.error('Error getting conversation:', getError);
-                                setSnackbarMessage('Failed to load or create conversation');
-                                setSnackbarOpen(true);
-                            });
+                            .catch(() => showSnackbar('Failed to load or create conversation'));
                     });
             })
-            .catch(error => {
-                console.error('Error marking messages as read:', error);
-                setSnackbarMessage('Failed to mark messages as read');
-                setSnackbarOpen(true);
-            });
-    };
-    const handleCloseSnackbar = () => {
-        setSnackbarOpen(false);
-    };
-
-    const handleCloseChatBox = () => {
-        setChatBoxOpen(false);
-        if (intervalId) {
-            clearInterval(intervalId);
-            setIntervalId(null);
-        }
+            .catch(() => showSnackbar('Failed to mark messages as read'));
     };
 
     return (
@@ -237,7 +176,7 @@ const DoctorAndMedicalNotebooks = () => {
             <Content>
                 <Helmet>
                     <title>
-                        {totalUnreadCount > 0 ? ` ${totalUnreadCount} tin nhắn mới` : pageTitle}
+                        {totalUnreadCount > 0 ? `${totalUnreadCount} tin nhắn mới` : pageTitle}
                     </title>
                 </Helmet>
                 <Breadcrumbs aria-label="breadcrumb" style={{ margin: '20px 0' }}>
@@ -272,7 +211,6 @@ const DoctorAndMedicalNotebooks = () => {
                                                         sx={{
                                                             color: 'white',
                                                             fontWeight: 'bold',
-                                                            ml: 1,
                                                             ml: 5,
                                                             width: 25,
                                                             fontSize: 15,
@@ -336,19 +274,18 @@ const DoctorAndMedicalNotebooks = () => {
                 <Snackbar
                     open={snackbarOpen}
                     autoHideDuration={6000}
-                    onClose={handleCloseSnackbar}
+                    onClose={() => setSnackbarOpen(false)}
                 >
-                    <Alert onClose={handleCloseSnackbar} severity="error">
+                    <Alert onClose={() => setSnackbarOpen(false)} severity="error">
                         {snackbarMessage}
                     </Alert>
                 </Snackbar>
 
-                {/* ChatBox Component */}
                 <ChatBox
                     open={chatBoxOpen}
-                    onClose={handleCloseChatBox}
+                    onClose={() => setChatBoxOpen(false)}
                     conversationId={conversationId}
-                    doctorIdSelected={selectedDoctorId} // Pass the selected doctor ID to ChatBox
+                    doctorIdSelected={selectedDoctorId}
                 />
             </Content>
             <Footer />

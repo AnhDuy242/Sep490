@@ -7,6 +7,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { AuthContext } from '../../utils/AuthContext'; // Adjust this path as needed
 import { fetchDepartments } from '../../services/department_service'; // Adjust this path as needed
 import axios from 'axios';
+
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
@@ -67,6 +68,7 @@ const Navbar = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [departments, setDepartments] = useState([]);
   const [searchValue, setSearchValue] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
   const patientCheck = localStorage.getItem('role') === 'Patient' ? true : false;
 
   useEffect(() => {
@@ -98,65 +100,74 @@ const Navbar = () => {
     console.log('Search clicked with value:', searchValue);
   };
 
+  const handleMenuToggle = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
   return (
     <AppBar position="static">
       <Toolbar>
-        <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+        <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={handleMenuToggle}>
           <MenuIcon />
         </IconButton>
         <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'space-between' }}>
-          <Button color="inherit" component={NavLink} to="/">Trang chủ</Button>
-          <Button
-            color="inherit"
-            aria-controls="department-menu"
-            aria-haspopup="true"
-            onClick={handleDropdownToggle}
-          >
-            Chuyên khoa & Dịch vụ
-          </Button>
-          <Menu
-            id="department-menu"
-            anchorEl={anchorEl}
-            keepMounted
-            open={Boolean(anchorEl)}
-            onClose={handleDropdownClose}
-            sx={{
-              '& .MuiMenu-paper': {
-                borderRadius: '8px',
-                boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
-                backgroundColor: '#fff',
-                padding: '10px',
-                width: '400px',
-                maxHeight: '600px',
-                overflowY: 'auto',
-              },
-            }}
-          >
-            <MenuTitle variant="h6">Chuyên khoa</MenuTitle>
-            {departments.map((department, index) => (
-              <React.Fragment key={index}>
-                <MenuTitle variant="h6" sx={{ mt: 2 }}>
-                  {department.name}
-                </MenuTitle>
-                {/* Fetch services for this department */}
-                <FetchServicesMenu departmentId={department.depId} />
-              </React.Fragment>
-            ))}
-          </Menu>
-          <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
-          <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
-          <Button color="inherit" component={NavLink} to="/viewAllBlogs">Tin tức y khoa</Button>
-
-          {isLoggedIn && (
-            <>
-              <Button color="inherit" component={NavLink} to="/getAppointment">Xem lịch khám</Button>
-              <Button color="inherit" component={NavLink} to="/getMedicalNotebook">Tra cứu kết quả</Button>
-              <Button color="inherit" component={NavLink} to="/getDoctorInteraction">Tư vấn online</Button>
-              {patientCheck && (
-                <Button color="inherit" component={NavLink} to="/patient-profile">Thông tin cá nhấn</Button>
-              )}
-            </>
+          {menuOpen && (
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              <Button color="inherit" component={NavLink} to="/about-us">Giới thiệu</Button>
+              <Button color="inherit" component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</Button>
+              <Button color="inherit" component={NavLink} to="/viewAllBlogs">Tin tức y khoa</Button>
+            </Box>
           )}
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button color="inherit" component={NavLink} to="/">Trang chủ</Button>
+            <Button
+              color="inherit"
+              aria-controls="department-menu"
+              aria-haspopup="true"
+              onClick={handleDropdownToggle}
+            >
+              Chuyên khoa & Dịch vụ
+            </Button>
+            <Menu
+              id="department-menu"
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleDropdownClose}
+              sx={{
+                '& .MuiMenu-paper': {
+                  borderRadius: '8px',
+                  boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+                  backgroundColor: '#fff',
+                  padding: '10px',
+                  width: '400px',
+                  maxHeight: '600px',
+                  overflowY: 'auto',
+                },
+              }}
+            >
+              <MenuTitle variant="h6">Chuyên khoa</MenuTitle>
+              {departments.map((department, index) => (
+                <React.Fragment key={index}>
+                  <MenuTitle variant="h6" sx={{ mt: 2 }}>
+                    {department.name}
+                  </MenuTitle>
+                  {/* Fetch services for this department */}
+                  <FetchServicesMenu departmentId={department.depId} />
+                </React.Fragment>
+              ))}
+            </Menu>
+            {isLoggedIn && (
+              <>
+                <Button color="inherit" component={NavLink} to="/getAppointment">Xem lịch khám</Button>
+                <Button color="inherit" component={NavLink} to="/getMedicalNotebook">Tra cứu kết quả</Button>
+                <Button color="inherit" component={NavLink} to="/getDoctorInteraction">Tư vấn online</Button>
+                {patientCheck && (
+                  <Button color="inherit" component={NavLink} to="/patient-profile">Thông tin cá nhấn</Button>
+                )}
+              </>
+            )}
+          </Box>
         </Box>
         <Search>
           <SearchIconWrapper>
