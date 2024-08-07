@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle,
-    TextField, MenuItem, FormControl, InputLabel, Select, TablePagination, Autocomplete, Grid
+    TextField, MenuItem, FormControl, InputLabel, Select, TablePagination, Autocomplete, Grid,
+    Snackbar,
+    Alert
 } from '@mui/material';
 import { createPatient, getAllPatients, updatePatientStatus } from './../../services/receptionist_management'; // Import hàm updatePatientStatus
 import AddIcon from '@mui/icons-material/Add';
@@ -111,37 +113,37 @@ const CreatePatientAccount = () => {
     useEffect(() => {
         // Fetch dates by doctor
         if (doctorId) {
-          fetchDateByDoctor(doctorId)
-            .then(data => {
-              const filteredDates = getNextFourDays(data);
-              setDateOptions(filteredDates || []);
-            })
-            .catch(error => console.error('Failed to fetch dates:', error));
+            fetchDateByDoctor(doctorId)
+                .then(data => {
+                    const filteredDates = getNextFourDays(data);
+                    setDateOptions(filteredDates || []);
+                })
+                .catch(error => console.error('Failed to fetch dates:', error));
         }
-      }, [doctorId]);
-      
+    }, [doctorId]);
+
 
     //Lấy 30 ngày
     const getNextFourDays = (dates) => {
         const today = new Date();
         const nextFourDays = [];
         let count = 0;
-      
+
         for (const dateItem of dates) {
-          const [day, month, year] = dateItem.date.split('-');
-          const date = new Date(`${year}-${month}-${day}`);
-          
-          if (isAfter(date, today) || date.toDateString() === today.toDateString()) {
-            nextFourDays.push(dateItem);
-            count++;
-          }
-      
-          if (count === 30) break;
+            const [day, month, year] = dateItem.date.split('-');
+            const date = new Date(`${year}-${month}-${day}`);
+
+            if (isAfter(date, today) || date.toDateString() === today.toDateString()) {
+                nextFourDays.push(dateItem);
+                count++;
+            }
+
+            if (count === 30) break;
         }
-      
+
         return nextFourDays;
-      };
-      
+    };
+
 
 
     useEffect(() => {
@@ -190,23 +192,17 @@ const CreatePatientAccount = () => {
         return new Date(`${year}-${month}-${day}`);
     };
 
-    const handleSubmit1 = (event) => {
+    const handleSubmit1 = async (event) => {
         event.preventDefault();
 
         const testDate = convertToDate(date);
-        console.log('Test Date:', testDate);
-
         if (isNaN(testDate.getTime())) {
-            console.error('Invalid date:', date);
             setOpenSnackbar(true);
             setSnackbarMessage('Ngày không hợp lệ. Vui lòng kiểm tra lại!');
             return;
         }
 
         const formattedDate = format(testDate, 'dd-MM-yyyy');
-
-        console.log('Formatted Date:', formattedDate);
-
         const appointmentDto = {
             patientId: parseInt(patientId, 10),
             doctorId: doctorId,
@@ -216,24 +212,26 @@ const CreatePatientAccount = () => {
             serviceId: serviceId
         };
 
-        ReceptionbookAppointment(appointmentDto)
-            .then(responseData => {
-                setOpenSnackbar(true);
-                setSnackbarMessage('Đặt lịch thành công!');
-                setDepId('');
-                setServId('');
-                setDoctor('');
-                setDoctorId('');
-                setDate('');
-                setTime('');
-                setSlotOptions([]);
-            })
-            .catch(error => {
-                setOpenSnackbar(true);
-                setSnackbarMessage('Đặt lịch thất bại. Vui lòng thử lại!');
-                console.error('Error booking appointment:', error);
-            });
+        try {
+            await ReceptionbookAppointment(appointmentDto);
+            setSnackbarMessage('Đặt lịch thành công!');
+            setOpenSnackbar(true);
+            handleAddDialogClose();
+            // Reset form
+            setDepId('');
+            setServId('');
+            setDoctor('');
+            setDoctorId('');
+            setDate('');
+            setTime('');
+            setSlotOptions([]);
+        } catch (error) {
+            setOpenSnackbar(true);
+            setSnackbarMessage('Đặt lịch thất bại. Vui lòng thử lại!');
+            console.error('Error booking appointment:', error);
+        }
     };
+
 
 
     const handleCloseSnackbar = (event, reason) => {
@@ -565,7 +563,7 @@ const CreatePatientAccount = () => {
                                                     </MenuItem>
                                                 ))
                                             ) : (
-                                                <MenuItem disabled>No services available</MenuItem>
+                                                <MenuItem disabled>Không có dịch vụ nào có sẵn</MenuItem>
                                             )}
                                         </Select>
 
@@ -651,11 +649,19 @@ const CreatePatientAccount = () => {
                         </form>
                     </Grid>
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleAddDialogClose}>Hủy</Button>
-                    <Button onClick={handleAddSubmit}>Lưu</Button>
-                </DialogActions>
+
             </Dialog>
+            <Snackbar
+                open={openSnackbar}
+                autoHideDuration={3000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Adjust position here
+                sx={{ zIndex: 1300 }} // Adjust zIndex if needed
+            >
+                <Alert onClose={handleCloseSnackbar} severity="success">
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
 };
