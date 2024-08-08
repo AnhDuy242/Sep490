@@ -81,163 +81,171 @@ const BlogList = () => {
                 value={searchTerm}
                 onChange={handleSearchChange}
               />
+          {filteredBlogs.length === 0 ? (
+  <Typography variant="h6" color="textSecondary" align="center">
+    Không có bài viết nào hiện tại
+  </Typography>
+) : (
+  <>
+    {/* Display the first blog post prominently */}
+    {featuredBlog && (
+      <Box sx={{ mb: 4, display: 'flex', alignItems: 'flex-start', pl: 0 }}>
+        <Box
+          component="img"
+          sx={{
+            width: 320,
+            height: 180,
+            borderRadius: 1,
+            mr: 2,
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.05)', // Zoom effect
+            },
+          }}
+          src={featuredBlog.thumbnail || 'https://via.placeholder.com/320x180'}
+          alt={featuredBlog.title}
+        />
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            variant="h4"
+            component="div"
+            sx={{
+              fontWeight: 'bold',
+              mb: 5,
+              fontSize: 20,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+              mt: 5
+            }}
+          >
+            <Link to={`/viewDetailBlog/${featuredBlog.blogId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              {featuredBlog.title}
+            </Link>
+          </Typography>
+          <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+            <CalendarTodayIcon sx={{ mr: 1 }} />
+            {format(new Date(featuredBlog.date), 'eeee, d MMMM yyyy', { locale: vi })}
+          </Typography>
+          <Typography variant="body1" color="textSecondary" sx={{ mb: 1 }}>
+            {featuredBlog.excerpt}
+          </Typography>
+        </Box>
+      </Box>
+    )}
 
-              {/* Display the first blog post prominently */}
-              {featuredBlog && (
-                <Box sx={{ mb: 4, display: 'flex', alignItems: 'flex-start', pl: 0 }}>
+    {/* Display the rest of the blog posts in a vertical list */}
+    {paginatedBlogs.map(blog => (
+      <Box key={blog.blogId} sx={{ mb: 2, display: 'flex', alignItems: 'center', pl: 0 }}>
+        <Box
+          component="img"
+          sx={{
+            width: 150,
+            height: 100,
+            borderRadius: 1,
+            mr: 2,
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              transform: 'scale(1.05)', // Zoom effect
+            },
+          }}
+          src={blog.thumbnail || 'https://via.placeholder.com/100'}
+          alt={blog.title}
+        />
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            variant="body2"
+            color="textSecondary"
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mb: 1,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <CalendarTodayIcon sx={{ mr: 1 }} />
+            {format(new Date(blog.date), 'eeee, d MMMM yyyy', { locale: vi })}
+          </Typography>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{
+              fontWeight: 'bold',
+              mb: 1,
+              fontSize: 18,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Link to={`/viewDetailBlog/${blog.blogId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+              {blog.title}
+            </Link>
+          </Typography>
+          <Typography variant="body2" color="textSecondary">
+            {blog.excerpt}
+          </Typography>
+        </Box>
+      </Box>
+    ))}
+
+    {/* Pagination Controls */}
+    <Pagination
+      count={totalPages}
+      page={page}
+      onChange={handlePageChange}
+      color="primary"
+      sx={{ mt: 4, ml: 35 }}
+    />
+  </>
+)}
+
+                </Grid>
+              <Grid item xs={12} md={4}> {/* 30% width for banners */}
+
+                <Box sx={{ mb: 2, height: 200, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
                   <Box
                     component="img"
                     sx={{
-                      width: 320,
-                      height: 180,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'fill',
                       borderRadius: 1,
-                      mr: 2,
-                      transition: 'transform 0.3s ease',
-                      '&:hover': {
-                        transform: 'scale(1.05)', // Zoom effect
-                      },
                     }}
-                    src={featuredBlog.thumbnail || 'https://via.placeholder.com/320x180'}
-                    alt={featuredBlog.title}
+                    src={image1}
+                    alt="Banner Image"
                   />
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="h4"
-                      component="div"
-                      sx={{
-                        fontWeight: 'bold',
-                        mb: 5,
-                        fontSize: 20,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        mt: 5
-                      }}
-                    >
-                      <Link to={`/viewDetailBlog/${featuredBlog.blogId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        {featuredBlog.title}
-                      </Link>
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary" sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                      <CalendarTodayIcon sx={{ mr: 1 }} />
-                      {format(new Date(featuredBlog.date), 'eeee, d MMMM yyyy', { locale: vi })}
-                    </Typography>
-                    <Typography variant="body1" color="textSecondary" sx={{ mb: 1 }}>
-                      {featuredBlog.excerpt}
-                    </Typography>
-                  </Box>
                 </Box>
-              )}
-
-              {/* Display the rest of the blog posts in a vertical list */}
-              {paginatedBlogs.map(blog => (
-                <Box key={blog.blogId} sx={{ mb: 2, display: 'flex', alignItems: 'center', pl: 0 }}>
+                <Box sx={{ mb: 2, height: 200, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
                   <Box
                     component="img"
                     sx={{
-                      width: 150,
-                      height: 100,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'fill',
                       borderRadius: 1,
-                      mr: 2,
-                      transition: 'transform 0.3s ease',
-                      '&:hover': {
-                        transform: 'scale(1.05)', // Zoom effect
-                      },
                     }}
-                    src={blog.thumbnail || 'https://via.placeholder.com/100'}
-                    alt={blog.title}
+                    src={image2}
+                    alt="Banner Image"
                   />
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="body2"
-                      color="textSecondary"
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      <CalendarTodayIcon sx={{ mr: 1 }} />
-                      {format(new Date(blog.date), 'eeee, d MMMM yyyy', { locale: vi })}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      component="div"
-                      sx={{
-                        fontWeight: 'bold',
-                        mb: 1,
-                        fontSize: 18,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                      }}
-                    >
-                      <Link to={`/viewDetailBlog/${blog.blogId}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                        {blog.title}
-                      </Link>
-                    </Typography>
-                    <Typography variant="body2" color="textSecondary">
-                      {blog.excerpt}
-                    </Typography>
-                  </Box>
                 </Box>
-              ))}
-
-              {/* Pagination Controls */}
-              <Pagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                color="primary"
-                sx={{ mt: 4, ml: 35 }}
-              />
+                <Box sx={{ height: 200, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
+                  <Box
+                    component="img"
+                    sx={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'fill',
+                      borderRadius: 1,
+                    }}
+                    src={image3}
+                    alt="Banner Image"
+                  />
+                </Box>
+              </Grid>
             </Grid>
-            <Grid item xs={12} md={4}> {/* 30% width for banners */}
-        
-              <Box sx={{ mb: 2, height: 200, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
-                <Box
-                  component="img"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'fill',
-                    borderRadius: 1,
-                  }}
-                  src={image1}
-                  alt="Banner Image"
-                />
-              </Box>
-              <Box sx={{ mb: 2, height: 200, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
-                <Box
-                  component="img"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'fill',
-                    borderRadius: 1,
-                  }}
-                  src={image2}
-                  alt="Banner Image"
-                />
-              </Box>
-              <Box sx={{ height: 200, backgroundColor: '#f0f0f0', borderRadius: 1 }}>
-                <Box
-                  component="img"
-                  sx={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'fill',
-                    borderRadius: 1,
-                  }}
-                  src={image3}
-                  alt="Banner Image"
-                />
-              </Box>
-            </Grid>
-          </Grid>
         </Container>
       </Box>
       <Footer />

@@ -70,7 +70,7 @@ const ServiceListPage = () => {
               {department ? department.name : 'Khoa'}
             </Typography>
           </Breadcrumbs>
-          
+
           <Typography variant="h4" component="h1" gutterBottom>
             Các Dịch Vụ tại {department ? department.name : 'Loading...'}
           </Typography>
@@ -85,55 +85,62 @@ const ServiceListPage = () => {
             />
           </Box>
 
-          <Grid container spacing={3}>
-            {filteredServices.map((service) => (
-              <Grid item xs={12} sm={6} md={4} key={service.serviceId}>
-                <Card
-                  sx={{
-                    transition: '0.3s',
-                    '&:hover': {
-                      backgroundColor: '#e0f7fa',
-                      boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
-                      transform: 'scale(1.02)',
-                    },
-                    cursor: 'pointer',
-                    borderRadius: 2,
-                    overflow: 'hidden',
-                    border: '1px solid #ddd',
-                  }}
-                  onClick={() => handleServiceClick(service.serviceId)}
-                >
-                  <CardContent>
-                    <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
-                      <Box
-                        sx={{
-                          width: '80px',
-                          height: '80px',
-                          backgroundColor: '#e0f2f1',
-                          borderRadius: '50%',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mb: 2,
-                        }}
-                      >
-                        <LocalHospitalIcon sx={{ fontSize: 40, color: '#00796b' }} />
+          {filteredServices.length === 0 ? (
+            <Typography variant="h6" color="textSecondary">
+              Không có kết quả
+            </Typography>
+          ) : (
+            <Grid container spacing={3}>
+              {filteredServices.map((service) => (
+                <Grid item xs={12} sm={6} md={4} key={service.serviceId}>
+                  <Card
+                    sx={{
+                      transition: '0.3s',
+                      '&:hover': {
+                        backgroundColor: '#e0f7fa',
+                        boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
+                        transform: 'scale(1.02)',
+                      },
+                      cursor: 'pointer',
+                      borderRadius: 2,
+                      overflow: 'hidden',
+                      border: '1px solid #ddd',
+                    }}
+                    onClick={() => handleServiceClick(service.serviceId)}
+                  >
+                    <CardContent>
+                      <Box display="flex" flexDirection="column" alignItems="center" textAlign="center">
+                        <Box
+                          sx={{
+                            width: '80px',
+                            height: '80px',
+                            backgroundColor: '#e0f2f1',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            mb: 2,
+                          }}
+                        >
+                          <LocalHospitalIcon sx={{ fontSize: 40, color: '#00796b' }} />
+                        </Box>
+                        <Typography variant="h5" component="div" sx={{ color: '#1E93E3', mb: 2 }}>
+                          {service.name}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {service.serviceDetails?.$values?.[0]?.description || 'No description available'}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Giá dịch vụ: {service.price}
+                        </Typography>
                       </Box>
-                      <Typography variant="h5" component="div" sx={{ color: '#1E93E3', mb: 2 }}>
-                        {service.name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {service.serviceDetails?.$values?.[0]?.description || 'No description available'}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Giá dịch vụ: {service.price}
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              ))}
+            </Grid>
+          )}
+
         </div>
       </Container>
       <Footer />
