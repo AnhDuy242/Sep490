@@ -30,6 +30,10 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const accountId = localStorage.getItem('accountId');
 
+
+    const [isSending, setIsSending] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+
     const messagesEndRef = useRef(null);
     const pollingInterval = useRef(null);
 
@@ -77,6 +81,8 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
             return;
         }
     
+        setIsSending(true);
+
         let imageUrl = '';
         const nowUtc = new Date();
         const offset = 7; // Vietnam Time Zone
@@ -84,6 +90,8 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
         const sentAt = nowVietnam.toISOString();
 
         if (selectedImage) {
+            setIsUploading(true);
+
             const uploadFormData = new FormData();
             uploadFormData.append('file', selectedImage);
 
@@ -98,15 +106,21 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
                     setSnackbarMessage(`Error uploading image: ${errorText}`);
                     setSnackbarSeverity('error');
                     setSnackbarOpen(true);
+                    setIsSending(false);
+                    setIsUploading(false);
                     return;
                 }
 
                 const uploadResult = await uploadResponse.json();
                 imageUrl = uploadResult.url;
+                setIsUploading(false);
+
             } catch (error) {
                 setSnackbarMessage(`Error uploading image: ${error.message}`);
                 setSnackbarSeverity('error');
                 setSnackbarOpen(true);
+                setIsSending(false);
+                setIsUploading(false);
                 return;
             }
         }
@@ -132,6 +146,8 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
                 setSnackbarMessage(`Error creating message: ${errorText}`);
                 setSnackbarSeverity('error');
                 setSnackbarOpen(true);
+                setIsSending(false);
+
                 return;
             }
 
@@ -142,10 +158,14 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
             setSnackbarMessage('Message sent successfully!');
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
+            setIsSending(false);
+
         } catch (error) {
             setSnackbarMessage(`Error creating message: ${error.message}`);
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
+            setIsSending(false);
+
         }
     };
 
@@ -154,9 +174,13 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
         setSelectedImage(file);
 
         if (file) {
+            setIsUploading(true);
+
             const reader = new FileReader();
             reader.onloadend = () => {
                 setSelectedImagePreview(reader.result);
+                setIsUploading(false);
+
             };
             reader.readAsDataURL(file);
         } else {
@@ -281,9 +305,10 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
                             onChange={handleImageChange}
                             style={{ display: 'none' }}
                             id="imageUpload"
+                            disabled={isUploading}
                         />
                         <label htmlFor="imageUpload">
-                            <IconButton color="primary" component="span">
+                            <IconButton color="primary" component="span" disabled={isUploading}>
                                 <AttachFileIcon />
                             </IconButton>
                         </label>
@@ -298,8 +323,9 @@ const ChatBox = ({ open, onClose, conversationId, doctorIdSelected }) => {
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             sx={{ flex: 1 }}
+                            disabled={isUploading || isSending}
                         />
-                        <IconButton color="primary" onClick={handleSendMessage}>
+                        <IconButton color="primary" onClick={handleSendMessage} disabled={isUploading || isSending}>
                             <SendIcon />
                         </IconButton>
                         {selectedImagePreview && (

@@ -42,13 +42,15 @@ import AdminProfile from './pages/AdminDashBoard/component/admin_profile';
 import BlogList from './pages/Blog';
 import BlogDetail from './pages/Blog/BlogDetails';
 import DoctorDetail from './pages/DoctorList/DoctorDetail';
-import ServiceList from './pages/Home/component/PolyServ/ServiceList';
 import FeedbackPage from './pages/ReceptionistManagement/feedback_receptionist';
 import EmployeeList from './pages/AdminDashBoard/EmployeeManagement/EmployeeManagement';
 import ServiceDetail from './pages/Home/component/PolyServ/ServiceDetail';
 import ForgotPasswordForm from './layouts/ForgotPassword';
 import PasswordSent from './layouts/ForgotPassword/PasswordSent';
 import AppointmentsDoctor from './pages/DoctorManagement/getAppointment_Doctor/Appointment_Doctor';
+import DepartmentList from './pages/Home/component/PolyServ/DepartmentList';
+import ServiceListPage from './pages/Home/component/PolyServ/ServiceList';
+import SearchServiceResult from './pages/Home/component/PolyServ/searchServiceResult';
 function App() {
   return (
     <Routes>
@@ -62,7 +64,10 @@ function App() {
       <Route path="/viewAllBlogs" element={<BlogList />} />
       <Route path="/viewDetailBlog/:id" element={<BlogDetail />} />
       <Route path="/viewDoctorDetail/:id" element={<DoctorDetail />} />
-      <Route path="/servicesByDepartment/:depId" element={<ServiceList />} />
+      <Route path="/servicesList/:depId" element={<ServiceListPage />} />
+      <Route path="/departmentsList" element={<DepartmentList/>} />
+      <Route path="/searchServicesList" element={<SearchServiceResult/>} />
+
       <Route path="/servicesDetail/:serviceId" element={<ServiceDetail />} />
 
       {/**Route admin */}

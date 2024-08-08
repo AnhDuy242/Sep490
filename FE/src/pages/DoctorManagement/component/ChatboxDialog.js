@@ -19,7 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ClearIcon from '@mui/icons-material/Clear';
 
-const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
+const ChatBox = ({ open, onClose, conversationId, patientIdSelected }) => {
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const [selectedImage, setSelectedImage] = useState(null);
@@ -30,6 +30,8 @@ const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
     const [previewImageUrl, setPreviewImageUrl] = useState('');
     const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
     const accountId = localStorage.getItem('accountId');
+    const [isSending, setIsSending] = useState(false);
+const [isUploading, setIsUploading] = useState(false);
 
     const messagesEndRef = useRef(null);
     const pollingInterval = useRef(null);
@@ -68,80 +70,91 @@ const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
 
     const handleSendMessage = async () => {
         if (!newMessage.trim() && !selectedImage) {
-            setSnackbarMessage('Please enter a message or select an image before sending.');
+            setSnackbarMessage('Không được để trống .');
             setSnackbarSeverity('warning');
             setSnackbarOpen(true);
             return;
         }
     
+        setIsSending(true);
+    
         let imageUrl = '';
-        const nowUtc = new Date();
-        const offset = 7; // Múi giờ Việt Nam
-        const nowVietnam = new Date(nowUtc.getTime() + offset * 60 * 60 * 1000);
-        const sentAt = nowVietnam.toISOString();
-
         if (selectedImage) {
+            setIsUploading(true);
             const uploadFormData = new FormData();
             uploadFormData.append('file', selectedImage);
-
+    
             try {
                 const uploadResponse = await fetch('https://localhost:7240/api/Upload/upload', {
                     method: 'POST',
                     body: uploadFormData,
                 });
-
+    
                 if (!uploadResponse.ok) {
                     const errorText = await uploadResponse.text();
-                    setSnackbarMessage(`Error uploading image: ${errorText}`);
+                    setSnackbarMessage(`Lỗi tải ảnh: ${errorText}`);
                     setSnackbarSeverity('error');
                     setSnackbarOpen(true);
+                    setIsSending(false);
+                    setIsUploading(false);
                     return;
                 }
-
+    
                 const uploadResult = await uploadResponse.json();
                 imageUrl = uploadResult.url;
+                setIsUploading(false);
             } catch (error) {
-                setSnackbarMessage(`Error uploading image: ${error.message}`);
+                setSnackbarMessage(`Lỗi tải ảnh: ${error.message}`);
                 setSnackbarSeverity('error');
                 setSnackbarOpen(true);
+                setIsSending(false);
+                setIsUploading(false);
                 return;
             }
         }
-
+    
+        const nowUtc = new Date();
+        const offset = 7; // Múi giờ Việt Nam
+        const nowVietnam = new Date(nowUtc.getTime() + offset * 60 * 60 * 1000);
+        const sentAt = nowVietnam.toISOString();
+    
         const message = {
             conversationId,
             senderId: parseInt(accountId),
-            receiverId:  patientIdSelected,
+            receiverId: patientIdSelected,
             messageText: newMessage,
             imageUrl: imageUrl || null,
             sentAt
         };
-
+    
         try {
             const messageResponse = await fetch('https://localhost:7240/api/Messages/Create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(message),
             });
-
+    
             if (!messageResponse.ok) {
                 const errorText = await messageResponse.text();
-                setSnackbarMessage(`Error creating message: ${errorText}`);
+                setSnackbarMessage(`Lỗi tải message: ${errorText}`);
                 setSnackbarSeverity('error');
                 setSnackbarOpen(true);
+                setIsSending(false);
                 return;
             }
-
+    
             setNewMessage('');
             setSelectedImage(null);
             setSelectedImagePreview('');
-            setSnackbarMessage('Message sent successfully!');
+            setSnackbarMessage('Gửi tin nhắn thành công!');
             setSnackbarSeverity('success');
             setSnackbarOpen(true);
+            setIsSending(false);
         } catch (error) {
-            setSnackbarMessage(`Error creating message: ${error.message}`);
+            setSnackbarMessage(`Gửi tin nhắn thất bại: ${error.message}`);
             setSnackbarSeverity('error');
             setSnackbarOpen(true);
+            setIsSending(false);
         }
     };
 
@@ -150,9 +163,11 @@ const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
         setSelectedImage(file);
 
         if (file) {
+            setIsUploading(true); 
             const reader = new FileReader();
             reader.onloadend = () => {
                 setSelectedImagePreview(reader.result);
+                setIsUploading(false);
             };
             reader.readAsDataURL(file);
         } else {
@@ -261,9 +276,10 @@ const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
                             onChange={handleImageChange}
                             style={{ display: 'none' }}
                             id="imageUpload"
+                            disabled={isUploading} 
                         />
                         <label htmlFor="imageUpload">
-                            <IconButton color="primary" component="span">
+                            <IconButton color="primary" component="span" disabled={isUploading}>
                                 <AttachFileIcon />
                             </IconButton>
                         </label>
@@ -271,15 +287,16 @@ const ChatBox = ({ open, onClose, conversationId,  patientIdSelected }) => {
                             autoFocus
                             margin="dense"
                             id="message"
-                            label="Type your message"
+                            label={isSending ? "Đang gửi tin nhắn..." : "Type your message"}
                             type="text"
                             fullWidth
                             variant="outlined"
                             value={newMessage}
                             onChange={(e) => setNewMessage(e.target.value)}
                             sx={{ flex: 1 }}
+                            disabled={isUploading || isSending}  // Disable the input field when isSending is true
                         />
-                        <IconButton color="primary" onClick={handleSendMessage}>
+                        <IconButton color="primary" onClick={handleSendMessage}  disabled={isUploading || isSending}>
                             <SendIcon />
                         </IconButton>
                         {selectedImagePreview && (

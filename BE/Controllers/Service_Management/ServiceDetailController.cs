@@ -42,6 +42,20 @@ namespace BE.Controllers.Service_Management
 
             return CreatedAtAction(nameof(GetServiceDetail), new { id = serviceDetail.ServiceDetailId }, serviceDetailDto);
         }
+        [HttpGet]
+        public async Task<IActionResult> SearchServices([FromQuery] string keyword)
+        {
+            if (string.IsNullOrEmpty(keyword))
+            {
+                return BadRequest("Keyword is required");
+            }
+
+            var services = await _context.Services
+                .Where(s => s.Name.Contains(keyword))
+                .ToListAsync();
+
+            return Ok(services);
+        }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateServiceDetail(int id, ServiceDetailDto serviceDetailDto)

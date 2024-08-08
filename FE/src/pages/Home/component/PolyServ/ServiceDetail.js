@@ -12,6 +12,7 @@ const ServiceDetail = () => {
   const [allServices, setAllServices] = useState([]);
   const { serviceId } = useParams();
 
+  // Fetch service details
   useEffect(() => {
     const fetchService = async () => {
       try {
@@ -23,10 +24,14 @@ const ServiceDetail = () => {
       }
     };
 
+    fetchService();
+  }, [serviceId]); // Only run when serviceId changes
+
+  // Fetch all services except the current one
+  useEffect(() => {
     const fetchAllServices = async () => {
       try {
         const response = await axios.get('https://localhost:7240/api/Department/GetAllServicesAndDetails');
-        // Ensure that the filter is applied after the service data is fetched
         if (service) {
           setAllServices(response.data.$values.filter(s => s.serviceId !== Number(serviceId)));
         } else {
@@ -38,9 +43,8 @@ const ServiceDetail = () => {
       }
     };
 
-    fetchService().then(fetchAllServices); // Chain fetchService and fetchAllServices
-
-  }, [serviceId, service]); // Added `service` to dependency array
+    fetchAllServices();
+  }, [service]); // Run when the service is fetched
 
   if (!service) {
     return <div>Loading...</div>;
@@ -50,7 +54,7 @@ const ServiceDetail = () => {
     <>
       <Header />
       <Navbar />
-      <Container sx={{ minHeight: '80vh', mt: 10 }}>
+      <Container sx={{ minHeight: '80vh', mt: 10,mb:10 }}>
         <Breadcrumbs aria-label="breadcrumb" sx={{ marginBottom: 4 }}>
           <Link component={RouterLink} to="/" color="inherit" sx={{ fontSize: '1.2rem' }}>
             Trang chủ

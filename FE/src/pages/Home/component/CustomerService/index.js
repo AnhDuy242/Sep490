@@ -364,7 +364,7 @@ function CustomerService() {
                     icon={<AttachMoneyIcon fontSize="large" color="primary" />}
                     title="Bảng giá dịch vụ"
                     description="Quý khách hàng sử dụng tiện ích này để tra cứu giá dịch vụ y tế tại phòng khám Đa khoa 68A"
-                    to="/servicesByDepartment/3"  // Adjust this route as needed
+                    to="/departmentsList"  // Adjust this route as needed
                     buttonText="Đi đến"
                 />
                 <ServiceButton

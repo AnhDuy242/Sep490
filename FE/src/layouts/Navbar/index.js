@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, InputBase, Button, Menu, MenuItem, Box, Typography } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import SearchIcon from '@mui/icons-material/Search';
@@ -70,7 +70,7 @@ const Navbar = () => {
   const [searchValue, setSearchValue] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
   const patientCheck = localStorage.getItem('role') === 'Patient' ? true : false;
-
+  const navigate = useNavigate();
   useEffect(() => {
     const loadDepartments = async () => {
       try {
@@ -97,8 +97,9 @@ const Navbar = () => {
   };
 
   const handleSearchClick = () => {
-    console.log('Search clicked with value:', searchValue);
-  };
+    if (searchValue.trim()) {
+      navigate(`/searchServicesList?search=${encodeURIComponent(searchValue.trim())}`);
+    }  };
 
   const handleMenuToggle = () => {
     setMenuOpen((prev) => !prev);

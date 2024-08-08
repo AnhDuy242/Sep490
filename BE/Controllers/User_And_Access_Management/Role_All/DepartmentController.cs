@@ -43,6 +43,42 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
 
             return Ok(result);
         }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<DepartmentWithServicesDto>>> GetAllDepartmentWithServices()
+        {
+            var departments = await _context.Departments
+                .Include(d => d.Services)
+                .ThenInclude(s => s.ServiceDetails) // Include service details
+                .ToListAsync();
+
+            if (departments == null || !departments.Any())
+            {
+                return NotFound();
+            }
+
+            var result = departments.Select(d => new DepartmentWithServicesDto
+            {
+                Department = _mapper.Map<DepartmentDTO>(d),
+                Services = d.Services.Select(s => new ServiceDTO
+                {
+                    ServiceId = s.ServiceId,
+                    Name = s.Name,
+                    Price = s.Price,
+                    IsActive = s.IsActive ?? true,
+                    ServiceDetails = s.ServiceDetails.Select(sd => new ServiceDetailDto
+                    {
+                        ServiceDetailId = sd.ServiceDetailId,
+                        ServiceId = sd.ServiceId,
+                        Description = sd.Description,
+                        Duration = sd.Duration,
+                        AdditionalInfo = sd.AdditionalInfo,
+                        IsActive = sd.IsActive
+                    }).ToList()
+                }).ToList()
+            }).ToList();
+
+            return Ok(result);
+        }
         [HttpGet("GetServicesByDepartment/{departmentId}")]
 
         public async Task<List<ServiceDTO>> GetServicesAndDetailsByDepartmentIdAsync(int departmentId)
@@ -91,6 +127,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
 
             return services;
         }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<DepartmentDTO>>> GetDepartments()
         {
