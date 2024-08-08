@@ -55,38 +55,75 @@ const AdminProfile = () => {
   };
 
   const handleUpdateProfile = async () => {
-    if (!profile.name || !profile.email || !profile.phone || !profile.password) {
-      setSnackbarMessage('Vui lòng điền tất cả các trường bắt buộc');
+    // Validation
+    if (!profile.name || profile.name.length > 50) {
+      setSnackbarMessage('Tên không được để trống và phải nhỏ hơn 50 ký tự');
       setSnackbarSeverity('warning');
       setOpenSnackbar(true);
       return;
     }
-
+  
+    if (!profile.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
+      setSnackbarMessage('Email không hợp lệ');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (!profile.phone || profile.phone.length < 10 || profile.phone.length > 11) {
+      setSnackbarMessage('Số điện thoại phải có từ 10 đến 11 ký tự');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (!profile.password || profile.password.length > 50) {
+      setSnackbarMessage('Mật khẩu không được để trống và phải nhỏ hơn 50 ký tự');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
     if (profile.password !== confirmPassword) {
       setSnackbarMessage('Mật khẩu không khớp');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
       return;
     }
-
+  
     try {
       const updatedProfile = {
         ...profile,
         password: profile.password,
       };
-
-      await axios.put(`https://localhost:7240/api/AdminProfile/UpdateAdmin/${adminId}`, updatedProfile);
-
+  
+      const response = await fetch(`https://localhost:7240/api/AdminProfile/UpdateAdmin/${adminId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProfile),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log(errorData);
+        throw new Error(errorData.error || 'Không thể cập nhật hồ sơ1');
+      }
+      
       setSnackbarMessage('Cập nhật hồ sơ thành công');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
       setIsEditing(false); // Exit edit mode after successful update
     } catch (error) {
-      setSnackbarMessage('Cập nhật hồ sơ thất bại');
+      console.log(error)
+      setSnackbarMessage(error.message || 'Không thể cập nhật hồ sơ');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
   };
+  
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;

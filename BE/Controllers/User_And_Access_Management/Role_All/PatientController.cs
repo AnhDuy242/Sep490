@@ -24,7 +24,7 @@ public class PatientProfileController : ControllerBase
         // Ensure the id in the route matches the id in the DTO
         if (id != updateDto.PatientId)
         {
-            return BadRequest("Không tìm thấy bệnh nhân với id này");
+            return BadRequest(new { Message = "Không tìm thấy bệnh nhân với id này" });
         }
 
         var patient = await _context.Patients
@@ -33,7 +33,24 @@ public class PatientProfileController : ControllerBase
 
         if (patient == null)
         {
-            return NotFound("Không tìm thấy bệnh nhân với id này");
+            return NotFound(new { Message = "Không tìm thấy bệnh nhân với id này" });
+        }
+
+        // Check if the new email or phone number already exists in the database
+        bool emailExists = await _context.Accounts
+            .AnyAsync(a => a.Email == updateDto.Email && a.AccId != patient.PatientNavigation.AccId);
+
+        bool phoneExists = await _context.Accounts
+            .AnyAsync(a => a.Phone == updateDto.Phone && a.AccId != patient.PatientNavigation.AccId);
+
+        if (emailExists)
+        {
+            return BadRequest(new { Message = "Email đã tồn tại trong hệ thống" });
+        }
+
+        if (phoneExists)
+        {
+            return BadRequest(new { Message = "Số điện thoại đã tồn tại trong hệ thống" });
         }
 
         // Map the DTO to the Patient model
@@ -57,7 +74,7 @@ public class PatientProfileController : ControllerBase
         {
             if (!PatientExists(id))
             {
-                return NotFound("Không tìm thấy bệnh nhân với id này");
+                return NotFound(new { Message = ("Không tìm thấy bệnh nhân với id này") });
             }
             else
             {
@@ -65,8 +82,9 @@ public class PatientProfileController : ControllerBase
             }
         }
 
-        return Ok("Đã cập nhật thành công thông tin");
+        return Ok(new { Message = ("Đã cập nhật thành công thông tin") });
     }
+
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetPatientProfile(int id)

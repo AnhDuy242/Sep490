@@ -81,24 +81,41 @@ const ReceptionistAccount = () => {
     };
     // Validation schema using yup
     const validationSchema = yup.object().shape({
-        name: yup.string().required('Name is required'),
-        gender: yup.string().required('Gender is required').oneOf(['Male', 'Female'], 'Gender is required'),
-        // age: yup.number().required('Age is required').positive('Age must be a positive number').integer('Age must be an integer'),
-        phone: yup.string().required('Phone is required').matches(/^\d{10,11}$/, 'Invalid phone number'),
-        dob: yup.date().required('Date of Birth is required').nullable(),
-        email: yup.string().email('Invalid email format').required('Email is required'),
-        // Password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
+        name: yup.string()
+            .required('Tên là bắt buộc')
+            .max(50, 'Tên không được quá 50 ký tự'),
+        gender: yup.string()
+            .required('Giới tính là bắt buộc')
+            .oneOf(['Male', 'Female'], 'Giới tính phải là Male hoặc Female'),
+        phone: yup.string()
+            .required('Số điện thoại là bắt buộc')
+            .matches(/^\d{10,11}$/, 'Số điện thoại không hợp lệ'),
+        dob: yup.date()
+            .required('Ngày sinh là bắt buộc')
+            .nullable(),
+        email: yup.string()
+            .email('Định dạng email không hợp lệ')
+            .required('Email là bắt buộc'),
+        // Password: yup.string().required('Mật khẩu là bắt buộc').min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
     });
     const validationSchemaforEdit = yup.object().shape({
-        name: yup.string().required('Name is required'),
-        gender: yup.string().required('Gender is required').oneOf(['Male', 'Female'], 'Gender is required'),
-        // age: yup.number().required('Age is required').positive('Age must be a positive number').integer('Age must be an integer'),
-        phone: yup.string().required('Phone is required').matches(/^\d{10,11}$/, 'Invalid phone number'),
-        dob: yup.date().required('Date of Birth is required').nullable(),
-        email: yup.string().email('Invalid email format').required('Email is required'),
-        // Password: yup.string().required('Password is required').min(6, 'Password must be at least 6 characters')
+        name: yup.string()
+            .required('Tên là bắt buộc')
+            .max(50, 'Tên không được quá 50 ký tự'),
+        gender: yup.string()
+            .required('Giới tính là bắt buộc')
+            .oneOf(['Male', 'Female'], 'Giới tính phải là Male hoặc Female'),
+        phone: yup.string()
+            .required('Số điện thoại là bắt buộc')
+            .matches(/^\d{10,11}$/, 'Số điện thoại không hợp lệ'),
+        dob: yup.date()
+            .required('Ngày sinh là bắt buộc')
+            .nullable(),
+        email: yup.string()
+            .email('Định dạng email không hợp lệ')
+            .required('Email là bắt buộc'),
+        // Password: yup.string().required('Mật khẩu là bắt buộc').min(6, 'Mật khẩu phải có ít nhất 6 ký tự')
     });
-
 
     // Function to load receptionists from API
     useEffect(() => {

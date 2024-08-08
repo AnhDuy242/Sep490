@@ -71,45 +71,53 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             {
                 return BadRequest(ModelState);
             }
-            if (!_validateService.CheckPhoneNumberExist(model.Phone))
 
+            // Check if phone number already exists
+            if (_validateService.CheckPhoneNumberExist(model.Phone))
             {
                 return BadRequest(new { message = "Số điện thoại đã tồn tại" });
             }
+
+            // Check if email already exists
+            if (_context.Accounts.Any(a => a.Email == model.Email))
+            {
+                return BadRequest(new { message = "Email đã tồn tại" });
+            }
+
+            // Generate random password
             string password = _validateService.GenerateRandomPassword();
 
-
+            // Create new account
             Account account = new Account
-                { 
-                    Phone = model.Phone,
-                    Password = password,
-                    RoleId = 3,
-                    Email = model.Email,
-                    IsActive = true
-                };
-                await _context.Accounts.AddAsync(account);
-                await _context.SaveChangesAsync();
-                Patient patient = new Patient
-                {
-                    PatientId = account.AccId,
-                    Name = model.Name,
-                    Gender = model.Gender,
-                    Dob = model.Dob,
-                    Address = model.Address,
-                    IsActive = true
-                };
-                await _context.Patients.AddAsync(patient);
-                // Lưu thông tin bác sĩ vào database
-            
+            {
+                Phone = model.Phone,
+                Password = password,
+                RoleId = 3,
+                Email = model.Email,
+                IsActive = true
+            };
 
+            await _context.Accounts.AddAsync(account);
             await _context.SaveChangesAsync();
 
+            // Create new patient
+            Patient patient = new Patient
+            {
+                PatientId = account.AccId,
+                Name = model.Name,
+                Gender = model.Gender,
+                Dob = model.Dob,
+                Address = model.Address,
+                IsActive = true
+            };
 
-          
-            return CreatedAtAction(nameof(TestGet), new { id = model.AccId }, model);
+            await _context.Patients.AddAsync(patient);
+            await _context.SaveChangesAsync();
+
+            // Return success response
+            return CreatedAtAction(nameof(TestGet), new { id = patient.PatientId }, model);
         }
-
-        
+     
 
 
     }

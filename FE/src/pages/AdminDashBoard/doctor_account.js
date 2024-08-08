@@ -23,7 +23,10 @@ const DoctorTable = () => {
     gender: '',
     age: '',
     phone: '',
+    email: '',
     role: 'Doctor',
+    depId: 0,
+
   });
   const [validationError, setValidationError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -32,10 +35,24 @@ const DoctorTable = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
+  const [departments, setDepartments] = useState([]);
+
 
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
+  useEffect(() => {
+    const fetchDepartments = async () => {
+      try {
+        const response = await fetch('https://localhost:7240/api/Department/GetDepartments');
+        const data = await response.json();
+        setDepartments(data.$values);
+      } catch (error) {
+        console.error('Error fetching departments:', error);
+      }
+    };
+    fetchDepartments();
+  }, []);
   useEffect(() => {
     loadDoctors(setDoctors, setLoading, setError);
   }, []);
@@ -50,7 +67,10 @@ const DoctorTable = () => {
       gender: '',
       age: '',
       phone: '',
+      email: '',
       role: 'Doctor',
+      depId: 0,
+
     });
     setValidationError('');
     setOpenAddDialog(false);
@@ -68,40 +88,51 @@ const DoctorTable = () => {
   };
 
   const handleAddDoctor = async () => {
-    if (!newDoctor.name || !newDoctor.gender || !newDoctor.age || !newDoctor.phone) {
+    if (!newDoctor.name || !newDoctor.gender || !newDoctor.age || !newDoctor.phone || !newDoctor.depId) {
       setValidationError('Tất cả các trường phải được điền đầy đủ.');
       return;
     }
-
+  
+    if (newDoctor.name.length > 50) {
+      setValidationError('Tên bác sĩ không được vượt quá 50 ký tự.');
+      return;
+    }
+  
     try {
-      const addedDoctor = await addDoctor(newDoctor);
+      const addedDoctor = await addDoctor({ ...newDoctor, depId: newDoctor.depId });
       setDoctors([...doctors, addedDoctor]);
       handleCloseAddDialog();
     } catch (error) {
       console.error('Error adding doctor:', error);
     }
   };
-
+  
   const handleEditDoctor = async () => {
-    if (!currentDoctor.name || !currentDoctor.gender || !currentDoctor.age || !currentDoctor.phone) {
+    if (!currentDoctor.name || !currentDoctor.gender || !currentDoctor.age || !currentDoctor.phone || !currentDoctor.depId) {
       setValidationError('Tất cả các trường phải được điền đầy đủ.');
       return;
     }
-
+  
+    if (currentDoctor.name.length > 50) {
+      setValidationError('Tên bác sĩ không được vượt quá 50 ký tự.');
+      return;
+    }
+  
     const updatedDoctorData = {
       ...currentDoctor,
       isActive: currentDoctor.isActive === 'true' || currentDoctor.isActive === true
     };
-
+  
     try {
       const updatedDoctor = await updateDoctor(currentDoctor.accId, updatedDoctorData);
       setDoctors(doctors.map(doc => (doc.accId === updatedDoctor.accId ? updatedDoctor : doc)));
       handleCloseEditDialog();
-      // window.location.reload();
     } catch (error) {
       console.error('Error updating doctor:', error);
     }
   };
+  
+  
 
   const handleSearchChange = (event, value) => {
     setSearchQuery(value);
@@ -266,6 +297,16 @@ const DoctorTable = () => {
           />
           <TextField
             margin="dense"
+            id="email"
+            label="Email"
+            type="text"
+            fullWidth
+            value={newDoctor.email}
+            onChange={(e) => setNewDoctor({ ...newDoctor, email: e.target.value })}
+            required
+          />
+          <TextField
+            margin="dense"
             id="phone"
             label="Số điện thoại"
             type="text"
@@ -283,6 +324,22 @@ const DoctorTable = () => {
             value={newDoctor.role}
             disabled
           />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="department-label">Chuyên khoa</InputLabel>
+            <Select
+              labelId="department-label"
+              id="department"
+              value={newDoctor.depId}
+              onChange={(e) => setNewDoctor({ ...newDoctor, depId: e.target.value })}
+              label="Chuyên khoa"
+            >
+              {departments.map((department) => (
+                <MenuItem key={department.depId} value={department.depId}>
+                  {department.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseAddDialog} color="primary">
@@ -381,26 +438,22 @@ const DoctorTable = () => {
             value={currentDoctor?.role || 'Doctor'}
             disabled
           />
-          <TextField
-            margin="dense"
-            id="edit-depId"
-            label="Chuyên khoa"
-            type="text"
-            fullWidth
-            value={currentDoctor?.depId || ''}
-            onChange={(e) => setCurrentDoctor({ ...currentDoctor, depId: e.target.value })}
-            required
-          />
-          <TextField
-            margin="dense"
-            id="edit-depName"
-            label="Tên chuyên khoa"
-            type="text"
-            fullWidth
-            value={currentDoctor?.departmentName || ''}
-            onChange={(e) => setCurrentDoctor({ ...currentDoctor, departmentName: e.target.value })}
-            required
-          />
+          <FormControl fullWidth margin="dense" required>
+            <InputLabel id="edit-depId-label">Chuyên khoa</InputLabel>
+            <Select
+              labelId="edit-depId-label"
+              id="edit-depId"
+              value={currentDoctor?.depId || ''}
+              onChange={(e) => setCurrentDoctor({ ...currentDoctor, depId: e.target.value })}
+              label="Chuyên khoa"
+            >
+              {departments.map((department) => (
+                <MenuItem key={department.depId} value={department.depId}>
+                  {department.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
           <FormControl fullWidth margin="dense" required>
             <InputLabel id="edit-isActive-label">Trạng thái hoạt động</InputLabel>
             <Select

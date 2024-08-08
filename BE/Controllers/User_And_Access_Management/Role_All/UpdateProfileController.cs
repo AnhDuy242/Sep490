@@ -43,7 +43,6 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
 
             return Ok(updateDto);
         }
-        // Update specific fields of doctor and account
         [HttpPut("/doctorProfile/{id}")]
         public async Task<IActionResult> UpdateDoctorAndAccount(int id, [FromBody] UpdateDoctorAndAccountDto updateDto)
         {
@@ -62,6 +61,33 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
                 return NotFound();
             }
 
+            // Check for email and phone existence
+            var account = doctor.Doc;
+            if (account != null)
+            {
+                if (updateDto.AccountEmail != null && account.Email != updateDto.AccountEmail)
+                {
+                    bool emailExists = await _context.Accounts
+                        .AnyAsync(a => a.Email == updateDto.AccountEmail);
+
+                    if (emailExists)
+                    {
+                        return BadRequest("Email đã tồn tại.");
+                    }
+                }
+
+                if (updateDto.AccountPhone != null && account.Phone != updateDto.AccountPhone)
+                {
+                    bool phoneExists = await _context.Accounts
+                        .AnyAsync(a => a.Phone == updateDto.AccountPhone);
+
+                    if (phoneExists)
+                    {
+                        return BadRequest("Số điện thoại đã tồn tại.");
+                    }
+                }
+            }
+
             // Update doctor details
             if (updateDto.Img != null)
             {
@@ -74,7 +100,6 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
             }
 
             // Update account details
-            var account = doctor.Doc;
             if (account != null)
             {
                 if (updateDto.AccountPhone != null)
@@ -104,5 +129,6 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
 
             return Ok(new { message = "Thông tin bác sĩ và tài khoản đã được cập nhật thành công!" });
         }
+
     }
 }

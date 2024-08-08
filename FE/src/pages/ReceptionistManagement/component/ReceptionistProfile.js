@@ -48,41 +48,75 @@ const ReceptionistProfile = () => {
   const handleToggleEdit = () => {
     setIsEditing(!isEditing);
   };
-
   const handleUpdateProfile = async () => {
+    // Kiểm tra các trường bắt buộc
     if (!profile.name || !profile.email || !profile.phone || !profile.password) {
       setSnackbarMessage('Vui lòng điền tất cả các trường bắt buộc');
       setSnackbarSeverity('warning');
       setOpenSnackbar(true);
       return;
     }
-
+  
+    // Kiểm tra độ dài tên
+    if (profile.name.length > 50) {
+      setSnackbarMessage('Tên không được vượt quá 50 ký tự');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    // Kiểm tra định dạng email
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(profile.email)) {
+      setSnackbarMessage('Email không hợp lệ');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    // Kiểm tra số điện thoại (10-11 số)
+    const phonePattern = /^\d{10,11}$/;
+    if (!phonePattern.test(profile.phone)) {
+      setSnackbarMessage('Số điện thoại phải có 10 hoặc 11 chữ số');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
     if (profile.password !== confirmPassword) {
       setSnackbarMessage('Mật khẩu không khớp');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
       return;
     }
-
+  
     try {
-      const updatedProfile = {
-        ...profile,
-        password: profile.password,
-      };
-
-      await axios.put(`https://localhost:7240/api/ReceptionistProfile/UpdateReceptionistProfile/${receptionistId}`, updatedProfile);
-
+      const response = await fetch(`https://localhost:7240/api/ReceptionistProfile/UpdateReceptionistProfile/${receptionistId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...profile,
+          password: profile.password,
+        }),
+      });
+  
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || 'Cập nhật hồ sơ thất bại');
+      }
+  
       setSnackbarMessage('Cập nhật hồ sơ thành công');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
       setIsEditing(false); // Exit edit mode after successful update
     } catch (error) {
-      setSnackbarMessage('Cập nhật hồ sơ thất bại');
+      setSnackbarMessage(error.message || 'Cập nhật hồ sơ thất bại');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prevProfile => ({ ...prevProfile, [name]: value }));
@@ -199,14 +233,15 @@ const ReceptionistProfile = () => {
           </Box>
         </Box>
         <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
+  open={openSnackbar}
+  autoHideDuration={6000}
+  onClose={handleCloseSnackbar}
+  anchorOrigin={{ vertical: 'top', horizontal: 'right' }} 
+>
+  <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+    {snackbarMessage}
+  </Alert>
+</Snackbar>
       </Container>
     </>
   );

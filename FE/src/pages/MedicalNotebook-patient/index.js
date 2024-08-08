@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Container, Button, Typography, Snackbar, Card, CardContent, Grid, Dialog, DialogTitle, DialogContent, DialogActions, CardActions
+    Container, Button, Typography, Snackbar, Card, CardContent, Grid, Dialog, DialogTitle, DialogContent, DialogActions, CardActions,
+    InputAdornment,
+    IconButton,
+    TextField
 } from '@mui/material';
 import { Font } from '@react-pdf/renderer';
 import ArialUnicodeMS from '../../assets/font/arial-unicode-ms.ttf';
@@ -12,6 +15,7 @@ import Footer from '../../layouts/Footer';
 import { Helmet } from 'react-helmet';
 import Breadcrumbs from '@mui/material/Breadcrumbs';
 import Link from '@mui/material/Link';
+import SearchIcon from '@mui/icons-material/Search';
 
 Font.register({
     family: 'ArialUnicodeMS',
@@ -19,6 +23,7 @@ Font.register({
 });
 
 const useStyles = makeStyles({
+
     root: {
         display: 'flex',
         flexDirection: 'column',
@@ -27,6 +32,14 @@ const useStyles = makeStyles({
     container: {
         flex: 1,
         paddingBottom: '60px',
+    },
+    searchContainer: {
+        marginBottom: '20px',
+        display: 'flex',
+        alignItems: 'center',
+    },
+    searchInput: {
+        marginRight: '10px',
     },
     footer: {
         position: 'relative',
@@ -97,10 +110,20 @@ const MedicalNotebook = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [searchNotebookId, setSearchNotebookId] = useState('');
     const [loading, setLoading] = useState(false);
+    const [searchText, setSearchText] = useState('');
+    const [searchPrescription, setSearchPrescription] = useState('');
+    const [filteredNotebooks, setFilteredNotebooks] = useState([]);
 
     useEffect(() => {
         handleGetPatientId();
     }, []);
+    useEffect(() => {
+        setFilteredNotebooks(
+            notebooks.filter(notebook =>
+                notebook.prescription.toLowerCase().includes(searchPrescription.toLowerCase())
+            )
+        );
+    }, [searchPrescription, notebooks]);
 
     const handleGetPatientId = () => {
         const isPatient = localStorage.getItem('role') === 'Patient' ? 'true' : 'false';
@@ -110,6 +133,10 @@ const MedicalNotebook = () => {
         }
     };
 
+    const handleDialogClose = () => {
+        setDialogOpen(false);
+        setSelectedNotebook(null);
+    };
     const fetchData = async (patientId) => {
         try {
             setLoading(true);
@@ -117,10 +144,12 @@ const MedicalNotebook = () => {
             console.log(data);
             if (data && data.length > 0) {
                 setNotebooks(data);
+                setFilteredNotebooks(data);
                 setSnackbarMessage('Tải dữ liệu thành công!');
                 setSnackbarOpen(true);
             } else {
                 setNotebooks([]);
+                setFilteredNotebooks([]);
                 setSnackbarMessage('Không có dữ liệu bệnh án!');
                 setSnackbarOpen(true);
             }
@@ -132,7 +161,6 @@ const MedicalNotebook = () => {
             setLoading(false);
         }
     };
-
     const fetchTestResults = async (medicalNotebookId) => {
         try {
             const response = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${medicalNotebookId}`);
@@ -170,10 +198,6 @@ const MedicalNotebook = () => {
         }
     };
 
-    const handleDialogClose = () => {
-        setDialogOpen(false);
-        setSelectedNotebook(null);
-    };
 
     const handlePrintImages = () => {
         const printWindow = window.open('', '', 'height=600,width=800');
@@ -208,7 +232,7 @@ const MedicalNotebook = () => {
             </Helmet>
             <Header />
             <Navbar />
-            <Container className={classes.container} style={{marginTop:'20px'}}>
+            <Container className={classes.container} style={{ marginTop: '20px' }}>
                 <Breadcrumbs aria-label="breadcrumb" style={{ marginBottom: '20px' }}>
                     <Link color="inherit" href="/">
                         Trang chủ
@@ -218,12 +242,22 @@ const MedicalNotebook = () => {
                 <Typography variant="h4" className={classes.title}>
                     Tra cứu kết quả bệnh án
                 </Typography>
+                <div className={classes.searchContainer}>
+                    <TextField
+                        label="Tìm kiếm theo chỉ định"
+                        variant="outlined"
+                        value={searchPrescription}
+                        onChange={(e) => setSearchPrescription(e.target.value)}
+                        className={classes.searchInput}
+                        fullWidth
+                    />
+                </div>
 
                 <Grid container spacing={2}>
                     {loading ? (
                         <Typography variant="body2">Đang tải dữ liệu...</Typography>
-                    ) : notebooks.length > 0 ? (
-                        notebooks.map((notebook) => (
+                    ) : filteredNotebooks.length > 0 ? (
+                        filteredNotebooks.map((notebook) => (
                             <Grid item xs={12} sm={6} md={4} key={notebook.$id}>
                                 <Card className={classes.card}>
                                     <CardContent>
@@ -273,7 +307,7 @@ const MedicalNotebook = () => {
                     >
                         <DialogTitle>Chi tiết bệnh án</DialogTitle>
                         <DialogContent className={classes.dialogContent}>
-                            {selectedNotebook && selectedNotebook.testResults && selectedNotebook.testResults.length > 0 && (
+                            {selectedNotebook && selectedNotebook.testResults && selectedNotebook.testResults.length > 0 ? (
                                 <div className={classes.imagesContainer}>
                                     <Typography variant="body1" style={{ marginBottom: '10px' }}>
                                         <strong>Kết quả xét nghiệm:</strong>
@@ -287,6 +321,10 @@ const MedicalNotebook = () => {
                                         />
                                     ))}
                                 </div>
+                            ) : (
+                                <Typography variant="body1" style={{ marginBottom: '10px' }}>
+                                    <strong>Không có kết quả xét nghiệm nào.</strong>
+                                </Typography>
                             )}
                         </DialogContent>
                         <DialogActions style={{ backgroundColor: '#f5f5f5', padding: '16px' }}>
@@ -306,9 +344,9 @@ const MedicalNotebook = () => {
                     message={snackbarMessage}
                 />
             </Container>
-         
-                <Footer />
-       
+
+            <Footer />
+
         </div>
     );
 };

@@ -12,6 +12,7 @@ import MuiAlert from '@mui/material/Alert';
 import { format, addDays, isAfter } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './component/rep.css'
+import dayjs from 'dayjs';
 
 const CreatePatientAccount = () => {
     const [open, setOpen] = useState(false);
@@ -25,7 +26,7 @@ const CreatePatientAccount = () => {
         gender: '',
         address: '',
         dob: '',
-        activeStatus: true // Mặc định là true
+        isActive: true // Mặc định là true
     });
     const [addData, setAddData] = useState(''); // State cho dữ liệu nhập từ dialog Add
     const [patients, setPatients] = useState([]);
@@ -33,6 +34,9 @@ const CreatePatientAccount = () => {
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [page, setPage] = useState(0);
     //
+    const today = dayjs();
+    const [snackbarSeverity, setSnackbarSeverity] = useState('success');
+
     const [departmentOptions, setDepartmentOptions] = useState([]);
     const [doctorOptions, setDoctorOptions] = useState([]);
     const [serviceOptions, setServiceOptions] = useState([]);
@@ -214,7 +218,8 @@ const CreatePatientAccount = () => {
 
         try {
             await ReceptionbookAppointment(appointmentDto);
-            setSnackbarMessage('Đặt lịch thành công!');
+            setSnackbarMessage('Thêm mới thành công');
+            setSnackbarSeverity('error');
             setOpenSnackbar(true);
             handleAddDialogClose();
             // Reset form
@@ -312,19 +317,91 @@ const CreatePatientAccount = () => {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setPatientData({ ...patientData, [name]: value });
+        if (name === 'dob') {
+            // Kiểm tra định dạng ngày sinh
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (dateRegex.test(value)) {
+                // Định dạng ngày hợp lệ, cập nhật state
+                setPatientData({ ...patientData, [name]: value });
+            } else {
+                // Định dạng ngày không hợp lệ, giữ nguyên giá trị trong state
+                setPatientData({ ...patientData, [name]: patientData.dob });
+            }
+        } else {
+            // Với các trường khác, cập nhật giá trị như bình thường
+            setPatientData({ ...patientData, [name]: value });
+        }
     };
 
     const handleSubmit = async () => {
+        // Validate fields
+        if (!patientData.phone || !patientData.email || !patientData.name || !patientData.address || !patientData.dob) {
+            setSnackbarMessage('Tất cả các trường đều là bắt buộc.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
+        if (patientData.phone.length < 10 || patientData.phone.length > 11) {
+            setSnackbarMessage('Số điện thoại phải có từ 10 đến 11 ký tự.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
+        if (!/\S+@\S+\.\S+/.test(patientData.email)) {
+            setSnackbarMessage('Email không hợp lệ.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
+        if (patientData.name.length > 50) {
+            setSnackbarMessage('Tên không được vượt quá 50 ký tự.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
+        if (patientData.address.length > 100) {
+            setSnackbarMessage('Địa chỉ không được vượt quá 100 ký tự.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
         try {
-            await createPatient(patientData);
+            // Ensure date is in correct format
+            const formattedDate = format(new Date(patientData.dob), 'yyyy-MM-dd');
+            const result = await createPatient({ ...patientData, dob: formattedDate });
+
+            // If no errors, show success message
+            setSnackbarMessage('Thêm mới bệnh nhân thành công!');
+            setSnackbarSeverity('success');
+            setOpenSnackbar(true);
             setOpen(false);
-            // Fetch the updated list of patients after adding a new one
+
+            // Fetch updated patient list
             const patientsList = await getAllPatients();
             setPatients(patientsList);
         } catch (error) {
+            // Show error message
+            let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại!';
+            if (error.response && error.response.data && error.response.data.message) {
+                errorMessage = error.response.data.message;
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+
+            setSnackbarMessage(errorMessage);
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
             console.error('Error creating patient:', error);
         }
     };
+
+
+
 
     const handleStatusChange = async (patientId, currentStatus) => {
         try {
@@ -332,8 +409,15 @@ const CreatePatientAccount = () => {
             await updatePatientStatus(patientId, currentStatus === null ? 1 : null);
             // Cập nhật danh sách bệnh nhân
             const patientsList = await getAllPatients();
+            setSnackbarMessage('Thay đổi trạng thái thành công!');
+            setSnackbarSeverity('success');
+
+            setOpenSnackbar(true);
             setPatients(patientsList);
         } catch (error) {
+            setSnackbarMessage('Thay đổi trạng thái thất bại');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
             console.error('Error updating patient status:', error);
         }
     };
@@ -369,6 +453,8 @@ const CreatePatientAccount = () => {
                         name="phone"
                         value={patientData.phone}
                         onChange={handleChange}
+                        required
+                        inputProps={{ maxLength: 11 }} // Giới hạn độ dài tối đa của số điện thoại
                     />
                     <TextField
                         margin="dense"
@@ -389,6 +475,7 @@ const CreatePatientAccount = () => {
                         onChange={handleChange}
                         style={{ display: 'none' }}
                     />
+
                     <TextField
                         margin="dense"
                         label="Tên"
@@ -397,7 +484,9 @@ const CreatePatientAccount = () => {
                         name="name"
                         value={patientData.name}
                         onChange={handleChange}
+                        required
                     />
+
                     <FormControl fullWidth margin="dense">
                         <InputLabel>Giới tính</InputLabel>
                         <Select
@@ -417,6 +506,8 @@ const CreatePatientAccount = () => {
                         name="address"
                         value={patientData.address}
                         onChange={handleChange}
+                        required
+                       
                     />
                     <TextField
                         margin="dense"
@@ -428,6 +519,10 @@ const CreatePatientAccount = () => {
                         onChange={handleChange}
                         InputLabelProps={{
                             shrink: true,
+                        }}
+                        inputProps={{
+                            min: format(addDays(new Date(), -365 * 100), 'yyyy-MM-dd'), // Đặt giá trị tối thiểu là 100 năm trước ngày hôm nay
+                            max: format(new Date(), 'yyyy-MM-dd'), // Đặt giá trị tối đa là ngày hôm nay
                         }}
                     />
                 </DialogContent>
@@ -655,7 +750,7 @@ const CreatePatientAccount = () => {
                 open={openSnackbar}
                 autoHideDuration={3000}
                 onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Adjust position here
+                anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Adjust position here
                 sx={{ zIndex: 1300 }} // Adjust zIndex if needed
             >
                 <Alert onClose={handleCloseSnackbar} severity="success">

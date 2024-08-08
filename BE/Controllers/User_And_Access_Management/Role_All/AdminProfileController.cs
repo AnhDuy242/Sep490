@@ -49,23 +49,53 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
         public async Task<IActionResult> UpdateAdmin(int id, [FromBody] AdminAccountDTO adminDto)
         {
             // Find the admin by ID from the URL
-            var admin = await _context.Admins.Include(a => a.AdminNavigation).FirstOrDefaultAsync(a => a.AdminId == id);
+            var admin = await _context.Admins
+                .Include(a => a.AdminNavigation)
+                .FirstOrDefaultAsync(a => a.AdminId == id);
+
             if (admin == null)
             {
-                return NotFound(new { Error = "Admin not found" });
+                return NotFound(new { Error = "Không tìm thấy admin " });
             }
 
             // Ensure AdminNavigation is not null
             if (admin.AdminNavigation == null)
             {
-                // Initialize AdminNavigation if needed, or handle this case accordingly
                 admin.AdminNavigation = new Account();
+            }
+
+            // Check if the email or phone is being updated
+            bool isEmailUpdated = admin.AdminNavigation.Email != adminDto.Email;
+            bool isPhoneUpdated = admin.AdminNavigation.Phone != adminDto.Phone;
+
+            // Check if the new email or phone number already exists in the database
+            if (isEmailUpdated)
+            {
+                bool emailExists = await _context.Accounts
+                    .AnyAsync(a => a.Email == adminDto.Email && a.AccId != admin.AdminNavigation.AccId);
+
+                if (emailExists)
+                {
+                    return BadRequest(new { Error = "Email đã tồn tại" });
+                }
+            }
+
+            if (isPhoneUpdated)
+            {
+                bool phoneExists = await _context.Accounts
+                    .AnyAsync(a => a.Phone == adminDto.Phone && a.AccId != admin.AdminNavigation.AccId);
+
+                if (phoneExists)
+                {
+                    return BadRequest(new { Error = "Số điện thoại đã tồn tại" });
+                }
             }
 
             // Update the admin properties
             admin.Name = adminDto.Name;
             admin.AdminNavigation.Email = adminDto.Email;
             admin.AdminNavigation.Phone = adminDto.Phone;
+
             // Note: Update password only if it's provided
             if (!string.IsNullOrWhiteSpace(adminDto.Password))
             {
@@ -76,14 +106,13 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
             {
                 _context.Admins.Update(admin);
                 await _context.SaveChangesAsync();
-                return Ok(new { Message = "Admin updated successfully" });
+                return Ok(new { Message = "Cập nhật thành công" });
             }
             catch (Exception)
             {
-                return StatusCode(500, new { Error = "An error occurred while updating the admin" });
+                return StatusCode(500, new { Error = "Đã có lỗi xảy ra" });
             }
         }
-
 
 
 

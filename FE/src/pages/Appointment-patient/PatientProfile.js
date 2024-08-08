@@ -28,11 +28,14 @@ const Profile = () => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`https://localhost:7240/api/PatientProfile/GetPatientProfile/${accountId}`);
-        // Update profile state with fetched data
-        setProfile(response.data);
+        const response = await fetch(`https://localhost:7240/api/PatientProfile/GetPatientProfile/${accountId}`);
+        if (!response.ok) {
+          throw new Error('Không thể tải thông tin hồ sơ');
+        }
+        const data = await response.json();
+        setProfile(data);
       } catch (error) {
-        setSnackbarMessage('Không thể tải thông tin hồ sơ');
+        setSnackbarMessage(error.message);
         setSnackbarSeverity('error');
         setOpenSnackbar(true);
       }
@@ -50,39 +53,86 @@ const Profile = () => {
   };
 
   const handleUpdateProfile = async () => {
+    // Validate form fields
     if (!profile.name || !profile.phone || !profile.password) {
       setSnackbarMessage('Vui lòng điền tất cả các trường bắt buộc');
       setSnackbarSeverity('warning');
       setOpenSnackbar(true);
       return;
     }
-
+  
+    if (profile.name.length > 50) {
+      setSnackbarMessage('Tên không được vượt quá 50 ký tự');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (profile.address.length > 200) {
+      setSnackbarMessage('Địa chỉ không được vượt quá 200 ký tự');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (profile.phone.length < 10 || profile.phone.length > 11) {
+      setSnackbarMessage('Số điện thoại phải từ 10 đến 11 số');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(profile.email)) {
+      setSnackbarMessage('Email không hợp lệ');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
+    if (profile.password.length < 6) {
+      setSnackbarMessage('Mật khẩu phải có ít nhất 6 ký tự');
+      setSnackbarSeverity('warning');
+      setOpenSnackbar(true);
+      return;
+    }
+  
     if (profile.password !== confirmPassword) {
       setSnackbarMessage('Mật khẩu không khớp');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
       return;
     }
-
+  
     try {
       const updatedProfile = {
         ...profile,
         password: profile.password,
       };
-
-      await axios.put(`https://localhost:7240/api/PatientProfile/UpdatePatientProfile/${accountId}`, updatedProfile);
-
+  
+      const response = await fetch(`https://localhost:7240/api/PatientProfile/UpdatePatientProfile/${accountId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProfile),
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Cập nhật hồ sơ thất bại');
+      }
+  
       setSnackbarMessage('Cập nhật hồ sơ thành công');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
       setIsEditing(false); // Exit edit mode after successful update
     } catch (error) {
-      setSnackbarMessage('Cập nhật hồ sơ thất bại');
+      console.log(error);
+      setSnackbarMessage(error.message);
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
   };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prevProfile => ({ ...prevProfile, [name]: value }));

@@ -48,6 +48,37 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
             var doctorDto = _mapper.Map<DoctorDto>(doctor);
             return Ok(doctorDto);
         }
+        [HttpPost]
+        public async Task<IActionResult> CheckExistence( string email,  string phone)
+        {
+            if ( (string.IsNullOrEmpty(email) && string.IsNullOrEmpty(phone)))
+            {
+                return BadRequest("Invalid input");
+            }
+
+            bool emailExists = false;
+            bool phoneExists = false;
+
+            if (!string.IsNullOrEmpty(email))
+            {
+                emailExists = await _context.Accounts
+                    .AnyAsync(a => a.Email == email);
+            }
+
+            if (!string.IsNullOrEmpty(phone))
+            {
+                phoneExists = await _context.Accounts
+                    .AnyAsync(a => a.Phone == phone);
+            }
+
+            var result = new
+            {
+                EmailExists = emailExists,
+                PhoneExists = phoneExists
+            };
+
+            return Ok(result);
+        }
     }
 }
 

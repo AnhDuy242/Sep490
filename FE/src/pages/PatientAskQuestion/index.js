@@ -3,10 +3,15 @@ import Header from '../../layouts/Header';
 import NavBar from '../../layouts/Navbar';
 import CarouselSlider from '../../layouts/CarouselSlider';
 import Footer from '../../layouts/Footer';
-import { fetchQuestionsByDepId } from './../../services/QuestionService'; // Cập nhật đường dẫn đúng với vị trí của hàm
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem } from '@mui/material';
-import { getListDepartment, createPatientQuestion } from './../../services/QuestionService'; // Thay đổi đường dẫn nếu cần
+import { fetchQuestionsByDepId, getListDepartment, createPatientQuestion } from './../../services/QuestionService';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField, MenuItem, Snackbar } from '@mui/material';
 import { NavLink } from 'react-router-dom';
+import MuiAlert from '@mui/material/Alert';
+import { useNavigate } from 'react-router-dom';
+
+const Alert = React.forwardRef(function Alert(props, ref) {
+    return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />;
+});
 
 const PatientViewQuestion = () => {
     const [departments, setDepartments] = useState([]);
@@ -15,12 +20,16 @@ const PatientViewQuestion = () => {
     const [openDialog, setOpenDialog] = useState(false);
     const [newQuestion, setNewQuestion] = useState('');
     const [departmentForQuestion, setDepartmentForQuestion] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [messageType, setMessageType] = useState('error'); // 'success' or 'error'
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
                 const data = await getListDepartment();
-                setDepartments(data.$values); // Đảm bảo cấu trúc dữ liệu đúng
+                setDepartments(data.$values);
             } catch (error) {
                 console.error('Error fetching departments:', error);
             }
@@ -38,7 +47,7 @@ const PatientViewQuestion = () => {
             if (selectedDepartment) {
                 try {
                     const data = await fetchQuestionsByDepId(selectedDepartment);
-                    setQuestions(data.$values); // Đảm bảo cấu trúc dữ liệu đúng
+                    setQuestions(data.$values);
                 } catch (error) {
                     console.error('Error fetching questions:', error);
                 }
@@ -58,8 +67,10 @@ const PatientViewQuestion = () => {
 
     const handleSubmitQuestion = async () => {
         const patientId = localStorage.getItem('accountId');
-        if (!patientId || !newQuestion || !departmentForQuestion) {
-            console.error('Missing required fields');
+        if (!patientId || !newQuestion.trim() || !departmentForQuestion) {
+            setSnackbarMessage('Vui lòng điền đầy đủ thông tin.');
+            setMessageType('error');
+            setSnackbarOpen(true);
             return;
         }
 
@@ -68,15 +79,29 @@ const PatientViewQuestion = () => {
             setNewQuestion('');
             setDepartmentForQuestion('');
             setOpenDialog(false);
+
             // Optionally, refresh the questions list here
             if (selectedDepartment) {
                 const data = await fetchQuestionsByDepId(selectedDepartment);
-                setQuestions(data.$values); // Đảm bảo cấu trúc dữ liệu đúng
+                setQuestions(data.$values);
+           
             }
-
+            // Optionally redirect after successful submission
+            // navigate('/some-success-page'); 
+            setSnackbarMessage('Đã gửi câu hỏi.');
+            setMessageType('success');
+            setSnackbarOpen(true);
         } catch (error) {
             console.error('Error creating question:', error);
+            setMessageType('error');
+
+            setSnackbarMessage('Có lỗi xảy ra khi gửi câu hỏi.');
+            setSnackbarOpen(true);
         }
+    };
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
     };
 
     return (
@@ -84,33 +109,17 @@ const PatientViewQuestion = () => {
             <Header />
             <NavBar />
             <CarouselSlider />
-            <div style={{
-                display: 'flex',
-                padding: '20px',
-                margin: '20px'
-            }}>
+            <div style={{ display: 'flex', padding: '20px', margin: '20px' }}>
                 <div style={{ width: '20%', paddingRight: '20px' }}>
                     <div style={{ backgroundColor: '#f0f0f0', padding: '15px' }}>
                         <h3 style={{ color: '#fff', backgroundColor: '#3498db', padding: '10px', margin: '-15px -15px 15px -15px' }}>Chuyên mục tư vấn online</h3>
                         {departments.map((department) => (
                             <div
                                 key={department.depId}
-                                style={{
-                                    marginBottom: '15px',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    cursor: 'pointer'
-                                }}
+                                style={{ marginBottom: '15px', display: 'flex', alignItems: 'center', cursor: 'pointer' }}
                                 onClick={() => handleDepartmentClick(department.depId)}
                             >
-                                <span style={{
-                                    width: '20px',
-                                    height: '20px',
-                                    borderRadius: '50%',
-                                    border: '2px solid #3498db',
-                                    display: 'inline-block',
-                                    marginRight: '10px'
-                                }}></span>
+                                <span style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid #3498db', display: 'inline-block', marginRight: '10px' }}></span>
                                 <span style={{ color: '#333' }}>{department.name}</span>
                             </div>
                         ))}
@@ -190,7 +199,7 @@ const PatientViewQuestion = () => {
                         variant="outlined"
                         margin="normal"
                         InputProps={{
-                            style: { resize: 'both' }, // Cho phép kéo to nhỏ
+                            style: { resize: 'both' },
                         }}
                     />
                 </DialogContent>
@@ -204,6 +213,15 @@ const PatientViewQuestion = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+            >
+                <Alert onClose={handleSnackbarClose} severity={messageType} sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </>
     );
 };

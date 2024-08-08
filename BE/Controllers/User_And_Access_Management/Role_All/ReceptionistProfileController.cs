@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BE.DTOs;
 using BE.Models;
+using CloudinaryDotNet.Core;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -54,6 +55,24 @@ namespace BE.Controllers
                 return NotFound();
             }
 
+            // Kiểm tra email đã tồn tại hay chưa
+            bool emailExists = await _context.Accounts
+                .AnyAsync(r => r.Email == receptionistAccount.Email && r.Receptionist.RecepId != id);
+
+            if (emailExists)
+            {
+                return Conflict(new { message = "Email đã tồn tại." });
+            }
+
+            // Kiểm tra số điện thoại đã tồn tại hay chưa
+            bool phoneExists = await _context.Accounts
+                .AnyAsync(r => r.Phone == receptionistAccount.Phone && r.Receptionist.RecepId != id);
+
+            if (phoneExists)
+            {
+                return Conflict(new { message = "Số điện thoại đã tồn tại." });
+            }
+
             _mapper.Map(receptionistAccount, receptionist);
 
             try
@@ -72,8 +91,9 @@ namespace BE.Controllers
                 }
             }
 
-            return NoContent();
+            return Ok(new {message ="Cập nhật thông tin thành công"});
         }
+
 
         // POST: api/ReceptionistProfile
         [HttpPost]

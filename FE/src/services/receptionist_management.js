@@ -1,28 +1,33 @@
 //Hàm gọi API tạo tài khoản bệnh nhân
 export const createPatient = async (patientData) => {
-    const url = 'https://localhost:7240/api/CreatePatient/CreatePatient';
+  const url = 'https://localhost:7240/api/CreatePatient/CreatePatient';
 
-    try {
-        const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(patientData)
-        });
+  try {
+      const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(patientData)
+      });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+      if (!response.ok) {
+          // Đọc nội dung lỗi từ phản hồi
+          const errorResponse = await response.json();
+          // Tạo lỗi tùy chỉnh với thông tin lỗi từ phản hồi
+          throw new Error(`Error: ${JSON.stringify(errorResponse)}`);
+      }
 
-        const result = await response.json();
-        console.log('Patient created successfully:', result);
-        return result;
-    } catch (error) {
-        console.error('Error creating patient:', error);
-        throw error;
-    }
+      // Nếu phản hồi thành công, trả về kết quả
+      const result = await response.json();
+      return result;
+  } catch (error) {
+      // Ném lỗi ra ngoài để được xử lý trong handleSubmit
+      throw error;
+  }
 };
+
+
 //hàm get tài khoản bệnh nhân
 export const getAllPatients = async () => {
     const url = 'https://localhost:7240/api/CreatePatient/TestGetAllPatient';

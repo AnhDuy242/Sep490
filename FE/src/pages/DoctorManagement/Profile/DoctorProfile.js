@@ -21,7 +21,7 @@ const Profile = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const accoundId = localStorage.getItem('accountId');
-
+  const [emailError, setEmailError] = useState('');
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -42,7 +42,10 @@ const Profile = () => {
 
     fetchProfile();
   }, [accoundId]);
-
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
@@ -53,14 +56,22 @@ const Profile = () => {
 
   const handleUpdateProfile = async () => {
     if (password !== confirmPassword) {
-      setSnackbarMessage('Passwords do not match');
+      setSnackbarMessage('Mật khẩu không trùng hợp');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+      return;
+    }
+    if (!validateEmail(email)) {
+      setEmailError('Email không hợp lệ');
+      setSnackbarMessage('Email không hợp lệ');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
       return;
     }
 
+    setEmailError('');
     if (!email || !phone || !password) {
-      setSnackbarMessage('Please fill in all required fields');
+      setSnackbarMessage('Hãy điền đầy đủ thông tin');
       setSnackbarSeverity('warning');
       setOpenSnackbar(true);
       return;
@@ -77,11 +88,12 @@ const Profile = () => {
 
       const response = await axios.put(`https://localhost:7240/doctorProfile/${accoundId}`, updatedProfile);
 
-      setSnackbarMessage(response.data.message || 'Profile updated successfully');
+      setSnackbarMessage(response.data.message || 'Cập nhật hồ sơ thành công');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
+      console.log(response);
     } catch (error) {
-      setSnackbarMessage('Failed to update profile');
+      setSnackbarMessage(error.response.data || 'Không thể cập nhật hồ sơ');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
@@ -104,7 +116,7 @@ const Profile = () => {
         const { url } = uploadResponse.data;
         setAvatarUrl(url); // Update the avatar URL with the uploaded image URL
       } catch (error) {
-        setSnackbarMessage('Failed to upload image');
+        setSnackbarMessage('Không thể tải ảnh lên');
         setSnackbarSeverity('error');
         setOpenSnackbar(true);
       }
@@ -122,7 +134,7 @@ const Profile = () => {
   return (
     <Container sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Profile
+        Hồ sơ
       </Typography>
       <Box sx={{ position: 'relative', mb: 2, cursor: 'pointer' }} onClick={handleAvatarClick}>
         <Avatar
@@ -151,7 +163,7 @@ const Profile = () => {
               cursor: 'pointer', // Ensure the overlay is clickable
             }}
           >
-            Click to upload
+            Bấm để tải lên
           </Box>
         )}
         <input
@@ -165,7 +177,7 @@ const Profile = () => {
         <TextField
           fullWidth
           margin="normal"
-          label="Description"
+          label="Mô tả"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
           variant="outlined"
@@ -177,9 +189,14 @@ const Profile = () => {
         <TextField
           fullWidth
           margin="normal"
-          label="Phone"
+          label="Số điện thoại"
           value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (/^\d{0,11}$/.test(value)) { // Chỉ cho phép số và tối đa 11 ký tự
+              setPhone(value);
+            }
+          }}
           variant="outlined"
           disabled={!isEditing}
           sx={{ border: '1px solid gray', borderRadius: 1 }}
@@ -191,16 +208,22 @@ const Profile = () => {
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           variant="outlined"
-          disabled={!isEditing}
+          error={!!emailError}
+          helperText={emailError}
           sx={{ border: '1px solid gray', borderRadius: 1 }}
         />
         <TextField
           fullWidth
           margin="normal"
-          label="Password"
+          label="Mật khẩu"
           type={showPassword ? 'text' : 'password'}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value.length <= 50) { // Giới hạn tối đa 50 ký tự
+              setPassword(value);
+            }
+          }}
           variant="outlined"
           disabled={!isEditing}
           sx={{ border: '1px solid gray', borderRadius: 1 }}
@@ -209,7 +232,7 @@ const Profile = () => {
               <IconButton
                 edge="end"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                aria-label={showPassword ? 'Ẩn' : 'Hiện'}
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
@@ -220,10 +243,15 @@ const Profile = () => {
           <TextField
             fullWidth
             margin="normal"
-            label="Confirm Password"
+            label="Xác nhận mật khẩu"
             type={showConfirmPassword ? 'text' : 'password'}
             value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
+            onChange={(e) => {
+              const value = e.target.value;
+              if (value.length <= 50) { // Giới hạn tối đa 50 ký tự
+                setConfirmPassword(value);
+              }
+            }}
             variant="outlined"
             sx={{ border: '1px solid gray', borderRadius: 1 }}
             InputProps={{
@@ -231,7 +259,7 @@ const Profile = () => {
                 <IconButton
                   edge="end"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showConfirmPassword ? 'Ẩn' : 'Hiện'}
                 >
                   {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
@@ -241,11 +269,11 @@ const Profile = () => {
         )}
         <Box sx={{ mt: 2 }}>
           <Button variant="contained" color="primary" onClick={handleToggleEdit}>
-            {isEditing ? 'View' : 'Edit'}
+            {isEditing ? 'Chế độ xem' : 'Chỉnh sửa'}
           </Button>
           {isEditing && (
             <Button variant="contained" color="secondary" onClick={handleUpdateProfile} sx={{ ml: 2 }}>
-              Update Profile
+              Cập nhật hồ sơ
             </Button>
           )}
         </Box>
