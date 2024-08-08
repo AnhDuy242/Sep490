@@ -1,4 +1,7 @@
-﻿namespace BE.DTOs.ServiceDto
+﻿using BE.Models;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace BE.DTOs.ServiceDto
 {
     namespace BE.DTOs
     {
@@ -15,6 +18,8 @@
             public string? AdditionalInfo { get; set; } // Any additional information about the service
 
             public bool IsActive { get; set; } // Status of the service detail
+
+            public string? ServiceName { get; set; }
         }
     }
 

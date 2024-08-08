@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BE.Controllers.Service_Management
 {
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [ApiController]
     public class ServiceDetailController : ControllerBase
     {
@@ -18,11 +18,12 @@ namespace BE.Controllers.Service_Management
             _context = context;
             _mapper = mapper;
         }
-
         [HttpGet("{id}")]
         public async Task<ActionResult<ServiceDetailDto>> GetServiceDetail(int id)
         {
-            var serviceDetail = await _context.ServiceDetail.FindAsync(id);
+            var serviceDetail = await _context.ServiceDetail
+                .Include(sd => sd.Service) // Ensure Service is included
+                .FirstOrDefaultAsync(sd => sd.ServiceDetailId == id);
 
             if (serviceDetail == null)
             {
@@ -31,7 +32,6 @@ namespace BE.Controllers.Service_Management
 
             return Ok(_mapper.Map<ServiceDetailDto>(serviceDetail));
         }
-
         [HttpPost]
         public async Task<ActionResult<ServiceDetailDto>> CreateServiceDetail(ServiceDetailDto serviceDetailDto)
         {

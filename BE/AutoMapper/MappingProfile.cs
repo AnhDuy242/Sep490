@@ -231,5 +231,12 @@ public class MappingProfile : Profile
     .ForMember(dest => dest.DocId, opt => opt.MapFrom(src => src.AccId))
     .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Doctor.Name)) // Ví dụ về ánh xạ thuộc tính
     .ReverseMap();
+
+        CreateMap<ServiceDetail, ServiceDetailDto>()
+            .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.ServiceId))
+            .ForMember(dest => dest.ServiceName, opt => opt.MapFrom(src => src.Service.Name));
+
+        CreateMap<Service, ServiceDTO>()
+            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name)); // Ensure this mapping exists
     }
 }

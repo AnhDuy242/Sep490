@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid, Card, CardContent, Box, Breadcrumbs, Link, Icon, Divider } from '@mui/material';
+import { Container, Typography, Grid, Card, CardContent, Box, Breadcrumbs, Link, Icon } from '@mui/material';
 import axios from 'axios';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import Navbar from '../../../../layouts/Navbar';
@@ -15,8 +15,9 @@ const ServiceDetail = () => {
   useEffect(() => {
     const fetchService = async () => {
       try {
-        const response = await axios.get(`https://localhost:7240/api/Department/GetServicesAndDetailsByDepartmentId/GetServicesByDepartment/${serviceId}`);
-        setService(response.data.$values.find(s => s.serviceId === Number(serviceId)));
+        const response = await axios.get(`https://localhost:7240/api/ServiceDetail/GetServiceDetail/${serviceId}`);
+        setService(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error('Error fetching service details:', error);
       }
@@ -25,15 +26,21 @@ const ServiceDetail = () => {
     const fetchAllServices = async () => {
       try {
         const response = await axios.get('https://localhost:7240/api/Department/GetAllServicesAndDetails');
-        setAllServices(response.data.$values.filter(s => s.serviceId !== Number(serviceId)));
+        // Ensure that the filter is applied after the service data is fetched
+        if (service) {
+          setAllServices(response.data.$values.filter(s => s.serviceId !== Number(serviceId)));
+        } else {
+          setAllServices(response.data.$values);
+        }
+        console.log(allServices);
       } catch (error) {
         console.error('Error fetching all services:', error);
       }
     };
 
-    fetchService();
-    fetchAllServices();
-  }, [serviceId]);
+    fetchService().then(fetchAllServices); // Chain fetchService and fetchAllServices
+
+  }, [serviceId, service]); // Added `service` to dependency array
 
   if (!service) {
     return <div>Loading...</div>;
@@ -48,7 +55,6 @@ const ServiceDetail = () => {
           <Link component={RouterLink} to="/" color="inherit" sx={{ fontSize: '1.2rem' }}>
             Trang chủ
           </Link>
-        
           <Typography color="text.primary" sx={{ fontSize: '1.2rem' }}>
             Chi Tiết Dịch Vụ
           </Typography>
@@ -70,17 +76,20 @@ const ServiceDetail = () => {
           <Grid item xs={12} sm={8}>
             <Card sx={{ padding: 3 }}>
               <CardContent>
+                <Typography variant="h3" component="div" sx={{ mb: 2 }}>
+                  {service.serviceName}
+                </Typography>
                 <Typography variant="h5" component="div" sx={{ mb: 2 }}>
                   Giá dịch vụ: {service.price}
                 </Typography>
                 <Typography variant="h6" component="div" sx={{ mb: 2 }}>
-                  {service.serviceDetails.$values[0]?.description || 'No description available'}
+                  {service.description || 'No description available'}
                 </Typography>
                 <Typography variant="body1" component="div" sx={{ mb: 2 }}>
-                  Thời gian: {service.serviceDetails.$values[0]?.duration} phút
+                  Thời gian: {service.duration} phút
                 </Typography>
                 <Typography variant="body1" component="div">
-                  Thông tin thêm: {service.serviceDetails.$values[0]?.additionalInfo || 'No additional info'}
+                  Thông tin thêm: {service.additionalInfo || 'No additional info'}
                 </Typography>
               </CardContent>
             </Card>
