@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Button,
   Dialog,
@@ -17,12 +17,36 @@ import { useDropzone } from 'react-dropzone';
 import remarkGfm from 'remark-gfm'; // Import remark-gfm
 
 const CreateBlogDialog = ({ open, onClose }) => {
-  const [newBlog, setNewBlog] = useState({ title: '', content: '', thumbnail: '' });
+  const [newBlog, setNewBlog] = useState({ title: '', content: '', thumbnail: '', docId: '' });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [thumbnailPreview, setThumbnailPreview] = useState('');
-    const accountId=localStorage.getItem('accountId');
+  const [doctors, setDoctors] = useState([]);
+  const accountId = localStorage.getItem('accountId');
+
+  useEffect(() => {
+    // Fetch doctors and set a random doctor ID
+    const fetchDoctors = async () => {
+      try {
+        const response = await fetch('https://localhost:7240/api/Header/GetAllDoctor');
+        const data = await response.json();
+        const doctorList = data.$values;
+        if (doctorList.length > 0) {
+          setDoctors(doctorList);
+          // Choose a random doctor
+          const randomDoctor = doctorList[Math.floor(Math.random() * doctorList.length)];
+          // Update newBlog state with the random doctor's ID
+          setNewBlog((prevState) => ({ ...prevState, docId: randomDoctor.docId }));
+        }
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+      }
+    };
+
+    fetchDoctors();
+  }, []); // Empty dependency array means this effect runs once on mount
+
   const onDropImage = (acceptedFiles) => {
     const file = acceptedFiles[0];
     const formData = new FormData();
@@ -78,7 +102,7 @@ const CreateBlogDialog = ({ open, onClose }) => {
     const blogData = {
       title: newBlog.title,
       content: formattedContent, // Use the formatted content
-      docId: 2, // Set this accordingly
+      docId: newBlog.docId, // Use the randomly selected doctor ID
       date: new Date().toISOString(),
       thumbnail: newBlog.thumbnail,
       aId: accountId,
@@ -102,7 +126,7 @@ const CreateBlogDialog = ({ open, onClose }) => {
       .then(data => {
         console.log('Blog created successfully:', data);
         onClose();
-        setNewBlog({ title: '', content: '', thumbnail: '' });
+        setNewBlog({ title: '', content: '', thumbnail: '', docId: '' });
         setThumbnailPreview('');
         setSnackbarMessage('Blog created successfully!');
         setSnackbarSeverity('success');

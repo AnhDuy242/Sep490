@@ -267,7 +267,7 @@ const FeedbackPage = () => {
 
             {/* Dialog for responding to feedback */}
             <Dialog open={dialogOpen} onClose={handleDialogClose}>
-                <DialogTitle>Phản hồi Phản hồi</DialogTitle>
+                <DialogTitle>Phản hồi Feedback</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus

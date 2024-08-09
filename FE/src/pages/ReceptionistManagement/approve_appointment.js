@@ -24,13 +24,26 @@ const AppointmentApproval = () => {
   const [newStatus, setNewStatus] = useState('');
 
   useEffect(() => {
-    getListDoctor()
-      .then(data => {
+    // Function to fetch data
+    const fetchData = async () => {
+      try {
+        const data = await getListDoctor();
         setAppointments(data.$values || []);
-      })
-      .catch(error => {
+      } catch (error) {
         console.error('Failed to fetch appointments:', error);
-      });
+      }
+    };
+
+    // Fetch data initially
+    fetchData();
+
+    // Set up interval to fetch data every second
+    const intervalId = setInterval(() => {
+      fetchData();
+    }, 1000); // 1000ms = 1 giây
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
   const handleStatusChangeClick = (appointment, status) => {
