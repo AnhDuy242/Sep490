@@ -47,7 +47,7 @@ namespace BE.Controllers.Appointment_Management.Role_Admin
             string output = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObj, Newtonsoft.Json.Formatting.Indented);
             System.IO.File.WriteAllText(configFilePath, output);
 
-            return Ok();
+            return Ok(new { Message = "Thời gian thông báo đã được chỉnh sửa thành công" });
         }
     }
 

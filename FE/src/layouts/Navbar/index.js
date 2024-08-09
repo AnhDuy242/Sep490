@@ -168,14 +168,34 @@ const Navbar = () => {
                 boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
                 backgroundColor: '#fff',
                 padding: '10px',
-                width: '250px',
+                width: '400px',
+              
+                mt:2,
+                position: 'absolute',
+                top: '100%', // Đặt menu ngay dưới navbar
+                left: 10,
+                mr:5,
+                zIndex: theme => theme.zIndex.drawer + 1, // Đảm bảo menu hiển thị bên dưới navbar
               },
             }}
           >
-            <MenuItemStyled component={NavLink} to="/about-us">Giới thiệu</MenuItemStyled>
-            <MenuItemStyled component={NavLink} to="/listDoctorView">Đội ngũ bác sĩ</MenuItemStyled>
-            <MenuItemStyled component={NavLink} to="/viewAllBlogs">Tin tức y khoa</MenuItemStyled>
+            <MenuItemStyled component={NavLink} to="/about-us">
+              <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1876D2' }}>
+                Giới thiệu
+              </Typography>
+            </MenuItemStyled>
+            <MenuItemStyled component={NavLink} to="/listDoctorView">
+              <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1876D2' }}>
+                Đội ngũ bác sĩ
+              </Typography>
+            </MenuItemStyled>
+            <MenuItemStyled component={NavLink} to="/viewAllBlogs">
+              <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#1876D2' }}>
+                Tin tức y khoa
+              </Typography>
+            </MenuItemStyled>
           </Menu>
+
           {isLoggedIn && (
             <>
               <Button color="inherit" component={NavLink} to="/getAppointment">Xem lịch khám</Button>

@@ -38,3 +38,19 @@ export const setNotificationTime = async (time) => {
         return null;
     }
 };
+
+export const getNotificationTime = async () => {
+  try {
+      const response = await fetch('https://localhost:7240/api/NotificationTime/GetNotificationTime');
+      
+      if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+  } catch (error) {
+      console.error('Error fetching notification time:', error);
+      return null;
+  }
+};

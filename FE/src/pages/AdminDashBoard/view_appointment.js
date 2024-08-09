@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAllAppointments, setNotificationTime } from '../../services/AdminManagerment';
+import { fetchAllAppointments, setNotificationTime, getNotificationTime } from '../../services/AdminManagerment'; // Thêm hàm getNotificationTime
 import {
     Table,
     TableBody,
@@ -13,14 +13,23 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    TextField,
+    Box,
+    Typography,
+    Snackbar,
+    Alert
 } from '@mui/material';
+import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { format } from 'date-fns';
+import './component/view_appointment.css';  // Đảm bảo bạn đã thêm CSS vào đây
 
 const AdminViewAppointment = () => {
     const [appointments, setAppointments] = useState([]);
     const [open, setOpen] = useState(false);
-    const [reminderTime, setReminderTime] = useState('');
-
+    const [reminderTime, setReminderTime] = useState(new Date());
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [currentReminderTime,setCurrentReminderTime]= useState(new Date());;
     useEffect(() => {
         const getAppointments = async () => {
             const data = await fetchAllAppointments();
@@ -29,7 +38,19 @@ const AdminViewAppointment = () => {
             }
         };
 
+        const fetchNotificationTime = async () => {
+            const response = await getNotificationTime();
+            if (response && response.time) {
+                const [hours, minutes] = response.time.split(':');
+                const date = new Date();
+                date.setHours(parseInt(hours, 10));
+                date.setMinutes(parseInt(minutes, 10));
+                setCurrentReminderTime(date);
+            }
+        };
+
         getAppointments();
+        fetchNotificationTime();
     }, []);
 
     const handleClickOpen = () => {
@@ -38,34 +59,70 @@ const AdminViewAppointment = () => {
 
     const handleClose = () => {
         setOpen(false);
-        setReminderTime(''); 
     };
 
     const handleSetReminder = async () => {
-        const result = await setNotificationTime(reminderTime);
-        if (result) {
-            console.log('Thời gian nhắc lịch đã được cài đặt');
+        try {
+            const formattedTime = format(reminderTime, 'HH:mm');
+            const response = await setNotificationTime(formattedTime);
+    
+         
+                setSnackbarOpen(true); // Hiển thị Snackbar thông báo thành công
+                // Fetch the updated notification time
+                const updatedResponse = await getNotificationTime();
+                if (updatedResponse && updatedResponse.time) {
+                    const [hours, minutes] = updatedResponse.time.split(':');
+                    const date = new Date();
+                    date.setHours(parseInt(hours, 10));
+                    date.setMinutes(parseInt(minutes, 10));
+                    setCurrentReminderTime(date);
+                    setSnackbarOpen(true);
+                }
+
+            
+        } catch (error) {
+            console.error('Error setting reminder:', error);
         }
         setOpen(false);
+    };
+    
+    
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
     };
 
     return (
         <>
-            <Button variant="contained" color="primary" style={{ marginBottom: '16px' }} onClick={handleClickOpen}>
-                Nhắc lịch
-            </Button>
+            <Box display="flex" alignItems="center" marginBottom="16px">
+                <Button variant="contained" color="primary" onClick={handleClickOpen}>
+                    Chỉnh sửa thời gian nhắc lịch
+                </Button>
+                <Typography variant="h6" style={{ marginLeft: '16px' }}>
+                    Thời gian nhắc lịch hiện tại: {format(currentReminderTime, 'HH:mm')}
+                </Typography>
+            </Box>
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Đặt thời gian nhắc lịch</DialogTitle>
                 <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        label="Thời gian nhắc lịch"
-                        type="text"
-                        fullWidth
-                        value={reminderTime}
-                        onChange={(e) => setReminderTime(e.target.value)}
-                    />
+                    <LocalizationProvider dateAdapter={AdapterDateFns}>
+                        <Box display="flex" flexDirection="column" alignItems="center">
+                            <Typography variant="h6" gutterBottom>
+                                Chọn thời gian
+                            </Typography>
+                            <StaticTimePicker
+                                orientation="portrait"
+                                value={reminderTime}
+                                onChange={(newValue) => setReminderTime(newValue)}
+                                ampm={false}
+                                renderInput={(params) => <input {...params} />}
+                                className="hide-picker-buttons"
+                            />
+                            <Typography variant="body2" color="textSecondary" mt={2}>
+                                Thời gian đã chọn: {format(reminderTime, 'HH:mm')} ({format(reminderTime, 'hh:mm a')})
+                            </Typography>
+                        </Box>
+                    </LocalizationProvider>
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleClose} color="primary">
@@ -104,6 +161,16 @@ const AdminViewAppointment = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+                    Thời gian nhắc lịch đã được cài đặt
+                </Alert>
+            </Snackbar>
         </>
     );
 };
