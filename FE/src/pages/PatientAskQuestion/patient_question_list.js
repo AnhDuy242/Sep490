@@ -14,7 +14,7 @@ const ListPatientQuestion = () => {
     const [updatedQuestion, setUpdatedQuestion] = useState('');
 
     const patientid = localStorage.getItem('accountId');
-    
+
     useEffect(() => {
         window.scrollTo(0, 0); // Cuộn về đầu trang khi component được mount
     }, []);
@@ -89,9 +89,11 @@ const ListPatientQuestion = () => {
                                         <TableCell>{question.ansDate ? new Date(question.ansDate).toLocaleDateString() : 'Chưa trả lời'}</TableCell>
                                         <TableCell>{question.answer || 'Chưa trả lời'}</TableCell>
                                         <TableCell>
-                                            <IconButton onClick={() => handleEditClick(question)}>
-                                                <EditIcon />
-                                            </IconButton>
+                                            {!question.answer && (
+                                                <IconButton onClick={() => handleEditClick(question)}>
+                                                    <EditIcon />
+                                                </IconButton>
+                                            )}
                                         </TableCell>
                                     </TableRow>
                                 ))
