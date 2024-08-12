@@ -293,10 +293,10 @@ const ReceptionistAccount = () => {
 
             // Update on the server
             updateReceptionistByActive(account.accId, { ...account, isActive: newIsActive });
-            handleOpenSnackbar(`Account status updated successfully!`, 'success');
+            handleOpenSnackbar(`Cập nhật thông tin thành công!`, 'success');
 
         } catch (error) {
-            console.error('Error updating active status:', error);
+            console.error('Đã có lỗi xảy ra:', error);
             setError(error.message);
         }
     };
@@ -319,10 +319,10 @@ const ReceptionistAccount = () => {
     return (
         <div className="full-height-container">
             <>
-                <Typography variant="h4" style={{ marginBottom: '1rem' }}>Receptionist Manager</Typography>
+                <Typography variant="h4" style={{ marginBottom: '1rem' }}>Tài khoản lễ tân</Typography>
                 <Container style={{ display: 'flex', marginBottom: '1rem' }}>
                     <TextField
-                        label={`Searching by ${searchType === 'name' ? 'name' : 'phone number'}`}
+                        label={`Tìm kiếm theo ${searchType === 'name' ? 'Tên' : 'SĐT'}`}
                         variant="outlined"
                         value={searchTerm}
                         onChange={handleSearchChange}
@@ -340,13 +340,13 @@ const ReceptionistAccount = () => {
                             id: 'search-type',
                         }}
                     >
-                        <MenuItem value={'name'}>Name</MenuItem>
-                        <MenuItem value={'phone'}>Phone Number</MenuItem>
+                        <MenuItem value={'name'}>Tên</MenuItem>
+                        <MenuItem value={'phone'}>SĐT</MenuItem>
                     </Select>
                 </Container>
 
                 <Button variant="contained" color="primary" onClick={handleAddAccount} style={{ marginBottom: '1rem' }}>
-                    Add Account
+                   Thêm tài khoản mới
                 </Button>
 
                 {loading ? (
@@ -359,15 +359,15 @@ const ReceptionistAccount = () => {
                             <TableHead>
                                 <TableRow>
                                     <TableCell>ID</TableCell>
-                                    <TableCell>Avatar</TableCell>
-                                    <TableCell>Name</TableCell>
-                                    <TableCell>Gender</TableCell>
-                                    <TableCell>DOB</TableCell>
-                                    <TableCell>Password</TableCell>
-                                    <TableCell>Phone</TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell>Tên</TableCell>
+                                    <TableCell>Giớ tính</TableCell>
+                                    <TableCell>Ngày sinh</TableCell>
+                                    <TableCell>Mật khẩu</TableCell>
+                                    <TableCell>SĐT</TableCell>
                                     <TableCell>Email</TableCell>
-                                    <TableCell>Status</TableCell>
-                                    <TableCell>Actions</TableCell>
+                                    <TableCell>Tình trạng</TableCell>
+                                    <TableCell></TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
@@ -400,8 +400,8 @@ const ReceptionistAccount = () => {
                                                 exclusive
                                                 onChange={(event, newStatus) => handleToggleChange(account, newStatus)}
                                             >
-                                                <ToggleButton value={true} disabled={account.isActive}>Active</ToggleButton>
-                                                <ToggleButton value={false} disabled={!account.isActive}>Inactive</ToggleButton>
+                                                <ToggleButton value={true} disabled={account.isActive}>Hoạt động</ToggleButton>
+                                                <ToggleButton value={false} disabled={!account.isActive}>Không hoạt động</ToggleButton>
                                             </ToggleButtonGroup>
                                         </TableCell>
 

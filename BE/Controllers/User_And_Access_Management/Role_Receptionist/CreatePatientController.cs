@@ -73,7 +73,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             }
 
             // Check if phone number already exists
-            if (_validateService.CheckPhoneNumberExist(model.Phone))
+            if (!_validateService.CheckPhoneNumberExist(model.Phone))
             {
                 return BadRequest(new { message = "Số điện thoại đã tồn tại" });
             }
@@ -94,7 +94,8 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                 Password = password,
                 RoleId = 3,
                 Email = model.Email,
-                IsActive = true
+                IsActive = true,
+                
             };
 
             await _context.Accounts.AddAsync(account);
@@ -108,7 +109,8 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                 Gender = model.Gender,
                 Dob = model.Dob,
                 Address = model.Address,
-                IsActive = true
+                IsActive = true,
+                Check=1
             };
 
             await _context.Patients.AddAsync(patient);
