@@ -19,7 +19,7 @@ import {
     Alert
 } from '@mui/material';
 import { StaticTimePicker } from '@mui/x-date-pickers/StaticTimePicker';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFnsV3';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { format } from 'date-fns';
 import './component/view_appointment.css';  // Đảm bảo bạn đã thêm CSS vào đây
