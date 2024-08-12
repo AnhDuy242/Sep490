@@ -271,7 +271,7 @@ const Chatpopup_ForReceptionist = () => {
                                                 onClick={() => handleConversationClick(conversation.id)}
                                                 style={{ cursor: 'pointer' }}
                                             >
-                                                <Typography variant="body2" noWrap>Patient: {conversation.name}</Typography>
+                                                <Typography variant="body2" noWrap>Bệnh nhân: {conversation.name}</Typography>
                                             </Box>
                                         ))}
 
@@ -318,7 +318,7 @@ const Chatpopup_ForReceptionist = () => {
                                                     fullWidth
                                                     value={inputMessage}
                                                     onChange={(e) => setInputMessage(e.target.value)}
-                                                    placeholder="Type a message"
+                                                    placeholder="Viết nội dung tin nhắn ở đây"
                                                     multiline
                                                     minRows={2}
                                                 />

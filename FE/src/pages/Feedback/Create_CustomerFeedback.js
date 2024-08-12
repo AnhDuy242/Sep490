@@ -18,13 +18,13 @@ const FeedbackForm = () => {
         event.preventDefault();
         if (!isLoggedIn) {
             setSnackbarSeverity('error');
-            setSnackbarMessage('Please log in to submit feedback.');
+            setSnackbarMessage('Phải login để gửi được đánh giá.');
             setSnackbarOpen(true);
             return;
         }
         if(getpatientId==null){
             setSnackbarSeverity('error');
-            setSnackbarMessage('Please log in to submit feedback.');
+            setSnackbarMessage('Phải login để gửi được đánh giá.');
             setSnackbarOpen(true);
             return;
         }
@@ -44,14 +44,14 @@ const FeedbackForm = () => {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to submit feedback');
+                throw new Error('Lỗi khi gửi feedback');
             }
 
             // Clear the form on successful submission
             setRating(4);
             setFeedback('');
             setSnackbarSeverity('success');
-            setSnackbarMessage('Feedback submitted successfully!');
+            setSnackbarMessage('Phản hồi đã được gửi thành công!');
             setSnackbarOpen(true);
         } catch (error) {
             setSnackbarSeverity('error');
@@ -105,7 +105,7 @@ const FeedbackForm = () => {
         sx={{ mb: 2 }}
       />
       <TextField
-        label="Tell us about your experience!"
+        label="Cho tôi biết về trải nghiệm dịch vụ của bạn nhé!"
         multiline
         rows={4}
         variant="outlined"

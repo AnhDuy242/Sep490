@@ -409,7 +409,7 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
               </TableHead>
               <TableBody>
                 <TableRow>
-                  <TableCell>Morning</TableCell>
+                  <TableCell>Sáng</TableCell>
                   {daysOfWeek.map((day, index) => (
                     <TableCell key={index} align="center">
                       {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (
@@ -426,7 +426,7 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
                   ))}
                 </TableRow>
                 <TableRow>
-                  <TableCell>Afternoon</TableCell>
+                  <TableCell>Chiều</TableCell>
                   {daysOfWeek.map((day, index) => (
                     <TableCell key={index} align="center">
                       {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (

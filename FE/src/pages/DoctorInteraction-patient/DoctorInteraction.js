@@ -102,7 +102,7 @@ const DoctorAndMedicalNotebooks = () => {
                 setUnreadCounts(newCounts);
                 setTotalUnreadCount(newTotalUnread);
             })
-            .catch(() => showSnackbar('Failed to load unread counts'));
+            .catch(() => showSnackbar('Có lỗi xảy ra khi tải danh sách tin nhắn chưa đọc'));
     }, [patientId]);
 
     useEffect(() => {
@@ -114,7 +114,7 @@ const DoctorAndMedicalNotebooks = () => {
                 setDoctors(doctorList);
                 fetchUnreadCounts(doctorList);
             })
-            .catch(() => showSnackbar('Failed to load doctors'));
+            .catch(() => showSnackbar('Lỗi khi tải danh sách bác sĩ'));
 
         const intervalId = setInterval(() => {
             if (doctors.length > 0) {
@@ -131,7 +131,7 @@ const DoctorAndMedicalNotebooks = () => {
                 setMedicalNotebooks(response.data.$values);
                 setSelectedDoctorId(doctorId);
             })
-            .catch(() => showSnackbar('Failed to load medical notebooks'));
+            .catch(() => showSnackbar('Lỗi khi tải danh sách bệnh án'));
     };
 
     const handleChatClick = (doctorId, event) => {
@@ -160,7 +160,7 @@ const DoctorAndMedicalNotebooks = () => {
                                     setConversationId(conversation.id);
                                     setChatBoxOpen(true);
                                 } else {
-                                    showSnackbar('No conversation found and unable to create one');
+                                    showSnackbar('Không tìm thấy cuộc hội thoại');
                                 }
                             })
                             .catch(() => showSnackbar('Failed to load or create conversation'));

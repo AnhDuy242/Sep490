@@ -86,13 +86,13 @@ const AppointmentApproval = () => {
         <Table>
           <TableHead>
             <TableRow>
-              <TableCell>Appointment ID</TableCell>
-              <TableCell>Patient ID</TableCell>
-              <TableCell>Doctor ID</TableCell>
-              <TableCell>Slot ID</TableCell>
-              <TableCell>Date</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Actions</TableCell>
+              <TableCell>Mã cuộc hội</TableCell>
+              <TableCell>Bệnh nhân</TableCell>
+              <TableCell>Bác sĩ</TableCell>
+              <TableCell>Thời gian</TableCell>
+              <TableCell>Ngày</TableCell>
+              <TableCell>Trạng thái</TableCell>
+              <TableCell></TableCell>
             </TableRow>
           </TableHead>
           <TableBody>

@@ -51,7 +51,7 @@ const BlogDetail = () => {
             Home
           </MuiLink>
           <MuiLink component={Link} to="/viewAllBlogs" color="inherit">
-            Blog List
+           Danh sách bài viết
           </MuiLink>
           <Typography color="textPrimary">Chi tiết bài viết {blog.title}{blog.title}</Typography>
         </Breadcrumbs>

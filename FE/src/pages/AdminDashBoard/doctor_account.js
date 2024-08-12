@@ -224,7 +224,7 @@ const DoctorTable = () => {
                 <TableCell>{doctor.gender}</TableCell>
                 <TableCell>{doctor.age}</TableCell>
                 <TableCell>{doctor.departmentName}</TableCell>
-                <TableCell>{doctor.isActive ? 'Active' : 'Inactive'}</TableCell>
+                <TableCell>{doctor.isActive ? 'Đang kích hoạt' : 'Không kích hoạt'}</TableCell>
                 <TableCell>
                   <IconButton title="Chỉnh sửa" color="primary" onClick={() => handleOpenEditDialog(doctor)}>
                     <EditIcon />
@@ -455,7 +455,7 @@ const DoctorTable = () => {
             </Select>
           </FormControl>
           <FormControl fullWidth margin="dense" required>
-            <InputLabel id="edit-isActive-label">Trạng thái hoạt động</InputLabel>
+            <InputLabel id="edit-isActive-label">Trạng thái kích hoạt</InputLabel>
             <Select
               labelId="edit-isActive-label"
               id="edit-isActive"
@@ -463,8 +463,8 @@ const DoctorTable = () => {
               onChange={(e) => setCurrentDoctor({ ...currentDoctor, isActive: e.target.value === 'true' })}
               label="Trạng thái hoạt động"
             >
-              <MenuItem value="true">Active</MenuItem>
-              <MenuItem value="false">Inactive</MenuItem>
+              <MenuItem value="true">Kích hoạt</MenuItem>
+              <MenuItem value="false">Không kích hoạt</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>

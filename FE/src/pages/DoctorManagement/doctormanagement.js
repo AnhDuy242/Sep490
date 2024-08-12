@@ -33,15 +33,14 @@ const MedicalNotebookForm = () => {
   return (
     <Container maxWidth="sm">
       <Typography variant="h4" gutterBottom>
-        Create Medical Notebook
-      </Typography>
+        Tạo bệnh án      </Typography>
       <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1 }}>
         <TextField
           margin="normal"
           required
           fullWidth
           id="prescription"
-          label="Prescription"
+          label="Toa thuốc"
           name="prescription"
           value={formData.prescription}
           onChange={handleChange}
@@ -51,7 +50,7 @@ const MedicalNotebookForm = () => {
           required
           fullWidth
           id="diagnostic"
-          label="Diagnostic"
+          label="Chỉ định"
           name="diagnostic"
           value={formData.diagnostic}
           onChange={handleChange}

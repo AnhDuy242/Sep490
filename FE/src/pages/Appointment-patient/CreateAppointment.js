@@ -265,7 +265,7 @@ const AppointmentScreen = () => {
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>No services available</MenuItem>
+                        <MenuItem disabled>Không có dịch vụ hiện có</MenuItem>
                       )}
                     </Select>
                   </FormControl>
@@ -288,7 +288,7 @@ const AppointmentScreen = () => {
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>Không có bác sĩ</MenuItem>
+                        <MenuItem disabled>Không có bác sĩ sẵn có</MenuItem>
                       )}
                     </Select>
                   </FormControl>
@@ -311,7 +311,7 @@ const AppointmentScreen = () => {
                           </MenuItem>
                         ))
                       ) : (
-                        <MenuItem disabled>Không có ngày</MenuItem>
+                        <MenuItem disabled>Không có ngày sẵn có</MenuItem>
                       )}
                     </Select>
                   </FormControl>

@@ -141,7 +141,7 @@ const ViewAllNoteBooks = () => {
                                         color="primary"
                                         onClick={() => handleSaveBut(notebook.id)}
                                     >
-                                        Save
+                                      Lưu
                                     </Button>
                                 </TableCell>
 

@@ -467,7 +467,7 @@ const CreatePatientAccount = () => {
                     />
                     <TextField
                         margin="dense"
-                        label="Password"
+                        label="Mật khẩu"
                         type="password"
                         fullWidth
                         name="password"
@@ -557,7 +557,7 @@ const CreatePatientAccount = () => {
                             <TableCell>ID</TableCell>
                             <TableCell>Số điện thoại</TableCell>
                             <TableCell>Email</TableCell>
-                            <TableCell>Password</TableCell>
+                            <TableCell>Mật khẩu</TableCell>
                             <TableCell>Tên</TableCell>
                             <TableCell>Giới tính</TableCell>
                             <TableCell>Địa chỉ</TableCell>

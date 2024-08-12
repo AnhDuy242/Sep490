@@ -187,7 +187,7 @@ const ReceptionistAccount = () => {
 
             // Call API to add receptionist
             await addReceptionist(values);
-            handleOpenSnackbar('Account added successfully!', 'success');
+            handleOpenSnackbar('Thêm mới lễ tân thành công!', 'success');
 
             closeDialogs(); // Close dialog after successful submission
             await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
@@ -400,8 +400,8 @@ const ReceptionistAccount = () => {
                                                 exclusive
                                                 onChange={(event, newStatus) => handleToggleChange(account, newStatus)}
                                             >
-                                                <ToggleButton value={true} disabled={account.isActive}>Hoạt động</ToggleButton>
-                                                <ToggleButton value={false} disabled={!account.isActive}>Không hoạt động</ToggleButton>
+                                                <ToggleButton value={true} disabled={account.isActive}>Kích hoạt</ToggleButton>
+                                                <ToggleButton value={false} disabled={!account.isActive}>Không kích hoạt</ToggleButton>
                                             </ToggleButtonGroup>
                                         </TableCell>
 

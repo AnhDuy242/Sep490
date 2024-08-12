@@ -217,9 +217,9 @@ const ExaminatedPatients = () => {
                   </Button>
                 </Box>
               </Box>
-              <Typography variant="body2">Gender: {patient.gender}</Typography>
-              <Typography variant="body2">Address: {patient.address}</Typography>
-              <Typography variant="body2">Date of Birth: {new Date(patient.dob).toLocaleDateString()}</Typography>
+              <Typography variant="body2">Giới tính: {patient.gender}</Typography>
+              <Typography variant="body2">Địa chỉ: {patient.address}</Typography>
+              <Typography variant="body2">Ngày sinh: {new Date(patient.dob).toLocaleDateString()}</Typography>
 
               {expanded === patient.patientId && notebooks.length > 0 && (
                 <Box mt={2}>
@@ -233,14 +233,14 @@ const ExaminatedPatients = () => {
                       </AccordionSummary>
                       <AccordionDetails>
                         <Typography variant="body2">
-                          <strong>Prescription:</strong> {notebook.prescription}
+                          <strong>Toa thuốc:</strong> {notebook.prescription}
                         </Typography>
                         <Divider sx={{ my: 1 }} />
                         <Typography variant="body2">
-                          <strong>Doctor:</strong> {notebook.doctorName}
+                          <strong>Bác sĩ chỉ định:</strong> {notebook.doctorName}
                         </Typography>
                         <Typography variant="body2">
-                          <strong>Date:</strong> {notebook.dateCreate ? new Date(notebook.dateCreate).toLocaleDateString() : 'Not available'}
+                          <strong>Ngày khám:</strong> {notebook.dateCreate ? new Date(notebook.dateCreate).toLocaleDateString() : 'Not available'}
                         </Typography>
                       </AccordionDetails>
                     </Accordion>

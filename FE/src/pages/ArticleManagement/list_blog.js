@@ -77,12 +77,12 @@ const BlogList = () => {
     try {
       await axios.delete(`https://localhost:7240/api/ArticleBlog/${currentBlogId}`);
       fetchBlogs(); // Refresh the list
-      setSnackbarMessage('Blog deleted successfully');
+      setSnackbarMessage('Xóa blog thành công');
       setSnackbarSeverity('success');
       setOpenSnackbar(true);
     } catch (error) {
       console.error('Error deleting blog:', error);
-      setSnackbarMessage('Failed to delete blog');
+      setSnackbarMessage('Có lỗi khi xóa blog');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
@@ -143,7 +143,7 @@ const BlogList = () => {
         <Grid container spacing={2} alignItems="center">
           <Grid item>
             <TextField
-              label="Search by Title"
+              label="Tìm kiếm theo tiêu đề"
               variant="outlined"
               value={searchTitle}
               onChange={(e) => setSearchTitle(e.target.value)}
@@ -158,7 +158,7 @@ const BlogList = () => {
           </Grid>
           <Grid item>
             <TextField
-              label="Start Date"
+              label="Ngày bắt đầu"
               type="date"
               variant="outlined"
               value={startDate}
@@ -175,7 +175,7 @@ const BlogList = () => {
           </Grid>
           <Grid item>
             <TextField
-              label="End Date"
+              label="Ngày kết thúc"
               type="date"
               variant="outlined"
               value={endDate}
@@ -197,7 +197,7 @@ const BlogList = () => {
               startIcon={<Add />}
               onClick={handleOpenAddDialog}
             >
-              Add New Blog
+              Thêm mới blog
             </Button>
           </Grid>
           <Grid item>
@@ -207,7 +207,7 @@ const BlogList = () => {
               startIcon={<Refresh />}
               onClick={handleRefresh}
             >
-              Refresh
+             Làm mới
             </Button>
           </Grid>
         </Grid>
@@ -237,7 +237,7 @@ const BlogList = () => {
                 startIcon={<Visibility />}
                 onClick={() => handlePreview(blog)}
               >
-                Preview
+               Xem trước
               </Button>
               <Button
                 variant="contained"
@@ -246,7 +246,7 @@ const BlogList = () => {
                 style={{ marginLeft: '8px' }}
                 onClick={() => handleEdit(blog.blogId)}
               >
-                Edit
+                Sửa
               </Button>
               <Button
                 variant="contained"
@@ -255,7 +255,7 @@ const BlogList = () => {
                 style={{ marginLeft: '8px' }}
                 onClick={() => handleOpenDeleteDialog(blog.blogId)}
               >
-                Delete
+              Xóa
               </Button>
             </div>
           </CardContent>
@@ -263,16 +263,16 @@ const BlogList = () => {
       ))}
 
       <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
-          <Typography>Are you sure you want to delete this blog?</Typography>
+          <Typography>ABạn có muốn xóa bài viết này không??</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button onClick={handleDelete} color="secondary">
-            Delete
+           Xóa
           </Button>
         </DialogActions>
       </Dialog>
@@ -296,7 +296,7 @@ const BlogList = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setPreviewBlog(null)} color="primary">
-            Close
+            Đóng
           </Button>
         </DialogActions>
       </Dialog>

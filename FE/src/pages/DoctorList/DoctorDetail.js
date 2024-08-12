@@ -33,7 +33,7 @@ const DoctorDetail = () => {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Helmet>
-                <title>Doctor Detail</title>
+                <title>Chi tiết bác sĩ</title>
             </Helmet>
             <Header />
             <Navbar />
