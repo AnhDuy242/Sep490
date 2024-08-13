@@ -68,48 +68,53 @@ const ListDoctorView = () => {
                         onChange={handleSearchChange}
                     />
 
-                    <Grid container spacing={2}>
-                        {paginatedDoctors.map((doctor) => (
-                            <Grid item key={doctor.$id} xs={12} sm={6} md={3} lg={3}>
-                                <Card sx={{ width: '100%', maxWidth: 300, minWidth: 300, boxShadow: 'none' }}>
-                                    <CardMedia
-                                        component="img"
-                                        height="150"
-                                        image={doctor.img || defaultImg}
-                                        alt={doctor.name}
-                                        sx={{
-                                            borderRadius: '50%',
-                                            width: '150px',
-                                            height: '150px',
-                                            objectFit: 'cover',
-                                            margin: 'auto',
-                                        }}
-                                    />
-                                    <CardContent>
-                                        <Typography gutterBottom variant="h6" component="div">
-                                            <Link
-                                                component={RouterLink}
-                                                to={`/viewDoctorDetail/${doctor.docId}`}
-                                                sx={{
-                                                    textDecoration: 'none',
-                                                    color: 'inherit',
-                                                    '&:hover': {
-                                                        textDecoration: 'underline',
-                                                    }
-                                                }}
-                                            >
-                                                Bác sĩ : {doctor.name}
-                                            </Link>
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            Chuyên khoa: {doctor.allDepartmentName}
-                                        </Typography>
-                                    </CardContent>
-                                </Card>
-                            </Grid>
-                        ))}
-                    </Grid>
-
+                    {filteredDoctors.length === 0 ? (
+                        <Typography variant="h6" align="center" color="text.secondary" sx={{ mt: 4 }}>
+                            Không có bác sĩ nào
+                        </Typography>
+                    ) : (
+                        <Grid container spacing={2}>
+                            {paginatedDoctors.map((doctor) => (
+                                <Grid item key={doctor.$id} xs={12} sm={6} md={3} lg={3}>
+                                    <Card sx={{ width: '100%', maxWidth: 300, minWidth: 300, boxShadow: 'none' }}>
+                                        <CardMedia
+                                            component="img"
+                                            height="150"
+                                            image={doctor.img || defaultImg}
+                                            alt={doctor.name}
+                                            sx={{
+                                                borderRadius: '50%',
+                                                width: '150px',
+                                                height: '150px',
+                                                objectFit: 'cover',
+                                                margin: 'auto',
+                                            }}
+                                        />
+                                        <CardContent>
+                                            <Typography gutterBottom variant="h6" component="div">
+                                                <Link
+                                                    component={RouterLink}
+                                                    to={`/viewDoctorDetail/${doctor.docId}`}
+                                                    sx={{
+                                                        textDecoration: 'none',
+                                                        color: 'inherit',
+                                                        '&:hover': {
+                                                            textDecoration: 'underline',
+                                                        }
+                                                    }}
+                                                >
+                                                    Bác sĩ : {doctor.name}
+                                                </Link>
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                Chuyên khoa: {doctor.allDepartmentName}
+                                            </Typography>
+                                        </CardContent>
+                                    </Card>
+                                </Grid>
+                            ))}
+                        </Grid>
+                    )}
                     {/* Pagination Controls */}
                     <Pagination
                         count={totalPages}

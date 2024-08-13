@@ -287,7 +287,7 @@ const [isUploading, setIsUploading] = useState(false);
                             autoFocus
                             margin="dense"
                             id="message"
-                            label={isSending ? "Đang gửi tin nhắn..." : "Type your message"}
+                            label={isSending ? "Đang gửi tin nhắn..." : "Ghi nội dung tin nhắn tại đây"}
                             type="text"
                             fullWidth
                             variant="outlined"

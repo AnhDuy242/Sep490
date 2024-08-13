@@ -112,13 +112,13 @@ const EditBlogDialog = ({ open, onClose, blogId, onSave }) => {
           ...blogData,
           content: `${blogData.content}\n![Image](${imageUrl})`
         });
-        setSnackbarMessage('Image uploaded successfully!');
+        setSnackbarMessage('Tải ảnh lên thành công!');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
       })
       .catch(error => {
         console.error('Error uploading image:', error);
-        setSnackbarMessage('Failed to upload image.');
+        setSnackbarMessage('Có lỗi khi tải ảnh lên.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       });
@@ -160,15 +160,15 @@ const EditBlogDialog = ({ open, onClose, blogId, onSave }) => {
     axios.put(`https://localhost:7240/api/ArticleManagerBlog/UpdateBlog/blog/${blogId}`, updatedBlogData)
       .then(response => {
         console.log('Blog updated successfully:', response.data);
-        onSave('Blog updated successfully!'); 
+        onSave('Blog đã được cập nhật!'); 
         onClose(); 
-        setSnackbarMessage('Blog updated successfully!');
+        setSnackbarMessage('Blog đã được cập nhật!');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
       })
       .catch(error => {
         console.error('Error updating blog:', error.response ? error.response.data : error.message);
-        setSnackbarMessage('Failed to update blog.');
+        setSnackbarMessage('Cập nhật blog thất bại.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       });
@@ -189,10 +189,9 @@ const EditBlogDialog = ({ open, onClose, blogId, onSave }) => {
       fullWidth
       maxWidth="95vw"
     >
-      <DialogTitle>Edit Blog</DialogTitle>
       <DialogContent>
         <TextField
-          label="Title"
+          label="Tiêu đề"
           variant="outlined"
           fullWidth
           margin="normal"
@@ -228,7 +227,7 @@ const EditBlogDialog = ({ open, onClose, blogId, onSave }) => {
           <IconButton component="label" color="primary" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <AddPhotoAlternateIcon fontSize="large" />
           </IconButton>
-          <p>Click to select a thumbnail image</p>
+          <p>Bấm vào đây để sửa ảnh bìa</p>
         </div>
         <TextField
           label="Content"
@@ -245,7 +244,7 @@ const EditBlogDialog = ({ open, onClose, blogId, onSave }) => {
           style={{ border: '1px dashed gray', padding: '20px', textAlign: 'center', marginTop: '16px' }}
         >
           <input {...getImageInputProps()} />
-          <p>Drag & drop an image here, or click to select one</p>
+          <p>Thêm mới ảnh tại đây</p>
         </div>
         <div style={{ border: '1px dashed gray', padding: '20px', textAlign: 'center', marginTop: '16px' }}>
           <h2>{blogData.title}</h2>
@@ -253,8 +252,8 @@ const EditBlogDialog = ({ open, onClose, blogId, onSave }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleUpdateBlog} color="primary">Update</Button>
+        <Button onClick={onClose}>Hủy</Button>
+        <Button onClick={handleUpdateBlog} color="primary">Sửa</Button>
       </DialogActions>
       <Snackbar
         open={snackbarOpen}

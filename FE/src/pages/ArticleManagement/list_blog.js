@@ -130,6 +130,10 @@ const BlogList = () => {
     fetchBlogs(); // Refresh the list
   };
 
+  const handleAddBlog = () => {
+    fetchBlogs(); // Refresh the list after adding a new blog
+    setOpenAddDialog(false); // Close the dialog after saving
+  };
   const handleSaveEdit = (message) => {
     fetchBlogs(); // Refresh the list after editing
     setSnackbarMessage(message);
@@ -265,7 +269,7 @@ const BlogList = () => {
       <Dialog open={openDeleteDialog} onClose={handleCloseDeleteDialog}>
         <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
-          <Typography>ABạn có muốn xóa bài viết này không??</Typography>
+          <Typography>Bạn có muốn xóa bài viết này không??</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDeleteDialog} color="primary">
@@ -277,7 +281,7 @@ const BlogList = () => {
         </DialogActions>
       </Dialog>
 
-      <CreateBlogDialog open={openAddDialog} onClose={handleCloseAddDialog} />
+      <CreateBlogDialog open={openAddDialog} onClose={handleCloseAddDialog} onSave={handleAddBlog} />
       
       <EditBlogDialog open={openEditDialog} onClose={handleCloseEditDialog} blogId={currentBlogId} onSave={handleSaveEdit} />
 

@@ -243,7 +243,7 @@
 
 import React, { useContext, useState, useEffect } from 'react';
 import { Box, Button, Grid, Paper, Typography } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../../../../utils/AuthContext';
 import { login } from '../../../../services/Authentication';
 import { jwtDecode } from 'jwt-decode';
@@ -256,6 +256,7 @@ import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 function CustomerService() {
     const { isLoggedIn, token, updateToken, logout } = useContext(AuthContext);
     const [showLogin, setShowLogin] = useState(false);
+    const navigate = useNavigate();
 
     useEffect(() => {
         // Check token validity on component mount
@@ -276,7 +277,6 @@ function CustomerService() {
         try {
             const { token } = await login(username, password);
             updateToken(token);
-
             const decodedToken = jwtDecode(token);
             const accountId = decodedToken.AccId;
             const role = decodedToken.role; // Adjust this according to your token structure
@@ -285,7 +285,10 @@ function CustomerService() {
             localStorage.setItem('token', token);
             localStorage.setItem('role', role);
             localStorage.setItem('accountId', accountId);
-
+            if(role==='Patient'){
+                navigate('/CreateAppointment', { replace: true });
+            }
+            return { success: true };
         } catch (error) {
             console.error('Login failed:', error);
         }

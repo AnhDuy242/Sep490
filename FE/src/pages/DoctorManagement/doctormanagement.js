@@ -23,7 +23,7 @@ const MedicalNotebookForm = () => {
     try {
       const response = await axios.post('https://localhost:7240/api/DoctorMedicalNotebook/CreateMedicalNoteBook', formData);
       console.log(response.data);
-      alert('Medical notebook created successfully!');
+      alert('Tạo mới bệnh án thành công');
     } catch (error) {
       console.error(error);
       alert('Error creating medical notebook.');

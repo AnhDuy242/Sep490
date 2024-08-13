@@ -16,7 +16,7 @@ import ReactMarkdown from 'react-markdown';
 import { useDropzone } from 'react-dropzone';
 import remarkGfm from 'remark-gfm'; // Import remark-gfm
 
-const CreateBlogDialog = ({ open, onClose }) => {
+const CreateBlogDialog = ({ open, onClose, onSave }) => {
   const [newBlog, setNewBlog] = useState({ title: '', content: '', thumbnail: '', docId: '' });
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -90,7 +90,7 @@ const CreateBlogDialog = ({ open, onClose }) => {
 
   const handleAddBlog = () => {
     if (!newBlog.title || !newBlog.content) {
-      setSnackbarMessage('Title and content cannot be empty.');
+      setSnackbarMessage('Tiêu đề và content ko được để trống.');
       setSnackbarSeverity('error');
       setSnackbarOpen(true);
       return;
@@ -102,10 +102,10 @@ const CreateBlogDialog = ({ open, onClose }) => {
     const blogData = {
       title: newBlog.title,
       content: formattedContent, // Use the formatted content
-      docId: newBlog.docId, // Use the randomly selected doctor ID
+      docId: parseInt(newBlog.docId, 10), // Use the randomly selected doctor ID
       date: new Date().toISOString(),
       thumbnail: newBlog.thumbnail,
-      aId: accountId,
+      aId: parseInt(accountId, 10)  ,
       articleManager: {
         aId: accountId,
         name: "Example Name",
@@ -125,16 +125,18 @@ const CreateBlogDialog = ({ open, onClose }) => {
       .then(response => response.json())
       .then(data => {
         console.log('Blog created successfully:', data);
+        onSave(); 
         onClose();
-        setNewBlog({ title: '', content: '', thumbnail: '', docId: '' });
+        setNewBlog({ title: '', content: '', thumbnail: '', docId:parseInt(newBlog.docId, 10) });
         setThumbnailPreview('');
-        setSnackbarMessage('Blog created successfully!');
+        setSnackbarMessage('Blog đã được tạo thành công!');
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
+        
       })
       .catch(error => {
         console.error('Error creating blog:', error);
-        setSnackbarMessage('Failed to create blog.');
+        setSnackbarMessage('Có lỗi khi thêm mới blog.');
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
       });
@@ -157,10 +159,9 @@ const CreateBlogDialog = ({ open, onClose }) => {
       fullWidth
       maxWidth="95vw" // Adjust the size to make it wider
     >
-      <DialogTitle>Add New Blog</DialogTitle>
       <DialogContent>
         <TextField
-          label="Title"
+          label="Tiêu đề"
           variant="outlined"
           fullWidth
           margin="normal"
@@ -196,10 +197,10 @@ const CreateBlogDialog = ({ open, onClose }) => {
           <IconButton component="label" color="primary" style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
             <AddPhotoAlternateIcon fontSize="large" />
           </IconButton>
-          <p>Click to select a thumbnail image</p>
+          <p>Thêm ảnh bìa tại đây</p>
         </div>
         <TextField
-          label="Content"
+          label="Nội dung"
           variant="outlined"
           fullWidth
           margin="normal"
@@ -209,6 +210,7 @@ const CreateBlogDialog = ({ open, onClose }) => {
           onChange={handleContentChange} // Update content handling
         />
         <div style={{ border: '1px dashed gray', padding: '20px', textAlign: 'center', marginTop: '16px' }}>
+          
           <ReactMarkdown remarkPlugins={[remarkGfm]}>{newBlog.content}</ReactMarkdown>
         </div>
         <div
@@ -216,12 +218,12 @@ const CreateBlogDialog = ({ open, onClose }) => {
           style={{ border: '1px dashed gray', padding: '20px', textAlign: 'center', marginTop: '16px' }}
         >
           <input {...getImageInputProps()} />
-          <p>Drag & drop an image here, or click to select one</p>
+          <p>Thêm ảnh nội dung tại đây</p>
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button onClick={handleAddBlog} color="primary">Add</Button>
+        <Button onClick={onClose}>Hủy</Button>
+        <Button onClick={handleAddBlog} color="primary">Thêm mới</Button>
       </DialogActions>
       <Snackbar
         open={snackbarOpen}
