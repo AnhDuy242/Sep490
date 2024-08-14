@@ -76,7 +76,7 @@ const EditSchedule = ({ setSnackbar }) => {
                       <TableCell key={index} align="center">
                         {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (
                           <Typography>
-                            {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.appointments || 0}
+                            {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.appointments || 'Có lịch'}
                           </Typography>
                         ) : (
                           '-'
@@ -90,7 +90,7 @@ const EditSchedule = ({ setSnackbar }) => {
                       <TableCell key={index} align="center">
                         {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (
                           <Typography>
-                            {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.appointments || 0}
+                            {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.appointments || 'Có lịch'}
                           </Typography>
                         ) : (
                           '-'

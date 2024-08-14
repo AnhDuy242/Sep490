@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
     TextField, Typography, Box, Table, TableBody, TableCell, TableContainer,
     TableHead, TableRow, Select, MenuItem, Button, Modal, Container, Snackbar,
-    Alert, Tabs, Tab, Card, CardContent, Grid, Dialog, DialogContent, DialogTitle
+    Alert, Tabs, Tab, Card, CardContent, Grid, Dialog, DialogContent, DialogTitle,
+    Pagination
 } from '@mui/material';
 import { fetchPatients, createMedicalNotebook } from '../../../services/patient_service';
 
@@ -16,7 +17,7 @@ const PatientManagement = () => {
         prescription: '',
         diagnostic: '',
         doctorId: localStorage.getItem('accountId'),
-        patientId: '',  // This will be updated when a patient is selected
+        patientId: '',
         name: ''
     });
     const [errors, setErrors] = useState({});
@@ -24,18 +25,20 @@ const PatientManagement = () => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
 
-    // State for medical notebooks and tabs
     const [medicalNotebooks, setMedicalNotebooks] = useState([]);
     const [activeTab, setActiveTab] = useState(0);
     const [openViewDialog, setOpenViewDialog] = useState(false);
     const [openImageDialog, setOpenImageDialog] = useState(false);
     const [selectedImage, setSelectedImage] = useState('');
 
+    // New state variables for pagination
+    const [page, setPage] = useState(1);
+    const [patientsPerPage] = useState(10);
+
     useEffect(() => {
         const fetchData = async () => {
             const data = await fetchPatients();
             setPatients(data);
-            console.log(data);
             setFilteredPatients(data);
         };
         fetchData();
@@ -44,27 +47,21 @@ const PatientManagement = () => {
     useEffect(() => {
         if (filter === 'All') {
             setFilteredPatients(patients);
-        } else if(filter ==='1') {
+        } else {
             setFilteredPatients(patients.filter(patient => patient.check === parseInt(filter)));
-            console.log(patients);
-        } else if(filter ==='2') {
-            setFilteredPatients(patients.filter(patient => patient.check === parseInt(filter)));
-        }
-        else if(filter ==='3') {
-            setFilteredPatients(patients.filter(patient => patient.check === parseInt(filter)));
-
         }
     }, [filter, patients]);
 
     const handleFilterChange = (event) => {
         setFilter(event.target.value);
+        setPage(1); // Reset to first page when filter changes
     };
 
     const handleOpenForm = (patient) => {
         setSelectedPatient(patient);
         setFormData({
             ...formData,
-            patientId: patient.patientId,  // Ensure this is the correct ID for the patient
+            patientId: patient.patientId,
             name: patient.name
         });
         setOpenForm(true);
@@ -95,15 +92,15 @@ const PatientManagement = () => {
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) return; // Stop submission if validation fails
+        if (!validateForm()) return;
 
         try {
             const response = await createMedicalNotebook(formData);
-            setSnackbarMessage(`Medical notebook created successfully: ${response.message || ''}`);
+            setSnackbarMessage(`Đã tạo thành công bệnh án: ${response.message || ''}`);
             setSnackbarSeverity('success');
             handleCloseForm();
         } catch (error) {
-            setSnackbarMessage(`Error creating medical notebook: ${error.response?.data?.message || 'Unknown error'}`);
+            setSnackbarMessage(`Có lỗi xảy ra khi tạo bệnh án: ${error.response?.data?.message || 'Unknown error'}`);
             setSnackbarSeverity('error');
         } finally {
             setOpenSnackbar(true);
@@ -116,28 +113,24 @@ const PatientManagement = () => {
 
     const handleOpenViewDialog = async (patientId) => {
         try {
-            // Fetch medical notebooks
             const notebooksResponse = await fetch(`https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientId?pid=${patientId}`);
             const notebooksData = await notebooksResponse.json();
             setMedicalNotebooks(notebooksData.$values || []);
     
-            // Fetch test results to get image URLs
             const imgUrlsResponse = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${patientId}`);
             const imgUrlsData = await imgUrlsResponse.json();
             const imgUrls = imgUrlsData.$values.map(result => result.imgUrl);
             
-            // Check if there's no data
             if ((notebooksData.$values.length === 0) && (imgUrls.length === 0)) {
                 setSnackbarMessage('Không có hồ sơ hoặc kết quả xét nghiệm cho bệnh nhân này.');
                 setSnackbarSeverity('warning');
                 setOpenSnackbar(true);
-                return; // Stop further execution if no data
+                return;
             }
     
-            // Add image URLs to medical notebooks (if needed)
             setMedicalNotebooks(prevNotebooks => prevNotebooks.map(notebook => ({
                 ...notebook,
-                imgUrls // Attach imgUrls here if needed
+                imgUrls
             })));
     
             setOpenViewDialog(true);
@@ -167,6 +160,15 @@ const PatientManagement = () => {
         setSelectedImage('');
     };
 
+    // Pagination logic
+    const indexOfLastPatient = page * patientsPerPage;
+    const indexOfFirstPatient = indexOfLastPatient - patientsPerPage;
+    const currentPatients = filteredPatients.slice(indexOfFirstPatient, indexOfLastPatient);
+
+    const handlePageChange = (event, value) => {
+        setPage(value);
+    };
+
     return (
         <Box>
             <Box mb={2}>
@@ -176,7 +178,6 @@ const PatientManagement = () => {
                     <MenuItem value="1">Hoạt động</MenuItem>
                     <MenuItem value="2">Chưa đánh giá</MenuItem>
                     <MenuItem value="3">Đã đánh giá</MenuItem>
-
                 </Select>
             </Box>
 
@@ -196,7 +197,7 @@ const PatientManagement = () => {
                         </TableRow>
                     </TableHead>
                     <TableBody>
-                        {filteredPatients.map((patient) => (
+                        {currentPatients.map((patient) => (
                             <TableRow key={patient.accId}>
                                 <TableCell>{patient.name}</TableCell>
                                 <TableCell>{patient.email}</TableCell>
@@ -238,6 +239,16 @@ const PatientManagement = () => {
                     </TableBody>
                 </Table>
             </TableContainer>
+
+            {/* Pagination */}
+            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                <Pagination
+                    count={Math.ceil(filteredPatients.length / patientsPerPage)}
+                    page={page}
+                    onChange={handlePageChange}
+                    color="primary"
+                />
+            </Box>
 
             <Modal
                 open={openForm}
@@ -351,7 +362,6 @@ const PatientManagement = () => {
                             <Tab key={notebook.$id} label={`Notebook ${notebook.$id}`} />
                         ))}
                     </Tabs>
-
                     <Box>
                         {medicalNotebooks.map((notebook, index) => (
                             <TabPanel key={notebook.$id} value={activeTab} index={index}>

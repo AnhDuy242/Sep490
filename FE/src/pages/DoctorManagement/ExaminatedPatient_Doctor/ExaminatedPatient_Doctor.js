@@ -239,9 +239,9 @@ const ExaminatedPatients = () => {
                         <Typography variant="body2">
                           <strong>Bác sĩ chỉ định:</strong> {notebook.doctorName}
                         </Typography>
-                        <Typography variant="body2">
+                        {/* <Typography variant="body2">
                           <strong>Ngày khám:</strong> {notebook.dateCreate ? new Date(notebook.dateCreate).toLocaleDateString() : 'Not available'}
-                        </Typography>
+                        </Typography> */}
                       </AccordionDetails>
                     </Accordion>
                   ))}

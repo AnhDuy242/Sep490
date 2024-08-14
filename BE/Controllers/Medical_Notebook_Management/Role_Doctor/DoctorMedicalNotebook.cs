@@ -81,7 +81,23 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
             return Ok(lists);
         }
+        [HttpGet]
+        public async Task<IActionResult> ViewMedicalNoteBookByMedicalId(int pid)
+        {
+            var list = _context.MedicalNotebooks
+                .Include(x => x.Patient)
+                .Include(x => x.Doctor)
+                .Where(x => x.Id == pid)
+                .ToList();
 
+            if (list.Count == 0)
+            {
+                return NotFound("Không tìm thấy bệnh án với ID này");
+            }
+
+            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            return Ok(lists);
+        }
         [HttpGet]
         public async Task<IActionResult> ViewMedicalNoteBookByPatientName(string name)
         {

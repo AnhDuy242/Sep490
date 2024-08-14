@@ -125,11 +125,10 @@
 // export default DoctorAnswerQuestion;
 
 
-
 import React, { useState, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, IconButton, Dialog, DialogActions, DialogContent, DialogTitle, TextField, Button, Snackbar, Alert } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
-import { fetchQuestionsByDepId, fetchDepartments, answerQuestion } from './../../../services/QuestionService'; // Import hàm answerQuestion
+import { fetchQuestionsByDepId, fetchDepartments, answerQuestion } from './../../../services/QuestionService';
 
 const DoctorAnswerQuestion = () => {
     const [questions, setQuestions] = useState([]);
@@ -137,6 +136,8 @@ const DoctorAnswerQuestion = () => {
     const [open, setOpen] = useState(false);
     const [currentQuestionId, setCurrentQuestionId] = useState(null);
     const [answer, setAnswer] = useState('');
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
     const docId = localStorage.getItem('accountId');
 
     useEffect(() => {
@@ -167,7 +168,7 @@ const DoctorAnswerQuestion = () => {
 
     const handleClickOpen = (questionId) => {
         setCurrentQuestionId(questionId);
-        setAnswer(''); // Reset câu trả lời trong Dialog
+        setAnswer('');
         setOpen(true);
     };
 
@@ -182,13 +183,23 @@ const DoctorAnswerQuestion = () => {
             try {
                 await answerQuestion(currentQuestionId, answer, docId);
                 handleClose();
+
                 // Cập nhật lại danh sách câu hỏi sau khi lưu
                 const questionsData = await fetchQuestionsByDepId(depId);
                 setQuestions(questionsData.$values);
+
+                // Hiển thị thông báo Snackbar
+                setSnackbarMessage('Câu trả lời đã được thêm thành công!');
+                setSnackbarOpen(true);
             } catch (error) {
+                
                 console.error('Error saving answer:', error);
             }
         }
+    };
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
     };
 
     return (
@@ -200,8 +211,8 @@ const DoctorAnswerQuestion = () => {
                             <TableCell>ID</TableCell>
                             <TableCell>Câu hỏi</TableCell>
                             <TableCell>Ngày tạo</TableCell>
-                            <TableCell>Trả lời câu hỏi</TableCell>
                             <TableCell>Câu trả lời</TableCell>
+                            <TableCell>Trả lời câu hỏi</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -229,8 +240,8 @@ const DoctorAnswerQuestion = () => {
                 fullWidth
                 PaperProps={{
                     style: {
-                        maxHeight: '80vh', // Giới hạn chiều cao tối đa của Dialog
-                        maxWidth: '90vw',  // Giới hạn chiều rộng tối đa của Dialog
+                        maxHeight: '80vh',
+                        maxWidth: '90vw',
                     },
                 }}
             >
@@ -249,8 +260,8 @@ const DoctorAnswerQuestion = () => {
                         onChange={(e) => setAnswer(e.target.value)}
                         variant="outlined"
                         sx={{
-                            resize: 'both', // Cho phép điều chỉnh kích thước của TextField
-                            maxHeight: '60vh', // Giới hạn chiều cao tối đa của TextField
+                            resize: 'both',
+                            maxHeight: '60vh',
                         }}
                     />
                 </DialogContent>
@@ -263,6 +274,17 @@ const DoctorAnswerQuestion = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            >
+                <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
+                    {snackbarMessage}
+                </Alert>
+            </Snackbar>
         </div>
     );
 };

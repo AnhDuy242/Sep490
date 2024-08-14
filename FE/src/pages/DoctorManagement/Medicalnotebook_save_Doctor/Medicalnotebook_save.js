@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Snackbar, MenuItem, Select, InputLabel, FormControl, Box, IconButton, Dialog, DialogContent, DialogTitle } from '@mui/material';
+import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Snackbar, MenuItem, Select, InputLabel, FormControl, Box, IconButton, Dialog, DialogContent, DialogTitle, TablePagination } from '@mui/material';
 import { Alert } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import CloseIcon from '@mui/icons-material/Close';
@@ -16,6 +16,10 @@ const MedicalNotebookList = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
   const [visibleImages, setVisibleImages] = useState({}); // Track visibility of images
+
+  // Pagination state
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     loadAllNotebooks();
@@ -47,31 +51,31 @@ const MedicalNotebookList = () => {
   };
 
   const handleSearch = async () => {
+    if (searchValue.trim() === '') {
+      setSnackbarMessage('Vui lòng nhập giá trị tìm kiếm');
+      setSnackbarSeverity('info');
+      setOpenSnackbar(true);
+      return;
+    }
+  
     try {
       let url = '';
-  
+      
       if (searchType === 'id') {
-        url = `https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientId?pid=${searchValue}`;
+        url = `https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByMedicalId?pid=${searchValue}`;
       } else if (searchType === 'name') {
-        url = `https://localhost:7240/api/DoctorMedicalNoteBook/ViewMedicalNoteBookByPatientName?name=${searchValue}`;
-      }
-  
-      if (searchValue.trim() === '') {
-        loadAllNotebooks(); // Load all notebooks if search value is empty
-        return;
+        url = `https://localhost:7240/api/DoctorMedicalNotebook/ViewMedicalNoteBookByPatientName?name=${searchValue}`;
       }
   
       const response = await axios.get(url);
       const data = response.data;
   
       if (Array.isArray(data.$values) && data.$values.length === 0) {
-        loadAllNotebooks(); // Load all notebooks if no results are found
         setSnackbarMessage('Không tìm thấy hồ sơ bệnh án');
         setSnackbarSeverity('info');
         setOpenSnackbar(true);
       } else {
-        const notebooksData = Array.isArray(data.$values) ? data.$values: [];
-        console.log(notebooks);
+        const notebooksData = Array.isArray(data.$values) ? data.$values : [];
         setNotebooks(notebooksData);
         setSnackbarMessage('Danh sách hồ sơ bệnh án đã được cập nhật');
         setSnackbarSeverity('success');
@@ -79,19 +83,26 @@ const MedicalNotebookList = () => {
       }
     } catch (error) {
       let errorMessage = 'Lỗi khi tìm kiếm hồ sơ bệnh án';
-      if (error.response) {
-        errorMessage = error.response.data || errorMessage;
+      
+      // Improved error handling to extract meaningful messages
+      if (error.response && error.response.data && typeof error.response.data === 'object') {
+        const errorData = error.response.data;
+        errorMessage = errorData.title || errorMessage; // Fallback to generic message if no specific title is found
+      } else if (error.response && error.response.data) {
+        errorMessage = error.response.data.toString(); // In case response data is string
       } else if (error.request) {
         errorMessage = 'Không nhận được phản hồi từ máy chủ';
       } else {
         errorMessage = error.message || errorMessage;
       }
+      
       console.error('Search Error:', error); // Log error for debugging
       setSnackbarMessage(errorMessage);
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
   };
+  
 
   const handleToggleImage = (mId) => {
     if (visibleImages[mId]) {
@@ -112,6 +123,15 @@ const MedicalNotebookList = () => {
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedImage('');
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -156,31 +176,46 @@ const MedicalNotebookList = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {notebooks.map((notebook) => (
-              <TableRow key={notebook.id}>
-                <TableCell>{notebook.id}</TableCell>
-                <TableCell>{notebook.prescription}</TableCell>
-                <TableCell>{notebook.diagnostic}</TableCell>
-                <TableCell>{notebook.patientName}</TableCell>
-                <TableCell>{notebook.doctorName}</TableCell>
-                <TableCell>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    onClick={() => handleToggleImage(notebook.id)}
-                  >
-                    {visibleImages[notebook.id] ? 'Ẩn ảnh' : 'Xem ảnh'}
-                  </Button>
-                  {visibleImages[notebook.id] && testResults[notebook.id] && testResults[notebook.id].map((result) => (
-                    <div key={result.imgId}>
-                      <Button onClick={() => handleOpenDialog(result.imgUrl)}>Xem ảnh</Button>
-                    </div>
-                  ))}
-                </TableCell>
-              </TableRow>
-            ))}
+            {notebooks
+              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              .map((notebook) => (
+                <TableRow key={notebook.id}>
+                  <TableCell>{notebook.id}</TableCell>
+                  <TableCell>{notebook.prescription}</TableCell>
+                  <TableCell>{notebook.diagnostic}</TableCell>
+                  <TableCell>{notebook.patientName}</TableCell>
+                  <TableCell>{notebook.doctorName}</TableCell>
+                  <TableCell>
+                    {visibleImages[notebook.id] && testResults[notebook.id]?.length === 0 ? (
+                      <div>Không có hình ảnh nào</div>
+                    ) : (
+                      <Button
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => handleToggleImage(notebook.id)}
+                      >
+                        {visibleImages[notebook.id] ? 'Ẩn ảnh' : 'Xem ảnh'}
+                      </Button>
+                    )}
+                    {visibleImages[notebook.id] && testResults[notebook.id] && testResults[notebook.id].map((result) => (
+                      <div key={result.imgId}>
+                        <Button onClick={() => handleOpenDialog(result.imgUrl)}>Xem ảnh</Button>
+                      </div>
+                    ))}
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={notebooks.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
       <Dialog
         open={openDialog}
@@ -191,22 +226,19 @@ const MedicalNotebookList = () => {
             maxWidth: '80%',
             maxHeight: '80%',
             margin: 'auto',
-            overflow: 'hidden',
           },
         }}
       >
         <DialogTitle>
-          
+        
           <IconButton
-            edge="end"
-            color="inherit"
-            onClick={handleCloseDialog}
             aria-label="close"
+            onClick={handleCloseDialog}
             sx={{
               position: 'absolute',
               right: 8,
               top: 8,
-              color: 'grey.500',
+              color: (theme) => theme.palette.grey[500],
             }}
           >
             <CloseIcon />
