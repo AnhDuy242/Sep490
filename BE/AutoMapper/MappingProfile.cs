@@ -68,8 +68,14 @@ public class MappingProfile : Profile
 
         CreateMap<Doctor, DoctorAppointment>().ReverseMap();
         CreateMap<Doctor, DoctorMarketing>()
-                    .ForMember(dest => dest.AllServiceName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Name))))
-                    .ForMember(dest => dest.AllDepartmentName, opt => opt.MapFrom(src => string.Join(", ", src.Services.Select(s => s.Dep.Name))));
+             .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Doc.Email))
+             .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src.Dep))
+             .ForMember(dest => dest.Services, opt => opt.MapFrom(src => src.Services));
+
+        CreateMap<Department, DepartmentWithServicesDto>()
+            .ForMember(dest => dest.Services, opt => opt.MapFrom(src => src.Services));
+
+        CreateMap<Service, ServiceDTO>();
 
         //test rs
         CreateMap<TestResult, TestResultPatient>().ReverseMap();

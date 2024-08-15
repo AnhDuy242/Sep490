@@ -597,14 +597,7 @@ const LoginForm = ({ show, handleClose, handleLogin }) => {
                 ),
               }}
             />
-            <Box sx={{ textAlign: 'center', my: 2 }}>
-              <Typography variant="body2">Hoặc đăng nhập bằng</Typography>
-            </Box>
-            <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <Button variant="outlined" startIcon={<img src={google_icon} alt="Google" className='google_icon' />} href="/identity/externallogin/?provider=Google">
-                Google
-              </Button>
-            </Box>
+         
             <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
               {loading ? 'Đang xử lý...' : 'Đăng nhập'}
             </Button>

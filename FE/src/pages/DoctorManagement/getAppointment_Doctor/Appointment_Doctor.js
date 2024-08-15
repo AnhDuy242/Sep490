@@ -86,7 +86,7 @@ const AppointmentsDoctor = () => {
                 Object.keys(groupedAppointments).map(date => (
                     <div key={date}>
                         <Typography variant="h6" gutterBottom>
-                            Ngày: {new Date(date).toLocaleDateString()}
+                            Ngày: {date}
                         </Typography>
                         <Grid container spacing={2}>
                             {groupedAppointments[date].map(appointment => (

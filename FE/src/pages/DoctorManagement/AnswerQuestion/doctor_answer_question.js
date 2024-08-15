@@ -130,6 +130,20 @@ import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper
 import EditIcon from '@mui/icons-material/Edit';
 import { fetchQuestionsByDepId, fetchDepartments, answerQuestion } from './../../../services/QuestionService';
 
+
+const formatDateToYYYYMMDD = (dateString) => {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+        return 'Ngày không hợp lệ'; // Invalid date
+    }
+
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are 0-based
+    const day = date.getDate().toString().padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
+};
+
 const DoctorAnswerQuestion = () => {
     const [questions, setQuestions] = useState([]);
     const [depId, setDepId] = useState(null);
@@ -139,7 +153,15 @@ const DoctorAnswerQuestion = () => {
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const docId = localStorage.getItem('accountId');
+const isValidDate = (dateString) => {
+    const regex = /^\d{4}-\d{2}-\d{2}$/; // Regular expression to match yyyy-MM-dd
+    if (!dateString.match(regex)) return false;
 
+    const date = new Date(dateString);
+    const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+
+    return date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
+};
     useEffect(() => {
         const getDepartmentAndQuestions = async () => {
             if (!docId) {
@@ -220,7 +242,7 @@ const DoctorAnswerQuestion = () => {
                             <TableRow key={question.quesId}>
                                 <TableCell>{question.quesId}</TableCell>
                                 <TableCell>{question.question1}</TableCell>
-                                <TableCell>{question.quesDate}</TableCell>
+                                <TableCell>{formatDateToYYYYMMDD(question.quesDate)}</TableCell>
                                 <TableCell>{question.answer}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => handleClickOpen(question.quesId)}>

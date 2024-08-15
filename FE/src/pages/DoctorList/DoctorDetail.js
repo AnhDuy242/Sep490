@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Box, Typography, CardMedia, Grid, Breadcrumbs, Link } from '@mui/material';
-import { useParams, useNavigate, Link as RouterLink } from 'react-router-dom';
+import { Container, Box, Typography, CardMedia, Grid, Breadcrumbs, Link, List, ListItem } from '@mui/material';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import axios from 'axios';
 import defaultImg from '../../assets/images/images (1).jpg'; // Import default image
 import { Helmet } from 'react-helmet';
@@ -11,13 +11,13 @@ import Header from '../../layouts/Header';
 const DoctorDetail = () => {
     const { id } = useParams();
     const [doctor, setDoctor] = useState(null);
-    const navigate = useNavigate(); // Hook to navigate
 
     useEffect(() => {
         const fetchDoctorDetail = async () => {
             try {
-                const response = await axios.get(`https://localhost:7240/api/Header/GetDoctorDetailById?id=${id}`);
-                setDoctor(response.data.$values[0]);
+                const response = await axios.get(`https://localhost:7240/api/Header/GetDoctorDetailAndDepartmentById?id=${id}`);
+                console.log('Fetched doctor data:', response.data); // Log data to verify structure
+                setDoctor(response.data);
             } catch (error) {
                 console.error('Error fetching doctor details:', error);
             }
@@ -29,6 +29,9 @@ const DoctorDetail = () => {
     if (!doctor) {
         return <p>Loading...</p>;
     }
+
+    // Ensure services is an array
+    const services = doctor.services && doctor.services.$values ? doctor.services.$values : [];
 
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -70,11 +73,26 @@ const DoctorDetail = () => {
                                 Bác sĩ: {doctor.name}
                             </Typography>
                             <Typography variant="h6" component="div" sx={{ marginTop: 2 }}>
-                                {doctor.description}
+                               Mô tả về bác sĩ: {doctor.description}
                             </Typography>
                             <Typography variant="body1" sx={{ marginTop: 1 }}>
-                                Chuyên ngành: {doctor.allDepartmentName}
+                                Email: {doctor.email}
                             </Typography>
+                            <Typography variant="body1" sx={{ marginTop: 1 }}>
+                                Chuyên ngành: {doctor.department.name}
+                            </Typography>
+                            <Typography variant="body1" component="div" sx={{ marginTop: 2 }}>
+                                Dịch vụ:
+                            </Typography>
+                            <List>
+                                {services.map((service) => (
+                                    <ListItem key={service.serviceId}>
+                                        <Typography variant="body1">
+                                            -{service.name} 
+                                        </Typography>
+                                    </ListItem>
+                                ))}
+                            </List>
                         </Box>
                     </Grid>
                 </Grid>

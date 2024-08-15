@@ -36,6 +36,25 @@ namespace BE.Controllers.Marketing
             var result = _mapper.Map<List<DoctorMarketing>>(listDoc);
             return Ok(result);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetDoctorDetailAndDepartmentById(int id)
+        {
+            var doctor = await _context.Doctors
+                .Include(x => x.Services)
+                .ThenInclude(x => x.Dep)
+                .Include(x => x.Doc) // Đảm bảo ánh xạ thông tin của bác sĩ
+                .Where(x => x.IsActive == true)
+                .Where(x => x.DocId == id)
+                .FirstOrDefaultAsync();
+
+            if (doctor == null)
+            {
+                return NotFound();
+            }
+
+            var result = _mapper.Map<DoctorMarketing>(doctor);
+            return Ok(result);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetService()

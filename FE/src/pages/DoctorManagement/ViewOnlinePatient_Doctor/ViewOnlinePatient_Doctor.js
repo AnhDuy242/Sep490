@@ -359,7 +359,7 @@ const PatientManagement = () => {
                         sx={{ mb: 2 }}
                     >
                         {medicalNotebooks.map((notebook) => (
-                            <Tab key={notebook.$id} label={`Notebook ${notebook.$id}`} />
+                            <Tab key={notebook.$id} label={`Bệnh án số ${notebook.$id-1}`} />
                         ))}
                     </Tabs>
                     <Box>
