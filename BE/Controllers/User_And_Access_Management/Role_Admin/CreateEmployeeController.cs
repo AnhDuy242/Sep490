@@ -46,6 +46,10 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             {
                 return BadRequest(new { message = "Số điện thoại đã tồn tại" });
             }
+            if (await CheckEmailExist(model.Email))
+            {
+                return BadRequest(new { message = "Email đã tồn tại" });
+            }
 
             string password = _validateService.GenerateRandomPassword();
             string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
@@ -133,7 +137,10 @@ namespace BE.Controllers.User_And_Access_Management.Admin
             }
             return true;
         }
-
+        private async Task<bool> CheckEmailExist(string email)
+        {
+            return await _context.Accounts.AnyAsync(a => a.Email == email);
+        }
 
     }
 }

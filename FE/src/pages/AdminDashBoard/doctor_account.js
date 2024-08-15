@@ -104,7 +104,15 @@ const DoctorTable = () => {
       setValidationError('Tên bác sĩ không được vượt quá 50 ký tự.');
       return;
     }
-    
+    if (!/^[\d]{10,11}$/.test(newDoctor.phone)) {
+      setValidationError('Số điện thoại không hợp lệ. Vui lòng nhập từ 10 đến 11 ký tự.');
+      return;
+    }
+  
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newDoctor.email)) {
+      setValidationError('Email không hợp lệ.');
+      return;
+    }
     try {
       const addedDoctor = await addDoctor({ ...newDoctor, depId: newDoctor.depId });
       setDoctors([...doctors, addedDoctor]);
