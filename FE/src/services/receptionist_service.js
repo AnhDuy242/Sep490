@@ -92,7 +92,7 @@ export const deleteReceptionist = async (phone) => {
     const response = await fetch(`${BASE_URL}/${phone}`, {
       method: 'DELETE',
     });
-    
+
     if (!response.ok) {
       throw new Error(`Failed to delete receptionist with phone ${phone} - Status: ${response.status}`);
     }
@@ -104,28 +104,32 @@ export const deleteReceptionist = async (phone) => {
 
 export const addReceptionist = async (receptionist) => {
   try {
-      const response = await fetch(SECONDARY_URL, {
-          method: 'POST',
-          headers: {
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(receptionist),
-      });
+    const response = await fetch(`https://localhost:7240/api/Employee/CreateReceptionist`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(receptionist),
+    });
 
-      if (!response.ok) {
-          let errorMessage = 'Failed to add new receptionist';
-          if (response.status === 400 || response.status === 409) {
-              // Handle specific error messages if necessary
-              const data = await response.json();
-              errorMessage = data.message || errorMessage;
-          }
-          throw new Error(`${errorMessage} - Status: ${response.status}`);
+    if (!response.ok) {
+      let errorMessage = 'Failed to add new receptionist';
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.indexOf("application/json") !== -1) {
+        // Response is JSON
+        const data = await response.json();
+        errorMessage = data.message || errorMessage;
+      } else {
+        // Response is likely plain text
+        errorMessage = await response.text();
       }
+      throw new Error(`${errorMessage} - Status: ${response.status}`);
+    }
 
-      return await response.json();
+    return await response.json();
   } catch (error) {
-      console.error('Error adding receptionist:', error);
-      throw error;
+    console.error('Error adding receptionist:', error);
+    throw error;
   }
 };
 

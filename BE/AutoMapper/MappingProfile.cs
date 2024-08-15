@@ -108,12 +108,19 @@ public class MappingProfile : Profile
         CreateMap<FeedbackRe, FeedbackReDto>()
             .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Feed.Patient.Name));
 
+
         CreateMap<Service, ServiceAppointment>().ReverseMap();
         CreateMap<Department, DepartmentAppointment>().ReverseMap();
         //MedicalNotebook
         CreateMap<MedicalNotebook, MedicalNotebookPatient>()
-            .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
-            .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doctor.Name))
+        .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Patient.PatientId))
+        .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.Name))
+        .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Patient.Dob))
+        .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Patient.IsActive))
+        .ForMember(dest => dest.Check, opt => opt.MapFrom(src => src.Patient.Check))
+        .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.DoctorId))
+        .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name))
+        .ForMember(dest => dest.DateCreate, opt => opt.MapFrom(src => src.DateCreate))
             .ReverseMap();
         CreateMap<Schedule, ScheduleDoctor>()
             .ForMember(dest => dest.Name, otp => otp.MapFrom(src => src.Doctor.Name)).ReverseMap();
@@ -144,8 +151,14 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.AId, opt => opt.Ignore()); // Ignore if the field does not match
 
         CreateMap<MedicalNotebook, MedicalNotebookPatient>()
+          .ForMember(dest => dest.PatientId, opt => opt.MapFrom(src => src.Patient.PatientId))
           .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.Name))
-          .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name));
+          .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Patient.Dob))
+          .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Patient.IsActive))
+          .ForMember(dest => dest.Check, opt => opt.MapFrom(src => src.Patient.Check))
+          .ForMember(dest => dest.DoctorId, opt => opt.MapFrom(src => src.DoctorId))
+          .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name))
+          .ForMember(dest => dest.DateCreate, opt => opt.MapFrom(src => src.DateCreate));
         // employee account
         CreateMap<Doctor, BE.DTOs.DoctorDto.DoctorDto>();
         CreateMap<Doctor, BE.DTOs.EmployeeDto.DoctorDto>()

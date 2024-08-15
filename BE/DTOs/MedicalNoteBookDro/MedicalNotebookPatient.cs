@@ -11,6 +11,11 @@
 
         public int PatientId { get; set; }
         public string PatientName { get; set; }
+        public DateTime Dob { get; set; }
+
+        public bool? IsActive { get; set; }
+
+        public int? Check { get; set; }
 
         public int DoctorId { get; set; }
         public string DoctorName { get; set;}

@@ -86,7 +86,7 @@ namespace BE.Controllers
         }
 
 
-        [HttpPost("Create")]
+        [HttpPost]
         public async Task<IActionResult> CreateReceptionist([FromBody] ReceptionistDto receptionistDto)
         {
             if (!ModelState.IsValid)

@@ -162,7 +162,7 @@ const ReceptionistAccount = () => {
                 console.log('Receptionist updated successfully with no content returned');
             }
 
-            handleOpenSnackbar(`Account ${currentAccount ? 'updated' : 'added'} successfully!`, 'success');
+            handleOpenSnackbar(`Tài khoản ${currentAccount ? 'cập nhật' : 'thêm mới'} thành công!`, 'success');
             closeDialogs(); // Close dialog after successful submission
 
             // Load receptionists and ensure setAccounts is called with an array
@@ -184,25 +184,21 @@ const ReceptionistAccount = () => {
     const handleAddFormSubmit = async (values, { setSubmitting }) => {
         try {
             setSubmitting(true); // Start submitting
-
+    
             // Call API to add receptionist
             await addReceptionist(values);
             handleOpenSnackbar('Thêm mới lễ tân thành công!', 'success');
-
+    
             closeDialogs(); // Close dialog after successful submission
             await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
         } catch (error) {
             console.error('Error submitting form:', error);
-            if (error.response && error.response.data && error.response.data.message) {
-                handleOpenSnackbar(error.response.data.message, 'error');
-            } else {
-                handleOpenSnackbar(`Error: ${error.message}`, 'error');
-            }
+            // The error message is now directly in error.message
+            handleOpenSnackbar(error.message || 'Lỗi khi thêm lễ tân', 'error');
         } finally {
             setSubmitting(false); // Stop submitting
         }
     };
-
     // Function to handle search input change
     const handleSearchChange = (event) => {
         setSearchTerm(event.target.value);
@@ -442,7 +438,7 @@ const ReceptionistAccount = () => {
                 </Snackbar>
                 {/* Dialog for adding a new account */}
                 <Dialog open={addDialogOpen} onClose={closeDialogs}>
-                    <DialogTitle>Add Account</DialogTitle>
+                    <DialogTitle>Thêm tài khoản lễ tân</DialogTitle>
                     <DialogContent>
                         <Formik
                             initialValues={{
@@ -453,7 +449,7 @@ const ReceptionistAccount = () => {
                                 dob: '',
                                 email: '',
                                 Password: '',
-                                role: 'Receptionist'
+                               roleId: 5
                             }}
                             validationSchema={validationSchema}
                             onSubmit={handleAddFormSubmit}
@@ -471,7 +467,7 @@ const ReceptionistAccount = () => {
                                 <Form onSubmit={handleSubmit}>
 
                                     <TextField
-                                        label="Name"
+                                        label="Tên"
                                         name="name"
                                         value={values.name}
                                         onChange={handleChange}
@@ -486,18 +482,16 @@ const ReceptionistAccount = () => {
                                         margin="normal"
                                         error={touched.gender && !!errors.gender}
                                     >
-                                        <InputLabel>Gender</InputLabel>
+                                        <InputLabel>Giới tính</InputLabel>
                                         <Select
                                             name="gender"
                                             value={values.gender}
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         >
-                                            <MenuItem value="">
-                                                <em>Select gender</em>
-                                            </MenuItem>
-                                            <MenuItem value="Male">Male</MenuItem>
-                                            <MenuItem value="Female">Female</MenuItem>
+                                          
+                                            <MenuItem value="Male">Nam</MenuItem>
+                                            <MenuItem value="Female">Nữ</MenuItem>
                                         </Select>
                                         {touched.gender && errors.gender && (
                                             <FormHelperText>{errors.gender}</FormHelperText>
@@ -516,7 +510,7 @@ const ReceptionistAccount = () => {
                                         margin="normal"
                                     /> */}
                                     <TextField
-                                        label="Phone"
+                                        label="SĐT"
                                         name="phone"
                                         value={values.phone}
                                         onChange={handleChange}
@@ -527,7 +521,7 @@ const ReceptionistAccount = () => {
                                         margin="normal"
                                     />
                                     <TextField
-                                        label="Date of Birth"
+                                        label="Ngày sinh"
                                         name="dob"
                                         type="date"
                                         value={values.dob}
@@ -576,10 +570,10 @@ const ReceptionistAccount = () => {
 
                                     <DialogActions>
                                         <Button onClick={closeDialogs} color="primary">
-                                            Cancel
+                                            Hủy
                                         </Button>
                                         <Button type="submit" color="primary" disabled={isSubmitting}>
-                                            Save
+                                            Lưu
                                         </Button>
                                     </DialogActions>
                                 </Form>
@@ -589,7 +583,7 @@ const ReceptionistAccount = () => {
                 </Dialog>
 
                 <Dialog open={viewEditDialogOpen} onClose={closeDialogs}>
-                    <DialogTitle>{isEditMode ? 'Edit Account' : 'View Account'}</DialogTitle>
+                    <DialogTitle>{isEditMode ? 'Sửa tài khoản' : 'Xem tài khoản'}</DialogTitle>
                     <DialogContent>
                         <Formik
                             initialValues={{
@@ -599,7 +593,7 @@ const ReceptionistAccount = () => {
                                 phone: currentAccount?.phone || '',
                                 dob: currentAccount?.dob ? new Date(currentAccount.dob).toISOString().split('T')[0] : '',
                                 email: currentAccount?.email || '',
-                                Password: ''
+                                Password: currentAccount?.password||''
                             }}
                             validationSchema={validationSchemaforEdit}
                             onSubmit={(values, actions) => {
@@ -630,7 +624,7 @@ const ReceptionistAccount = () => {
                                         sx={{ display: "none" }}
                                     />
                                     <TextField
-                                        label="Name"
+                                        label="Tên"
                                         name="name"
                                         disabled={!isEditMode}
                                         value={values.name}
@@ -647,7 +641,7 @@ const ReceptionistAccount = () => {
                                         margin="normal"
                                         error={touched.gender && !!errors.gender}
                                     >
-                                        <InputLabel>Gender</InputLabel>
+                                        <InputLabel>Giới tính</InputLabel>
                                         <Select
                                             name="gender"
                                             value={values.gender}
@@ -655,18 +649,16 @@ const ReceptionistAccount = () => {
                                             onBlur={handleBlur}
                                             disabled={!isEditMode}
                                         >
-                                            <MenuItem value="">
-                                                <em>Select gender</em>
-                                            </MenuItem>
-                                            <MenuItem value="Male">Male</MenuItem>
-                                            <MenuItem value="Female">Female</MenuItem>
+                                          
+                                            <MenuItem value="Male">Nam</MenuItem>
+                                            <MenuItem value="Female">Nữ</MenuItem>
                                         </Select>
                                         {touched.gender && errors.gender && (
                                             <FormHelperText>{errors.gender}</FormHelperText>
                                         )}
                                     </FormControl>
                                     <TextField
-                                        label="Phone"
+                                        label="SĐT"
                                         name="phone"
                                         value={values.phone}
                                         onChange={handleChange}
@@ -678,7 +670,7 @@ const ReceptionistAccount = () => {
                                         disabled={!isEditMode}
                                     />
                                     <TextField
-                                        label="Date of Birth"
+                                        label="Ngày sinh"
                                         name="dob"
                                         type="date"
                                         value={values.dob}
@@ -698,6 +690,18 @@ const ReceptionistAccount = () => {
                                         }}
                                         disabled={!isEditMode}
                                     />
+                                     <TextField
+                                        label="Mật khẩu"
+                                        name="password"
+                                        value={values.password}
+                                        onChange={handleChange}
+                                        onBlur={handleBlur}
+                                        error={touched.password && !!errors.password}
+                                        helperText={touched.password && errors.password}
+                                        fullWidth
+                                        margin="normal"
+                                        disabled={!isEditMode}
+                                    />
                                     <TextField
                                         label="Email"
                                         name="email"
@@ -712,11 +716,11 @@ const ReceptionistAccount = () => {
                                     />
                                     <DialogActions>
                                         <Button onClick={closeDialogs} color="primary">
-                                            Close
+                                           Hủy
                                         </Button>
                                         {isEditMode && (
                                             <Button type="submit" color="primary" disabled={isSubmitting}>
-                                                Save
+                                                Lưu
                                             </Button>
                                         )}
                                     </DialogActions>

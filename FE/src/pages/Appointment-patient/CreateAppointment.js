@@ -8,6 +8,7 @@ import Navbar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
 import MuiAlert from '@mui/material/Alert';
 import { Helmet } from 'react-helmet';
+import { useNavigate } from 'react-router-dom';
 
 const AppointmentScreen = () => {
   const [departmentOptions, setDepartmentOptions] = useState([]);
@@ -23,6 +24,7 @@ const AppointmentScreen = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [doctor, setDoctor] = useState('');
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch departments on component mount
@@ -162,6 +164,10 @@ const AppointmentScreen = () => {
         setDate('');
         setTime('');
         setSlotOptions([]);
+        
+        //redirect
+        navigate('/getAppointment');
+
       })
       .catch(error => {
         setOpenSnackbar(true);

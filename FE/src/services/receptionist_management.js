@@ -124,7 +124,7 @@ export const approveAppointment = async (appId, status) => {
 };
 export const cancelAppointment = async (appointmentId) => {
   try {
-    const response = await fetch(`https://localhost:7240/api/ReceptionistAppointment/CancelAppointment?appId=${appointmentId}`, {
+    const response = await fetch(`https://localhost:7240/api/ReceptionistAppointment/DeclineAppointment?appId=${appointmentId}`, {
       method: 'DELETE',
     });
 

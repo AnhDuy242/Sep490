@@ -245,7 +245,7 @@ const FetchServicesMenu = ({ departmentId }) => {
   return (
     <>
       {services.map((service) => (
-        <MenuItemStyled key={service.serviceId} component={NavLink} to={`/servicesByDepartment/${service.serviceId}`}>
+        <MenuItemStyled key={service.serviceId} component={NavLink} to={`/servicesDetail/${service.serviceId}`}>
           {service.name}
         </MenuItemStyled>
       ))}

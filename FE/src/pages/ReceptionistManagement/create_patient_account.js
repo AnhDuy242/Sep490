@@ -3,7 +3,8 @@ import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogActions, DialogContent, DialogTitle,
     TextField, MenuItem, FormControl, InputLabel, Select, TablePagination, Autocomplete, Grid,
     Snackbar,
-    Alert
+    Alert,
+    Box
 } from '@mui/material';
 import { createPatient, getAllPatients, updatePatientStatus } from './../../services/receptionist_management'; // Import hàm updatePatientStatus
 import AddIcon from '@mui/icons-material/Add';
@@ -562,7 +563,7 @@ const CreatePatientAccount = () => {
                             <TableCell>Giới tính</TableCell>
                             <TableCell>Địa chỉ</TableCell>
                             <TableCell>Ngày sinh</TableCell>
-                            <TableCell>Trạng thái hoạt động</TableCell>
+                            <TableCell>Trạng thái tài khoản</TableCell>
                             <TableCell>Tạo lịch tái khám</TableCell>
                             <TableCell>Trạng thái</TableCell>
                         </TableRow>
@@ -575,10 +576,22 @@ const CreatePatientAccount = () => {
                                 <TableCell>{patient.email}</TableCell>
                                 <TableCell>{patient.password}</TableCell>
                                 <TableCell>{patient.name}</TableCell>
-                                <TableCell>{patient.gender}</TableCell>
+                                <TableCell>{patient.gender === 'Male' ? 'Nam' : 'Nữ'}</TableCell>
                                 <TableCell>{patient.address}</TableCell>
                                 <TableCell>{patient.dob}</TableCell>
-                                <TableCell>{patient.isActive ? 'Active' : 'Inactive'}</TableCell>
+                                <TableCell>
+                        <Box
+                            sx={{
+                                width: 10,
+                                height: 10,
+                                borderRadius: '50%',
+                                backgroundColor: patient.isActive ? 'green' : 'red',
+                                display: 'inline-block',
+                              marginLeft:5
+                            }}
+                        />
+                    </TableCell>
+
                                 <TableCell>
                                     <Button
                                         className="small-button"
@@ -750,8 +763,8 @@ const CreatePatientAccount = () => {
                 open={openSnackbar}
                 autoHideDuration={3000}
                 onClose={handleCloseSnackbar}
-                anchorOrigin={{ vertical: 'top', horizontal: 'right' }} // Adjust position here
-                sx={{ zIndex: 1300 }} // Adjust zIndex if needed
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Adjust position here
+                sx={{ zIndex: 1300,position:'absolute' }} // Adjust zIndex if needed
             >
                 <Alert onClose={handleCloseSnackbar} severity="success">
                     {snackbarMessage}

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Typography, TextField, Button, Dialog, DialogActions, DialogContent,
-  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination, useMediaQuery
+  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination, useMediaQuery, Snackbar, Alert
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { loadDoctors, addDoctor, updateDoctor } from '../../services/doctor_service';
@@ -37,7 +37,14 @@ const DoctorTable = () => {
   const [page, setPage] = useState(0);
   const [departments, setDepartments] = useState([]);
 
-
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+  const handleSnackbar = (message, severity = 'success') => {
+    setSnackbar({ open: true, message, severity });
+  };
   const theme = useTheme();
   const isSmallScreen = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -92,47 +99,58 @@ const DoctorTable = () => {
       setValidationError('Tất cả các trường phải được điền đầy đủ.');
       return;
     }
-  
+    
     if (newDoctor.name.length > 50) {
       setValidationError('Tên bác sĩ không được vượt quá 50 ký tự.');
       return;
     }
-  
+    
     try {
       const addedDoctor = await addDoctor({ ...newDoctor, depId: newDoctor.depId });
       setDoctors([...doctors, addedDoctor]);
       handleCloseAddDialog();
+      handleSnackbar('Thêm bác sĩ thành công', 'success');
     } catch (error) {
       console.error('Error adding doctor:', error);
+      handleSnackbar(error.message || 'Lỗi khi thêm bác sĩ', 'error');
     }
   };
-  
+  const handleCloseSnackbar = (event, reason) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbar({ ...snackbar, open: false });
+  };
   const handleEditDoctor = async () => {
     if (!currentDoctor.name || !currentDoctor.gender || !currentDoctor.age || !currentDoctor.phone || !currentDoctor.depId) {
       setValidationError('Tất cả các trường phải được điền đầy đủ.');
       return;
     }
-  
+
     if (currentDoctor.name.length > 50) {
       setValidationError('Tên bác sĩ không được vượt quá 50 ký tự.');
       return;
     }
-  
+
     const updatedDoctorData = {
       ...currentDoctor,
       isActive: currentDoctor.isActive === 'true' || currentDoctor.isActive === true
     };
-  
+
     try {
       const updatedDoctor = await updateDoctor(currentDoctor.accId, updatedDoctorData);
       setDoctors(doctors.map(doc => (doc.accId === updatedDoctor.accId ? updatedDoctor : doc)));
+      handleSnackbar('Cập nhật bác sĩ thành công', 'success');
+
       handleCloseEditDialog();
     } catch (error) {
       console.error('Error updating doctor:', error);
+      handleSnackbar('Lỗi khi cập nhật bác sĩ', 'error');
+
     }
   };
-  
-  
+
+
 
   const handleSearchChange = (event, value) => {
     setSearchQuery(value);
@@ -209,7 +227,7 @@ const DoctorTable = () => {
               <TableCell>Giới tính</TableCell>
               <TableCell>Tuổi</TableCell>
               <TableCell>Chuyên khoa</TableCell>
-              <TableCell>Trạng thái hoạt động</TableCell>
+              <TableCell>Trạng thái tài khoản</TableCell>
               <TableCell>Chức năng</TableCell>
             </TableRow>
           </TableHead>
@@ -229,9 +247,7 @@ const DoctorTable = () => {
                   <IconButton title="Chỉnh sửa" color="primary" onClick={() => handleOpenEditDialog(doctor)}>
                     <EditIcon />
                   </IconButton>
-                  <IconButton title="Chi tiết" sx={{ color: '#ff5722' }}>
-                    <InfoIcon />
-                  </IconButton>
+               
                 </TableCell>
               </TableRow>
             ))}
@@ -477,6 +493,16 @@ const DoctorTable = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

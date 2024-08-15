@@ -36,12 +36,15 @@ export const addDoctor = async (doctor) => {
     },
     body: JSON.stringify(doctor),
   });
+  
+  const data = await response.json();
+  
   if (!response.ok) {
-    throw new Error('Failed to add new doctor');
+    throw new Error(data.message || 'Lỗi khi thêm mới bác sĩ');
   }
-  return await response.json();
+  
+  return data;
 };
-
 // Hàm để chỉnh sửa thông tin bác sĩ
 export const updateDoctor = async (id, data) => {
   const url = `https://localhost:7240/api/Doctor/${id}`;
