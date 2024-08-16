@@ -49,7 +49,7 @@ const EditSchedule = ({ setSnackbar }) => {
             <ArrowBack />
           </IconButton>
           <Typography variant="h6">
-            Tuần bắt đầu từ {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'dd/MM/yyyy')}
+            Lịch làm việc từ {format(startOfWeek(currentWeek, { weekStartsOn: 1 }), 'dd/MM/yyyy')}
           </Typography>
           <IconButton onClick={handleNextWeek}>
             <ArrowForward />

@@ -107,7 +107,7 @@ const ListDoctorView = () => {
                                                 </Link>
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary">
-                                                Chuyên khoa: {doctor.allDepartmentName}
+                                                Chuyên khoa: {doctor.department.name}
                                             </Typography>
                                         </CardContent>
                                     </Card>

@@ -273,7 +273,7 @@ const ChatPopup_ForPatient = () => {
         <>
         <div>
         <Helmet>
-            <title>{unreadMessages > 0 ? `(${unreadMessages}) New Messages` : 'Phòng khám đa khoa 68A'}</title>
+            <title>{unreadMessages > 0 ? `(${unreadMessages}) tin nhắn mới` : 'Phòng khám đa khoa 68A'}</title>
         </Helmet>
         {/* Rest of the component */}
     </div>

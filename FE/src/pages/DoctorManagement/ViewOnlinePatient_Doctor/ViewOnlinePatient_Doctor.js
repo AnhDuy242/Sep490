@@ -322,7 +322,7 @@ const PatientManagement = () => {
                             color="primary"
                             sx={{ mt: 3, mb: 2 }}
                         >
-                            Submit
+                           Tạo 
                         </Button>
                     </Box>
                 </Container>
