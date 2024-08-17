@@ -104,7 +104,7 @@ const RegisterForm = ({ show, handleClose }) => {
       phone: savedPhone,
     });
   }, [savedEmail, savedPhone]);
-  
+
   const formikOTP = useFormik({
     initialValues: {
       contact: '',
@@ -124,23 +124,23 @@ const RegisterForm = ({ show, handleClose }) => {
     const contact = formikOTP.values.contact;
     const isPhoneNumber = /^(0\d{9,10})$/.test(contact);
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
-  
+
     if (!isPhoneNumber && !isEmail) {
       setOtpError('Vui lòng nhập thông tin liên hệ hợp lệ trước khi yêu cầu mã OTP.');
       return;
     }
-  
+
     try {
       const response = await fetch(`https://localhost:7240/api/Authentication/Check/check/${encodeURIComponent(contact)}`);
       const result = await response.json();
-  
+
       if (result.exists) {
         setSnackbarMessage(`Thông tin liên hệ ${contact} đã tồn tại`);
         setSnackbarSeverity('error');
         setSnackbarOpen(true);
         return;
       }
-  
+
       if (isEmail) {
         setSavedEmail(contact); // Set savedEmail
         const otp = await handleReceiveOTPForEmail(contact);
@@ -158,18 +158,18 @@ const RegisterForm = ({ show, handleClose }) => {
         setSnackbarSeverity('success');
         setSnackbarOpen(true);
       }
-  
+
       setOtpSent(true);
       setOtpError('');
       startTimer();  // Start the timer when OTP is sent
       setContactForDialog(contact);
-  
+
     } catch (error) {
       console.error('Error receiving OTP:', error);
       setOtpError('Đã xảy ra lỗi khi nhận OTP. Vui lòng thử lại sau.');
     }
   };
-  
+
 
 
   const handleSentOtpConfirm = async () => {
@@ -177,7 +177,7 @@ const RegisterForm = ({ show, handleClose }) => {
     const contact = formikOTP.values.contact;
     const isPhoneNumber = /^(0\d{9,10})$/.test(contact);
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contact);
-  
+
     if (isEmail) {
       try {
         await handleSentOTPConfirmForEmail(contact, otp);
@@ -198,7 +198,7 @@ const RegisterForm = ({ show, handleClose }) => {
       setSnackbarOpen(true);
     }
   };
-  
+
 
   const handleCloseDialog = () => {
     setOpen(false);
@@ -234,14 +234,14 @@ const RegisterForm = ({ show, handleClose }) => {
         dob: values.dob,
         Gender: values.gender,
         address: values.address,
-      phone: values.phone,
+        phone: values.phone,
         password: values.password,
       };
-      const getPhone=values.phone;
+      const getPhone = values.phone;
 
       console.log('Thông tin đăng ký hoàn tất:', registrationDetails);
       setRegistrationData(registrationDetails);
-      RegisterCompleteForm(registrationDetails,getPhone)
+      RegisterCompleteForm(registrationDetails, getPhone)
         .then(() => {
           handleCloseDialog();
           handleSnackbarOpen('Đăng ký thành công!', 'success');
@@ -252,7 +252,7 @@ const RegisterForm = ({ show, handleClose }) => {
         });
     },
   });
-  
+
 
 
   useEffect(() => {

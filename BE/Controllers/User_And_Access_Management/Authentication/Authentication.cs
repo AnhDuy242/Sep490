@@ -60,7 +60,13 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             }
 
             // Kiểm tra xem số điện thoại đã tồn tại trong bảng Account chưa
-         
+            var existingPhone = await _medPalContext.Accounts
+         .FirstOrDefaultAsync(a => a.Phone == phone);
+
+            if (existingPhone != null)
+            {
+                return BadRequest(new { message = "Số điện thoại đã tồn tại" });
+            }
 
             // Tạo mới Account
             var account = new Account

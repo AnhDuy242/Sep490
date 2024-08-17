@@ -205,7 +205,7 @@ export const RegisterCompleteForm = async (registrationDetails, getPhone) => {
         Dob: registrationDetails.dob,
         Gender: registrationDetails.Gender,
         Address: registrationDetails.address,
-        // Phone: registrationDetails.Phone, // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
+        Phone: registrationDetails.Phone, // Hoặc registrationDetails.Phone nếu bạn muốn lấy từ form
         Password: registrationDetails.password,
         Check:1
       }),
