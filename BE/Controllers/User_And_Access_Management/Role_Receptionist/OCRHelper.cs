@@ -41,7 +41,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             }
 
             var OCR = new TesseractEngine("tessdata", "vie", Tesseract.EngineMode.TesseractAndLstm);
-            string template = "0123456789aăâbcddđeêghiklmnôopqrstưuvxyAĂÂBCDĐEÊGHIKLMNÔOPQRSTƯUVXYàằầáắấảẳẩãẵẫạặậèẻẽẹéếểễệìỉĩịíòỏõọóốồổỗộớờởỡợùủũụúứừửữựỳỷỹỵý\r\nÀẰẦÁẮẤẢẲẨÃẴẪẠẶẬÈẺẼẸÉẾỂỄỆÌỈĨỊÍÒỎÕỌÓỐỒỔỖỘỚỜỞỠỢÙỦŨỤÚỨỪỬỮỰỲỶỸỴÝ ;?,.:/>-#()";
+            string template = "0123456789aăâbcddđeêghiklmnôopqrstưuvxyAĂÂBCDĐEÊGHIKLMNÔOPQRSTƯUVXYàằầáắấảẳẩãẵẫạặậèẻẽẹéếểễệìỉĩịíòỏõọóốồổỗộớờởỡợùủũụúứừửữựỳỷỹỵýÀẰẦÁẮẤẢẲẨÃẴẪẠẶẬÈẺẼẸÉẾỂỄỆÌỈĨỊÍÒỎÕỌÓỐỒỔỖỘỚỜỞỠỢÙỦŨỤÚỨỪỬỮỰỲỶỸỴÝ ;?,.:/>-#()";
             OCR.SetVariable("tessedit_char_whitelist", template);
 
             string res = "";
