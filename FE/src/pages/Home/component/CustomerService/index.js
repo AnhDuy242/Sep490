@@ -349,7 +349,7 @@ function CustomerService() {
             <Grid container spacing={3}>
                 <ServiceButton
                     icon={<CalendarTodayIcon fontSize="large" color="primary" />}
-                    title="Đặt lịch khám, lấy mẫu tại nhà"
+                    title="Đặt lịch khám"
                     description="Quý khách hàng sử dụng tiện ích này để đặt lịch khám online tại phòng khám Đa khoa 68A"
                     onClick={isLoggedIn ? null : handleShowLogin}
                     to={isLoggedIn ? "/CreateAppointment" : null}
