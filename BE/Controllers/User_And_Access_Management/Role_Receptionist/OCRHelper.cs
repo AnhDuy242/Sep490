@@ -40,7 +40,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                 b = ScaleImage(b, (double)scale);
             }
 
-            var OCR = new TesseractEngine(tessdataPath, "vie", Tesseract.EngineMode.TesseractAndLstm);
+            var OCR = new TesseractEngine("tessdata", "vie", Tesseract.EngineMode.TesseractAndLstm);
             string template = "0123456789aăâbcddđeêghiklmnôopqrstưuvxyAĂÂBCDĐEÊGHIKLMNÔOPQRSTƯUVXYàằầáắấảẳẩãẵẫạặậèẻẽẹéếểễệìỉĩịíòỏõọóốồổỗộớờởỡợùủũụúứừửữựỳỷỹỵý\r\nÀẰẦÁẮẤẢẲẨÃẴẪẠẶẬÈẺẼẸÉẾỂỄỆÌỈĨỊÍÒỎÕỌÓỐỒỔỖỘỚỜỞỠỢÙỦŨỤÚỨỪỬỮỰỲỶỸỴÝ ;?,.:/>-#()";
             OCR.SetVariable("tessedit_char_whitelist", template);
 
