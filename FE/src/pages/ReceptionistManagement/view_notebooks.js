@@ -22,6 +22,7 @@ const ViewAllNoteBooks = () => {
     const [page1, setPage1] = useState(0);
     const [rowsPerPage1, setRowsPerPage1] = useState(5);
     const [searchQuery1, setSearchQuery1] = useState('');
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState(null);
 
     const [page2, setPage2] = useState(0);
     const [rowsPerPage2, setRowsPerPage2] = useState(5);
@@ -67,12 +68,12 @@ const ViewAllNoteBooks = () => {
                 handleOpenSnackbar('Chỉ cho phép tải lên hình ảnh', 'error');
                 return;
             }
-    
+
             try {
                 const fileName = file.name;
                 await uploadFile(selectedNotebook.id, file);
                 handleOpenSnackbar('Tải lên hình ảnh thành công', 'success');
-    
+
                 // Update the notebook state to show the file title instead of the icon
                 setNotebooks(prevNotebooks =>
                     prevNotebooks.map(nb =>
@@ -86,7 +87,37 @@ const ViewAllNoteBooks = () => {
         }
         handleClose();
     };
+    const markAppointmentAsCompleted = async (patientId, doctorId, date) => {
+        try {
+            // Chuyển đổi ngày giờ thành định dạng yyyy-MM-dd
+            const localDate = new Date(date);
+            const year = localDate.getFullYear();
+            const month = String(localDate.getMonth() + 1).padStart(2, '0');
+            const day = String(localDate.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
     
+            // Kiểm tra kết quả của ngày giờ trước khi gửi API
+            console.log(`Sending date: ${formattedDate}`);
+    
+            const response = await fetch(`https://localhost:7240/api/ReceptionistMedicalNotebook/MarkAppointmentAsCompleted?patientId=${patientId}&doctorId=${doctorId}&date=${encodeURIComponent(formattedDate)}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            if (response.ok) {
+                handleOpenSnackbar('Appointment has been marked as completed', 'success');
+            } else {
+                handleOpenSnackbar('Failed to update appointment status', 'error');
+            }
+        } catch (error) {
+            console.error('Error updating appointment status:', error);
+            handleOpenSnackbar('Error updating appointment status', 'error');
+        }
+    };
+    
+
 
     const handleFileChange = (event) => {
         setFile(event.target.files[0]);
@@ -126,11 +157,31 @@ const ViewAllNoteBooks = () => {
         }
     };
 
-    const handleSaveBut = async (patientId) => {
+    const handleSaveBut = async (patientId, doctorId) => {
         try {
+            // Assuming `getMedicalNotebooks` returns the data structure you provided
+            const notebooks = await getMedicalNotebooks();
+
+            // Find the relevant dateCreate based on patientId and doctorId
+            const notebook = notebooks.find(
+                (item) => item.patientId === patientId && item.doctorId === doctorId
+            );
+
+            if (!notebook) {
+                throw new Error('Không tìm thấy hồ sơ y tế phù hợp');
+            }
+
+            const appointmentDate = notebook.dateCreate;
+
+            console.log('Calling setOfflinePatientByMid with:', patientId);
             await setOfflinePatientByMid(patientId);
+
+            console.log('Calling markAppointmentAsCompleted with:', patientId, doctorId, appointmentDate);
+            await markAppointmentAsCompleted(patientId, doctorId, appointmentDate);
+
             handleOpenSnackbar('Cập nhật trạng thái bệnh nhân thành công', 'success');
 
+            // Refresh notebooks data
             const data = await getMedicalNotebooks();
             setNotebooks(data);
         } catch (error) {
@@ -138,6 +189,8 @@ const ViewAllNoteBooks = () => {
             handleOpenSnackbar('Lỗi khi cập nhật trạng thái bệnh nhân', 'error');
         }
     };
+
+
 
     // Separate notebooks based on check value
     const check1Notebooks = notebooks.filter(nb => nb.check === 1 && nb.diagnostic.toLowerCase().includes(searchQuery1.toLowerCase()));
@@ -180,16 +233,16 @@ const ViewAllNoteBooks = () => {
                                             {/* {notebook.fileTitle ? (
                                                 <span title={notebook.fileTitle}>{notebook.fileTitle}</span>
                                             ) : ( */}
-                                                <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
-                                                    <AddIcon />
-                                                </IconButton>
+                                            <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
+                                                <AddIcon />
+                                            </IconButton>
                                             {/* )} */}
                                         </TableCell>
                                         <TableCell>
                                             <Button
                                                 variant="contained"
                                                 color="primary"
-                                                onClick={() => handleSaveBut(notebook.id)}
+                                                onClick={() => handleSaveBut(notebook.patientId, notebook.doctorId, notebook.appointmentDate)}
                                             >
                                                 Lưu
                                             </Button>
@@ -244,9 +297,9 @@ const ViewAllNoteBooks = () => {
                                             {/* {notebook.fileTitle ? (
                                                 <span title={notebook.fileTitle}>{notebook.fileTitle}</span>
                                             ) : ( */}
-                                                <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
-                                                    <AddIcon />
-                                                </IconButton>
+                                            <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
+                                                <AddIcon />
+                                            </IconButton>
                                             {/* )} */}
                                         </TableCell>
                                     </TableRow>
@@ -285,18 +338,18 @@ const ViewAllNoteBooks = () => {
             </Dialog>
 
             <Snackbar
-    open={snackbar.open}
-    autoHideDuration={6000}
-    onClose={handleCloseSnackbar}
-    anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'right',
-    }}
->
-    <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
-        {snackbar.message}
-    </Alert>
-</Snackbar>
+                open={snackbar.open}
+                autoHideDuration={6000}
+                onClose={handleCloseSnackbar}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right',
+                }}
+            >
+                <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: '100%' }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
 
         </>
     );

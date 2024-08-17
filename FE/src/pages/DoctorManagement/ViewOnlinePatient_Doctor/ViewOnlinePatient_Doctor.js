@@ -10,7 +10,7 @@ import { fetchPatients, createMedicalNotebook } from '../../../services/patient_
 const PatientManagement = () => {
     const [patients, setPatients] = useState([]);
     const [filteredPatients, setFilteredPatients] = useState([]);
-    const [filter, setFilter] = useState('All');
+    const [filter, setFilter] = useState('1');
     const [selectedPatient, setSelectedPatient] = useState(null);
     const [openForm, setOpenForm] = useState(false);
     const [formData, setFormData] = useState({
@@ -18,7 +18,8 @@ const PatientManagement = () => {
         diagnostic: '',
         doctorId: localStorage.getItem('accountId'),
         patientId: '',
-        name: ''
+        name: '',
+        dateCreate:'',
     });
     const [errors, setErrors] = useState({});
     const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -62,7 +63,8 @@ const PatientManagement = () => {
         setFormData({
             ...formData,
             patientId: patient.patientId,
-            name: patient.name
+            name: patient.name,
+            dateCreate: getTodayDate()
         });
         setOpenForm(true);
     };
@@ -107,6 +109,13 @@ const PatientManagement = () => {
         }
     };
 
+    const getTodayDate = () => {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
     const handleSnackbarClose = () => {
         setOpenSnackbar(false);
     };

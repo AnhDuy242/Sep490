@@ -63,6 +63,38 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
             return Ok(lists);
         }
+        [HttpPut()]
+        public IActionResult MarkAppointmentAsCompleted(int patientId, int doctorId, DateTime date)
+        {
+            // Find the MedicalNotebook based on patientId and doctorId
+            var medicalNotebook = _context.MedicalNotebooks
+                .FirstOrDefault(mn => mn.PatientId == patientId && mn.DoctorId == doctorId && mn.DateCreate.Value.Date == date.Date);
+
+            if (medicalNotebook == null)
+            {
+                return NotFound("Không tìm thấy MedicalNotebook với thông tin này.");
+            }
+
+            // Find the appointment that matches the criteria
+            var appointment = _context.Appointments
+                .FirstOrDefault(a => a.PatientId == patientId && a.DoctorId == doctorId && a.Date.Date == date.Date && a.Status != "Đã khám");
+
+            if (appointment != null)
+            {
+                appointment.Status = "Đã khám";
+                _context.SaveChanges();
+                return Ok();
+            }
+            else
+            {
+                return NotFound("Không tìm thấy appointment này hoặc appointment đã được đánh dấu là 'Đã khám'");
+            }
+        }
+
+        private bool AppointmentExists(int id)
+        {
+            return _context.Appointments.Any(e => e.Id == id);
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetMedicalNoteBookByPatientId(int pid)
@@ -85,21 +117,47 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
         {
             try
             {
-                var m = _context.MedicalNotebooks.Include(x => x.Patient).Include(x => x.Doctor).Include(x => x.TestResults).FirstOrDefault(x => x.Id == mid);
-                var p = _context.Patients.FirstOrDefault(x => x.PatientId == m.PatientId);
-                var a = _context.Appointments.Where(x => x.PatientId == p.PatientId).FirstOrDefault(x => x.Date == DateTime.Now);
-                if (a != null)
+                var medicalNotebook = await _context.MedicalNotebooks
+                    .Include(x => x.Patient)
+                    .Include(x => x.Doctor)
+                    .Include(x => x.TestResults)
+                    .FirstOrDefaultAsync(x => x.PatientId == mid);
+
+                if (medicalNotebook == null)
                 {
-                    a.Status = "Đã khám";
-                    _context.Appointments.Update(a);
+                    return NotFound("Medical notebook not found.");
                 }
-                p.Check = 3;
-                _context.Patients.Update(p);
-                _context.SaveChanges();
+
+                var patient = await _context.Patients
+                    .FirstOrDefaultAsync(x => x.PatientId == medicalNotebook.PatientId);
+
+                if (patient == null)
+                {
+                    return NotFound("Patient not found.");
+                }
+
+                var appointment = await _context.Appointments
+                    .FirstOrDefaultAsync(x => x.PatientId == patient.PatientId && x.Date.Date == DateTime.Now.Date);
+
+                if (appointment != null)
+                {
+                    appointment.Status = "Đã khám";
+                    _context.Appointments.Update(appointment);
+                }
+
+                patient.Check = 3;
+                _context.Patients.Update(patient);
+                await _context.SaveChangesAsync();
+
                 return Ok();
             }
-            catch (Exception ex) { return BadRequest(ex); }
+            catch (Exception ex)
+            {
+                // Log the exception here if necessary
+                return StatusCode(500, "Internal server error occurred.");
+            }
         }
+
         [HttpPut]
         public async Task<IActionResult> SetOnlinePatientByPid(int pid)
         {

@@ -35,6 +35,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
                 Diagnostic = medicalNoteBookCreate.Diagnostic,
                 DoctorId = medicalNoteBookCreate.DoctorId,
                 PatientId = medicalNoteBookCreate.PatientId,
+                DateCreate=medicalNoteBookCreate.DateCreate,
             };
             _context.MedicalNotebooks.Add(medicalNoteBook);
             _context.SaveChanges();
