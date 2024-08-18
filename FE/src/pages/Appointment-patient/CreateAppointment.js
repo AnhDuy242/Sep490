@@ -71,17 +71,40 @@ const AppointmentScreen = () => {
         .catch(error => console.error('Failed to fetch dates:', error));
     }
   }, [doctorId]);
-  
-  
+
+
+  useEffect(() => {
+    // Fetch departments on component mount
+    getListDepartment()
+      .then(data => setDepartmentOptions(data.$values || []))
+      .catch(error => console.error('Error fetching departments:', error));
+  }, []);
+
 
   useEffect(() => {
     // Fetch slots when date or doctor changes
     if (doctorId && date) {
       fetchSlotsByDoctorAndDate(doctorId, date)
-        .then(data => setSlotOptions(data || []))
-        .catch(error => console.error('Failed to fetch slots:', error));
+        .then(data => {
+          console.log('Fetched slots:', data); // Log data for debugging
+          if (data == null || data.length === 0) {
+            setSnackbarMessage('Không tìm lịch làm việc.');
+            setOpenSnackbar(true);
+            setSlotOptions([]); // No slots available
+          } else {
+            setSlotOptions(data); // Update slot options
+          }
+        })
+        .catch(error => {
+          console.error('Failed to fetch slots:', error);
+          setOpenSnackbar(true);
+        });
+    } else {
+      setSlotOptions([]); // Clear slots if doctor or date is not selected
     }
   }, [doctorId, date]);
+  
+
 
   const handleDepartmentChange = (event) => {
     const depId = event.target.value;
@@ -92,7 +115,7 @@ const AppointmentScreen = () => {
     setDate('');
     setSlotOptions([]);
   };
-
+  
   const handleServiceChange = (event) => {
     const serviceId = event.target.value;
     setServId(serviceId);
@@ -101,14 +124,14 @@ const AppointmentScreen = () => {
     setDate('');
     setSlotOptions([]);
   };
-
+  
   const handleDoctorChange = (event) => {
     const doctorId = event.target.value;
     setDoctorId(doctorId);
-    setDate('');
-    setSlotOptions([]);
+    setDate(''); // Reset the date when doctor changes
+    setSlotOptions([]); // Clear slots when doctor changes
   };
-
+  
   const handleDateChange = (event) => {
     const selectedDate = event.target.value;
     console.log('Selected Date:', selectedDate);
@@ -164,7 +187,7 @@ const AppointmentScreen = () => {
         setDate('');
         setTime('');
         setSlotOptions([]);
-        
+
         //redirect
         navigate('/getAppointment');
 
@@ -192,30 +215,84 @@ const AppointmentScreen = () => {
     const today = new Date();
     const nextFourDays = [];
     let count = 0;
-  
+
     for (const dateItem of dates) {
       const [day, month, year] = dateItem.date.split('-');
       const date = new Date(`${year}-${month}-${day}`);
-      
+
       if (isAfter(date, today) || date.toDateString() === today.toDateString()) {
         nextFourDays.push(dateItem);
         count++;
       }
-  
+
       if (count === 4) break;
     }
-  
+
     return nextFourDays;
   };
+
+  const handleRandomDoctor = async () => {
+    try {
+      // Random chọn một chuyên khoa
+      const randomDep = departmentOptions[Math.floor(Math.random() * departmentOptions.length)];
+      setDepId(randomDep.depId);
   
+      // Lấy danh sách dịch vụ của chuyên khoa đó
+      const services = await fetchServices(randomDep.depId);
+  
+      // Random chọn một dịch vụ
+      const randomService = services[Math.floor(Math.random() * services.length)];
+      setServId(randomService.serviceId);
+  
+      // Lấy danh sách bác sĩ của dịch vụ đó
+      const doctors = await fetchDoctorByService(randomService.serviceId);
+  
+      // Random chọn một bác sĩ
+      const randomDoctor = doctors[Math.floor(Math.random() * doctors.length)];
+      setDoctorId(randomDoctor.docId);
+  
+      // Lấy danh sách ngày của bác sĩ đó
+      const dates = await fetchDateByDoctor(randomDoctor.docId);
+      const filteredDates = getNextFourDays(dates);
+      setDateOptions(filteredDates);
+  
+      if (filteredDates.length > 0) {
+        // Chọn ngày đầu tiên nếu có
+        const selectedDate = filteredDates[0].date;
+        setDate(selectedDate);
+  
+        // Lấy danh sách slot của ngày đó
+        const slots = await fetchSlotsByDoctorAndDate(randomDoctor.docId, selectedDate);
+        if (slots && slots.length > 0) {
+          // Chọn một slot ngẫu nhiên từ danh sách slot
+          const randomSlot = slots[Math.floor(Math.random() * slots.length)];
+          setSlotOptions(slots);
+          setTime(randomSlot.slotId);
+        } else {
+          setSlotOptions([]); // Clear slots if no slots available
+        }
+      } else {
+        // Nếu không có ngày làm việc, xóa các slot
+        setDate('');
+        setSlotOptions([]);
+      }
+  
+      setOpenSnackbar(true);
+      setSnackbarMessage('Đã chọn ngẫu nhiên một lịch khám. Vui lòng kiểm tra lại thông tin!');
+    } catch (error) {
+      console.error('Error in random selection:', error);
+      setOpenSnackbar(true);
+      setSnackbarMessage('Có lỗi xảy ra khi chọn ngẫu nhiên. Vui lòng thử lại!');
+    }
+  };
   
   return (
     <>
-     <Helmet>
-            <title>
-                Đặt lịch khám
-            </title>
-        </Helmet>
+      <Helmet>
+        <title>
+          Đặt lịch khám
+        </title>
+      </Helmet>
       <Header />
       <Navbar />
       <Container sx={{ marginTop: 20 }}>
@@ -236,7 +313,7 @@ const AppointmentScreen = () => {
             <form onSubmit={handleSubmit}>
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined" required sx={{ marginTop: 2 }}>
+                  <FormControl fullWidth variant="outlined" sx={{ marginTop: 2 }}>
                     <InputLabel id="department-label">Chuyên khoa</InputLabel>
                     <Select
                       labelId="department-label"
@@ -254,7 +331,7 @@ const AppointmentScreen = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined" required sx={{ marginTop: 2 }}>
+                  <FormControl fullWidth variant="outlined" sx={{ marginTop: 2 }}>
                     <InputLabel id="service-label">Dịch vụ</InputLabel>
                     <Select
                       labelId="service-label"
@@ -277,7 +354,7 @@ const AppointmentScreen = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined" required sx={{ marginTop: 2 }}>
+                  <FormControl fullWidth variant="outlined" sx={{ marginTop: 2 }}>
                     <InputLabel id="doctor-label">Bác sĩ</InputLabel>
                     <Select
                       labelId="doctor-label"
@@ -300,7 +377,7 @@ const AppointmentScreen = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined" required sx={{ marginTop: 2 }}>
+                  <FormControl fullWidth variant="outlined" sx={{ marginTop: 2 }}>
                     <InputLabel id="date-label">Chọn ngày</InputLabel>
                     <Select
                       labelId="date-label"
@@ -323,7 +400,7 @@ const AppointmentScreen = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <FormControl fullWidth variant="outlined" required sx={{ marginTop: 2 }}>
+                  <FormControl fullWidth variant="outlined" sx={{ marginTop: 2 }}>
                     <InputLabel id="time-label">Thời gian</InputLabel>
                     <Select
                       labelId="time-label"
@@ -345,6 +422,17 @@ const AppointmentScreen = () => {
                       )}
                     </Select>
                   </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    fullWidth
+                    onClick={handleRandomDoctor}
+                    sx={{ marginTop: 2, marginBottom: 2 }}
+                  >
+                    Chọn ngẫu nhiên
+                  </Button>
                 </Grid>
                 <Grid item xs={12}>
                   <Button type="submit" variant="contained" color="primary" fullWidth>

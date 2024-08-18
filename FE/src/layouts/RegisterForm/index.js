@@ -40,7 +40,7 @@ const otpValidationSchema = yup.object({
 const personalInfoSchema = yup.object({
   name: yup
     .string('Nhập tên')
-    .matches(/^[a-zA-Z\s]+$/, 'Tên chỉ được chứa các ký tự chữ cái.')
+    .matches(/^[a-zA-ZÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴÝỶỸửựỳỵỷỹ\s]+$/, 'Tên chỉ được chứa các ký tự chữ cái.')
     .required('Tên là bắt buộc'),
   email: yup
     .string('Nhập email')

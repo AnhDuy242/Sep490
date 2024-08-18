@@ -195,7 +195,8 @@ namespace BE.Controllers.Appointment_Management
         public async Task<IActionResult> GetListSlot(int docid, [FromBody] DateTimeDto date)
         {
             var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).FirstOrDefault(x => x.Date == date.Date);
-            if (s == null) return BadRequest();
+            if (s == null) return NotFound(new { message = "Không tìm lịch làm việc." });
+
             if (s.Morning == true && s.Afternoon == true)
             {
                 var sl = _alo2Context.Slots.ToList();
@@ -226,8 +227,8 @@ namespace BE.Controllers.Appointment_Management
                 }
                 return Ok(sl);
             }
-            return BadRequest();
-           
+            return NotFound(new { message = "Không tìm thấy dữ liệu slot." });
+
         }
 
         [HttpGet]
