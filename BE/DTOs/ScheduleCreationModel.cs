@@ -18,4 +18,11 @@
         public List<bool> Afternoon { get; set; } = new List<bool>(); // 7 items for each day of the week
     }
 
+    public class UpdateAppointmentsRequest
+    {
+        public int ScheduleId { get; set; }
+        public int SlotId { get; set; }
+        public int DoctorId { get; set; }
+    }
+
 }

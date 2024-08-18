@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
-import { Button, Card, CardContent, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider } from '@mui/material';
+import { Button, Card, CardContent, Typography, Box, Accordion, AccordionSummary, AccordionDetails, Divider, TextField, Pagination } from '@mui/material';
 import { getPatientsByDoctorId, fetchOrCreateConversation } from '../../../services/doctor_service';
 import ChatBoxDialog from '../component/ChatboxDialog';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -31,6 +31,19 @@ const ExaminatedPatients = () => {
   const [pageTitle, setPageTitle] = useState('');
   const doctorId = localStorage.getItem('accountId');
 
+  //paging
+  const [allPatients, setAllPatients] = useState([]);
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10); // Number of patients per page
+  
+  const [searchTerm, setSearchTerm] = useState(''); // Trạng thái từ khóa tìm kiếm
+
+
+  
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
   // Fetch unread counts
   const fetchUnreadCounts = async (doctorId, patientId) => {
     try {
@@ -52,19 +65,28 @@ const ExaminatedPatients = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const patientsData = await getPatientsByDoctorId(doctorId);
-        setPatients(patientsData);
-        patientsData.forEach(patient => {
-          fetchUnreadCounts(doctorId, patient.patientId);
-        });
+        const patientsData = await getPatientsByDoctorId(doctorId); // Fetch all patients
+        console.log('Fetched Patients:', patientsData); // Debugging line
+        setAllPatients(patientsData); // Save all patients in state
+        setFilteredPatients(patientsData); // Initialize filtered patients
       } catch (error) {
         console.error('Error fetching patients:', error);
       }
     };
-
+  
     fetchPatients();
   }, [doctorId]);
-
+  
+  const handlePageChange = (event, newPage) => {
+    setCurrentPage(newPage);
+  };
+  
+  const paginatedPatients = filteredPatients.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  
+  
   // Update total unread count
   useEffect(() => {
     const total = Object.values(unreadCounts).reduce((acc, count) => acc + count, 0);
@@ -113,7 +135,18 @@ const ExaminatedPatients = () => {
 
     return () => clearInterval(interval); // Cleanup interval on component unmount or when chat closes
   }, [openChat, conversationId, doctorId, patientIdSelected]);
-
+  useEffect(() => {
+    if (searchTerm === '') {
+      setFilteredPatients(allPatients);
+    } else {
+      setFilteredPatients(
+        allPatients.filter(patient =>
+          patient.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+  }, [searchTerm, allPatients]);
+  
   const handleChatStart = async (patientId) => {
     try {
       const conversation = await fetchOrCreateConversation(doctorId, patientId);
@@ -165,7 +198,16 @@ const ExaminatedPatients = () => {
         </title>
       </Helmet>
       <Box flex={1} mr={2} overflow="auto">
-        {patients.map((patient) => (
+        {/* Thanh tìm kiếm */}
+        <TextField
+          label="Tìm kiếm bệnh nhân"
+          variant="outlined"
+          fullWidth
+          margin="normal"
+          value={searchTerm}
+          onChange={handleSearchChange}
+        />
+        {filteredPatients.map((patient) => (
           <Card
             key={patient.patientId}
             sx={{
@@ -250,6 +292,14 @@ const ExaminatedPatients = () => {
             </CardContent>
           </Card>
         ))}
+         <Box display="flex" justifyContent="center" mt={2}>
+        <Pagination
+          count={Math.ceil(filteredPatients.length / pageSize)}
+          page={currentPage}
+          onChange={handlePageChange}
+          color="primary"
+        />
+      </Box>
       </Box>
       <ChatBoxDialog
         open={openChat}

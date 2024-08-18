@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, TextField, Button, Snackbar, Alert, Box, IconButton } from '@mui/material';
+import { Container, Typography, TextField, Button, Snackbar, Alert, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
 import Navbar from '../../layouts/Navbar';
@@ -23,7 +23,11 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
+  const [openOtpDialog, setOpenOtpDialog] = useState(false);
   const accountId = localStorage.getItem('accountId'); // Adjust as necessary
+  const [originalEmail, setOriginalEmail] = useState('');
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -34,6 +38,7 @@ const Profile = () => {
         }
         const data = await response.json();
         setProfile(data);
+        setOriginalEmail(data.email);
       } catch (error) {
         setSnackbarMessage(error.message);
         setSnackbarSeverity('error');
@@ -51,6 +56,33 @@ const Profile = () => {
   const handleToggleEdit = () => {
     setIsEditing(!isEditing);
   };
+
+  const handleSendOtp = async () => {
+    try {
+      // Send OTP request including the email address
+      await axios.post(`https://localhost:7240/api/Otp/SendOtp?Email=${originalEmail}`);
+      setOpenOtpDialog(true);
+    } catch (error) {
+      setSnackbarMessage('Không thể gửi mã OTP');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+    }
+  };
+  
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await axios.post(`https://localhost:7240/api/Otp/VerifyOtpEmail`, { email: originalEmail, otp });
+      if (response.status === 200) {
+        handleUpdateProfile();
+        setOpenOtpDialog(false);
+      } else {
+        setOtpError('Mã OTP không hợp lệ');
+      }
+    } catch (error) {
+      setOtpError('Lỗi xác minh mã OTP');
+    }
+  };
+  
 
   const handleUpdateProfile = async () => {
     // Validate form fields
@@ -133,6 +165,7 @@ const Profile = () => {
       setOpenSnackbar(true);
     }
   };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setProfile(prevProfile => ({ ...prevProfile, [name]: value }));
@@ -249,28 +282,51 @@ const Profile = () => {
               />
             </>
           )}
-          <Box sx={{ mt: 2 }}>
-            <Button variant="contained" color={isEditing ? 'secondary' : 'primary'} onClick={handleToggleEdit}>
-              {isEditing ? 'Trở về' : 'Chỉnh sửa hồ sơ'}
-            </Button>
-            {isEditing && (
-              <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleUpdateProfile}>
+  
+          {isEditing ? (
+            <>
+              <Button variant="contained" color="primary" onClick={handleSendOtp}>
                 Lưu thay đổi
               </Button>
-            )}
-          </Box>
+              <Button variant="outlined" color="secondary" onClick={handleToggleEdit} sx={{ ml: 2 }}>
+                Hủy
+              </Button>
+            </>
+          ) : (
+            <Button variant="contained" color="primary" onClick={handleToggleEdit}>
+              Chỉnh sửa
+            </Button>
+          )}
         </Box>
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-        >
+  
+        <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
           <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
             {snackbarMessage}
           </Alert>
         </Snackbar>
+  
+        <Dialog open={openOtpDialog} onClose={() => setOpenOtpDialog(false)}>
+          <DialogTitle>Nhập mã OTP</DialogTitle>
+          <DialogContent>
+            <TextField
+              fullWidth
+              margin="normal"
+              label="Mã OTP"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              variant="outlined"
+              error={!!otpError}
+              helperText={otpError}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpenOtpDialog(false)}>Hủy</Button>
+            <Button onClick={handleVerifyOtp}>Xác minh OTP</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
-      <Footer sx={{ position: 'fixed', bottom: 0, width: '100%' }} />
+  
+      <Footer />
     </>
   );
 };

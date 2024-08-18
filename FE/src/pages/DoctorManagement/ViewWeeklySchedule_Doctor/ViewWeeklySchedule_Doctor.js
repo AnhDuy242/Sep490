@@ -73,11 +73,13 @@ const EditSchedule = ({ setSnackbar }) => {
                   <TableRow>
                     <TableCell>Morning</TableCell>
                     {daysOfWeek.map((day, index) => (
-                      <TableCell key={index} align="center">
+                        <TableCell key={index} align="center">
                         {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (
-                          <Typography>
-                            {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.appointments || 'Có lịch'}
-                          </Typography>
+                          schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.morning ? (
+                            'Có lịch'
+                          ) : (
+                            '-'
+                          )
                         ) : (
                           '-'
                         )}
@@ -88,14 +90,16 @@ const EditSchedule = ({ setSnackbar }) => {
                     <TableCell>Afternoon</TableCell>
                     {daysOfWeek.map((day, index) => (
                       <TableCell key={index} align="center">
-                        {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (
-                          <Typography>
-                            {schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.appointments || 'Có lịch'}
-                          </Typography>
+                      {schedules.some(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day) ? (
+                        schedules.find(schedule => format(new Date(schedule.date), 'EEE dd/MM') === day)?.afternoon ? (
+                          'Có lịch'
                         ) : (
                           '-'
-                        )}
-                      </TableCell>
+                        )
+                      ) : (
+                        '-'
+                      )}
+                    </TableCell>
                     ))}
                   </TableRow>
                 </TableBody>

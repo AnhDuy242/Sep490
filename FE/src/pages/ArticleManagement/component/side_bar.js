@@ -101,7 +101,7 @@ const Sidebar = () => {
         }}
       >
         <Typography variant="h6" className={classes.title}>
-          <b>Article Management</b>
+          <b>Quản lý tài khoản article</b>
         </Typography>
         {list}
         <Box width="100%" display="flex" justifyContent="center">

@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, TextField, Button, Snackbar, Alert, Box, IconButton } from '@mui/material';
+import { Container, Typography, TextField, Button, Snackbar, Alert, Box, IconButton, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import axios from 'axios';
 import { Helmet } from 'react-helmet';
-
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import Header from '../../../layouts/Header';
-import { Navbar } from 'react-bootstrap';
-import Footer from '../../../layouts/Footer';
 
 const AdminProfile = () => {
   const [profile, setProfile] = useState({
@@ -16,6 +12,7 @@ const AdminProfile = () => {
     phone: '',
     password: ''
   });
+  const [originalEmail, setOriginalEmail] = useState(''); // Store original email
   const [confirmPassword, setConfirmPassword] = useState('');
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
@@ -23,19 +20,22 @@ const AdminProfile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otpDialogOpen, setOtpDialogOpen] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [otpError, setOtpError] = useState('');
   const adminId = localStorage.getItem('accountId'); // Adjust as necessary
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(`https://localhost:7240/api/AdminProfile/GetAdmin/${adminId}`);
-        // Update profile state with fetched data
         setProfile({
           name: response.data.name || '',
           email: response.data.email || '',
           phone: response.data.phone || '',
           password: response.data.password || ''
         });
+        setOriginalEmail(response.data.email || ''); // Store original email
       } catch (error) {
         setSnackbarMessage('Không thể tải thông tin hồ sơ');
         setSnackbarSeverity('error');
@@ -50,12 +50,52 @@ const AdminProfile = () => {
     setOpenSnackbar(false);
   };
 
-  const handleToggleEdit = () => {
-    setIsEditing(!isEditing);
+  const handleOpenOtpDialog = () => {
+    setOtpDialogOpen(true);
   };
 
+  const handleCloseOtpDialog = () => {
+    setOtpDialogOpen(false);
+    setOtp('');
+    setOtpError('');
+  };
+
+  const handleSendOtp = async () => {
+    try {
+      await axios.post(`https://localhost:7240/api/Otp/SendOtp?Email=${originalEmail}`); // Send OTP to original email
+      handleOpenOtpDialog();
+    } catch (error) {
+      setSnackbarMessage('Không thể gửi OTP');
+      setSnackbarSeverity('error');
+      setOpenSnackbar(true);
+    }
+  };
+
+  const handleOtpChange = (e) => {
+    setOtp(e.target.value);
+  };
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await axios.post(
+        'https://localhost:7240/api/Otp/VerifyOtpEmail',
+        {
+          email: originalEmail, // Send the current email from the profile
+          otp: otp              // Send the OTP
+        }
+      );
+      if (response.status === 200) { // Check if response status is 201
+        await handleUpdateProfile(); // Call the function to update the profile
+        handleCloseOtpDialog();      // Close the OTP dialog
+      } else {
+        setOtpError('OTP không đúng'); // Handle invalid OTP
+      }
+    } catch (error) {
+      setOtpError('Xác minh OTP thất bại'); // Handle OTP verification failure
+    }
+  };
+  
+
   const handleUpdateProfile = async () => {
-    // Validation
     if (!profile.name || profile.name.length > 50) {
       setSnackbarMessage('Tên không được để trống và phải nhỏ hơn 50 ký tự');
       setSnackbarSeverity('warning');
@@ -108,7 +148,7 @@ const AdminProfile = () => {
       if (!response.ok) {
         const errorData = await response.json();
         console.log(errorData);
-        throw new Error(errorData.error || 'Không thể cập nhật hồ sơ1');
+        throw new Error(errorData.error || 'Không thể cập nhật hồ sơ');
       }
       
       setSnackbarMessage('Cập nhật hồ sơ thành công');
@@ -116,14 +156,12 @@ const AdminProfile = () => {
       setOpenSnackbar(true);
       setIsEditing(false); // Exit edit mode after successful update
     } catch (error) {
-      console.log(error)
+      console.log(error);
       setSnackbarMessage(error.message || 'Không thể cập nhật hồ sơ');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
     }
   };
-  
-
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -132,6 +170,16 @@ const AdminProfile = () => {
 
   const handleConfirmPasswordChange = (e) => {
     setConfirmPassword(e.target.value);
+  };
+
+  const handleEdit = () => {
+    if (isEditing) {
+      // If already in editing mode, trigger OTP sending
+      handleSendOtp();
+    } else {
+      // Toggle edit mode
+      setIsEditing(true);
+    }
   };
 
   if (!profile) return <Typography>Đang tải...</Typography>;
@@ -228,27 +276,45 @@ const AdminProfile = () => {
               />
             </>
           )}
-          <Box sx={{ mt: 2 }}>
-            <Button variant="contained" color={isEditing ? 'secondary' : 'primary'} onClick={handleToggleEdit}>
-              {isEditing ? 'Trở về' : 'Chỉnh sửa hồ sơ'}
-            </Button>
-            {isEditing && (
-              <Button variant="contained" color="primary" sx={{ ml: 2 }} onClick={handleUpdateProfile}>
-                Lưu thay đổi
-              </Button>
-            )}
-          </Box>
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={handleEdit}
+            sx={{ mb: 2 }}
+          >
+            {isEditing ? 'Gửi OTP' : 'Chỉnh sửa'}
+          </Button>
         </Box>
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={6000}
-          onClose={handleCloseSnackbar}
-        >
-          <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
       </Container>
+
+      <Snackbar open={openSnackbar} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
+
+      <Dialog open={otpDialogOpen} onClose={handleCloseOtpDialog}>
+        <DialogTitle>Xác thực OTP</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Nhập OTP"
+            type="text"
+            fullWidth
+            variant="outlined"
+            value={otp}
+            onChange={handleOtpChange}
+            error={!!otpError}
+            helperText={otpError}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseOtpDialog}>Hủy</Button>
+          <Button onClick={handleVerifyOtp}>Xác nhận</Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

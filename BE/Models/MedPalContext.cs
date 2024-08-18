@@ -276,7 +276,7 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.Age).HasColumnName("age");
             entity.Property(e => e.DepId).HasColumnName("dep_id");
             entity.Property(e => e.Description)
-                .IsUnicode(false)
+                  .IsUnicode()
                 .HasColumnName("description");
             entity.Property(e => e.Gender)
                 .HasMaxLength(50)

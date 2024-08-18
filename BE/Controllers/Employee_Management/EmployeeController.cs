@@ -103,12 +103,16 @@ namespace BE.Controllers
                 return Conflict("Email hoặc số điện thoại đã được sử dụng.");
             }
 
+            string password = _validateService.GenerateRandomPassword();
+            string resetPasswordUrl = Url.Action("ResetPassword", "Account", null, Request.Scheme);
+
+
             // Create new account
             var account = new Account
             {
                 Email = receptionistDto.Email,
                 Phone = receptionistDto.Phone,
-                Password = receptionistDto.Password,
+                Password =password,
                 RoleId = receptionistDto.RoleId ?? 0, // Provide a default value if RoleId is null
                 IsActive = receptionistDto.IsActive
             };
@@ -119,6 +123,7 @@ namespace BE.Controllers
             // Create receptionist
             var receptionist = new Receptionist
             {
+                
                 Name = receptionistDto.Name,
                 Gender = receptionistDto.Gender,
                 Dob = receptionistDto.Dob,
@@ -338,6 +343,14 @@ namespace BE.Controllers
             {
                 return StatusCode(500, $"Lỗi hệ thống: {ex.Message}");
             }
+        }
+        private string GenerateRandomPassword()
+        {
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            var random = new Random();
+            return new string(Enumerable.Repeat(chars, 8)
+                                      .Select(s => s[random.Next(s.Length)])
+                                      .ToArray());
         }
 
 

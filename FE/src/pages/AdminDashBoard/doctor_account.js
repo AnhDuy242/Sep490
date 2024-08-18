@@ -2,7 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import {
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, CircularProgress, IconButton, Typography, TextField, Button, Dialog, DialogActions, DialogContent,
-  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination, useMediaQuery, Snackbar, Alert
+  DialogTitle, Select, MenuItem, FormControl, InputLabel, TablePagination, useMediaQuery, Snackbar, Alert,
+  InputAdornment
 } from '@mui/material';
 import Autocomplete from '@mui/material/Autocomplete';
 import { loadDoctors, addDoctor, updateDoctor } from '../../services/doctor_service';
@@ -10,6 +11,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import EditIcon from '@mui/icons-material/Edit';
 import { useTheme } from '@mui/material/styles';
 import '../../assets/css/doctor_list_table.css';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const DoctorTable = () => {
   const [doctors, setDoctors] = useState([]);
@@ -36,6 +38,7 @@ const DoctorTable = () => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [page, setPage] = useState(0);
   const [departments, setDepartments] = useState([]);
+  const [passwordVisible, setPasswordVisible] = useState({}); // Trạng thái mật khẩu
 
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -99,7 +102,7 @@ const DoctorTable = () => {
       setValidationError('Tất cả các trường phải được điền đầy đủ.');
       return;
     }
-    
+
     if (newDoctor.name.length > 50) {
       setValidationError('Tên bác sĩ không được vượt quá 50 ký tự.');
       return;
@@ -108,7 +111,7 @@ const DoctorTable = () => {
       setValidationError('Số điện thoại không hợp lệ. Vui lòng nhập từ 10 đến 11 ký tự.');
       return;
     }
-  
+
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newDoctor.email)) {
       setValidationError('Email không hợp lệ.');
       return;
@@ -159,7 +162,12 @@ const DoctorTable = () => {
   };
 
 
-
+  const handleTogglePasswordVisibility = (accId) => {
+    setPasswordVisible(prevState => ({
+      ...prevState,
+      [accId]: !prevState[accId]
+    }));
+  };
   const handleSearchChange = (event, value) => {
     setSearchQuery(value);
     const filtered = doctors
@@ -246,8 +254,30 @@ const DoctorTable = () => {
                 <TableCell>{doctor.name}</TableCell>
                 <TableCell>{doctor.email}</TableCell>
                 <TableCell>{doctor.phone}</TableCell>
-                <TableCell>{doctor.password}</TableCell>
-                <TableCell>{doctor.gender}</TableCell>
+                <TableCell>
+                  <TextField
+                    type={passwordVisible[doctor.accId] ? 'text' : 'password'}
+                    value={doctor.password}
+                    InputProps={{
+                      readOnly: true,
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton
+                            aria-label="toggle password visibility"
+                            onClick={() => handleTogglePasswordVisibility(doctor.accId)}
+                          >
+                            {passwordVisible[doctor.accId] ? <Visibility /> : <VisibilityOff />}
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </TableCell>
+                <TableCell>
+                  {doctor.gender === 'Male' ? 'Nam' :
+                    doctor.gender === 'Female' ? 'Nữ' :
+                      doctor.gender}
+                </TableCell>
                 <TableCell>{doctor.age}</TableCell>
                 <TableCell>{doctor.departmentName}</TableCell>
                 <TableCell>{doctor.isActive ? 'Đang kích hoạt' : 'Không kích hoạt'}</TableCell>
@@ -255,7 +285,7 @@ const DoctorTable = () => {
                   <IconButton title="Chỉnh sửa" color="primary" onClick={() => handleOpenEditDialog(doctor)}>
                     <EditIcon />
                   </IconButton>
-               
+
                 </TableCell>
               </TableRow>
             ))}

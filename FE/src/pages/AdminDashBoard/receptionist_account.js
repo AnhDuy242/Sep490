@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     Dialog,
     DialogTitle,
@@ -184,11 +184,11 @@ const ReceptionistAccount = () => {
     const handleAddFormSubmit = async (values, { setSubmitting }) => {
         try {
             setSubmitting(true); // Start submitting
-    
+
             // Call API to add receptionist
             await addReceptionist(values);
             handleOpenSnackbar('Thêm mới lễ tân thành công!', 'success');
-    
+
             closeDialogs(); // Close dialog after successful submission
             await loadReceptionists(setAccounts, setLoading, setError); // Reload receptionist data
         } catch (error) {
@@ -342,7 +342,7 @@ const ReceptionistAccount = () => {
                 </Container>
 
                 <Button variant="contained" color="primary" onClick={handleAddAccount} style={{ marginBottom: '1rem' }}>
-                   Thêm tài khoản mới
+                    Thêm tài khoản mới
                 </Button>
 
                 {loading ? (
@@ -357,7 +357,7 @@ const ReceptionistAccount = () => {
                                     <TableCell>ID</TableCell>
                                     <TableCell></TableCell>
                                     <TableCell>Tên</TableCell>
-                                    <TableCell>Giớ tính</TableCell>
+                                    <TableCell>Giới tính</TableCell>
                                     <TableCell>Ngày sinh</TableCell>
                                     <TableCell>Mật khẩu</TableCell>
                                     <TableCell>SĐT</TableCell>
@@ -377,8 +377,11 @@ const ReceptionistAccount = () => {
                                         </TableCell>
                                         <TableCell><Avatar {...stringAvatar(account.name)} /></TableCell>
                                         <TableCell>{account.name}</TableCell>
-                                        <TableCell>{account.gender}</TableCell>
-                                        <TableCell>{formatDate(account.dob)}</TableCell>
+                                        <TableCell>
+                                            {account.gender === 'Male' ? 'Nam' :
+                                                account.gender === 'Female' ? 'Nữ' :
+                                                    account.gender}
+                                        </TableCell>                                        <TableCell>{formatDate(account.dob)}</TableCell>
                                         <TableCell>
                                             <TextField type={passwordVisible[account.accId] ? "text" : "password"} value={account.password} InputProps={{
                                                 readOnly: true, endAdornment:
@@ -449,7 +452,7 @@ const ReceptionistAccount = () => {
                                 dob: '',
                                 email: '',
                                 Password: '',
-                               roleId: 5
+                                roleId: 5
                             }}
                             validationSchema={validationSchema}
                             onSubmit={handleAddFormSubmit}
@@ -489,7 +492,7 @@ const ReceptionistAccount = () => {
                                             onChange={handleChange}
                                             onBlur={handleBlur}
                                         >
-                                          
+
                                             <MenuItem value="Male">Nam</MenuItem>
                                             <MenuItem value="Female">Nữ</MenuItem>
                                         </Select>
@@ -593,7 +596,7 @@ const ReceptionistAccount = () => {
                                 phone: currentAccount?.phone || '',
                                 dob: currentAccount?.dob ? new Date(currentAccount.dob).toISOString().split('T')[0] : '',
                                 email: currentAccount?.email || '',
-                                Password: currentAccount?.password||''
+                                Password: currentAccount?.password || ''
                             }}
                             validationSchema={validationSchemaforEdit}
                             onSubmit={(values, actions) => {
@@ -649,7 +652,7 @@ const ReceptionistAccount = () => {
                                             onBlur={handleBlur}
                                             disabled={!isEditMode}
                                         >
-                                          
+
                                             <MenuItem value="Male">Nam</MenuItem>
                                             <MenuItem value="Female">Nữ</MenuItem>
                                         </Select>
@@ -690,7 +693,7 @@ const ReceptionistAccount = () => {
                                         }}
                                         disabled={!isEditMode}
                                     />
-                                     <TextField
+                                    <TextField
                                         label="Mật khẩu"
                                         name="password"
                                         value={values.password}
@@ -716,7 +719,7 @@ const ReceptionistAccount = () => {
                                     />
                                     <DialogActions>
                                         <Button onClick={closeDialogs} color="primary">
-                                           Hủy
+                                            Hủy
                                         </Button>
                                         {isEditMode && (
                                             <Button type="submit" color="primary" disabled={isSubmitting}>

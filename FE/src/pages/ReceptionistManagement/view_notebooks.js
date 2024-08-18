@@ -18,6 +18,10 @@ const ViewAllNoteBooks = () => {
         severity: 'success'
     });
 
+    const [imageDialogOpen, setImageDialogOpen] = useState(false);
+    const [currentImages, setCurrentImages] = useState([]);
+
+
     // Pagination and search state for both tables
     const [page1, setPage1] = useState(0);
     const [rowsPerPage1, setRowsPerPage1] = useState(5);
@@ -50,16 +54,32 @@ const ViewAllNoteBooks = () => {
             });
     }, []);
 
-    const handleClickOpen = (notebook) => {
-        setSelectedNotebook(notebook);
-        setOpen(true);
-    };
-
     const handleClose = () => {
         setOpen(false);
         setFile(null);
     };
+    const handleClickOpen = async (notebook) => {
+        setSelectedNotebook(notebook);
+        setOpen(true);
+        // Fetch images for the selected notebook
 
+    };
+    const handleOpenImageDialog = async (notebook) => {
+        setSelectedNotebook(notebook);
+        setImageDialogOpen(true);
+        try {
+            const response = await fetch(`https://localhost:7240/api/PatientMedicalNoteBook/GetTestResult?mid=${notebook.id}`);
+            const data = await response.json();
+            setCurrentImages(data.$values);
+        } catch (error) {
+            console.error('Error fetching images:', error);
+            handleOpenSnackbar('Error fetching images', 'error');
+        }
+    };
+
+    const handleCloseImageDialog = () => {
+        setImageDialogOpen(false);
+    };
     const handleSave = async () => {
         if (file && selectedNotebook) {
             // Check if the file is an image
@@ -95,17 +115,17 @@ const ViewAllNoteBooks = () => {
             const month = String(localDate.getMonth() + 1).padStart(2, '0');
             const day = String(localDate.getDate()).padStart(2, '0');
             const formattedDate = `${year}-${month}-${day}`;
-    
+
             // Kiểm tra kết quả của ngày giờ trước khi gửi API
             console.log(`Sending date: ${formattedDate}`);
-    
+
             const response = await fetch(`https://localhost:7240/api/ReceptionistMedicalNotebook/MarkAppointmentAsCompleted?patientId=${patientId}&doctorId=${doctorId}&date=${encodeURIComponent(formattedDate)}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-    
+
             if (response.ok) {
                 handleOpenSnackbar('Appointment has been marked as completed', 'success');
             } else {
@@ -116,7 +136,7 @@ const ViewAllNoteBooks = () => {
             handleOpenSnackbar('Error updating appointment status', 'error');
         }
     };
-    
+
 
 
     const handleFileChange = (event) => {
@@ -233,9 +253,13 @@ const ViewAllNoteBooks = () => {
                                             {/* {notebook.fileTitle ? (
                                                 <span title={notebook.fileTitle}>{notebook.fileTitle}</span>
                                             ) : ( */}
+
                                             <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
                                                 <AddIcon />
                                             </IconButton>
+                                            <Button onClick={() => handleOpenImageDialog(notebook)} color="primary">
+                                                Xem ảnh hiện có
+                                            </Button>
                                             {/* )} */}
                                         </TableCell>
                                         <TableCell>
@@ -300,6 +324,9 @@ const ViewAllNoteBooks = () => {
                                             <IconButton onClick={() => handleClickOpen(notebook)} title="Thêm ảnh">
                                                 <AddIcon />
                                             </IconButton>
+                                            <Button onClick={() => handleOpenImageDialog(notebook)} color="primary">
+                                                Xem ảnh hiện có
+                                            </Button>
                                             {/* )} */}
                                         </TableCell>
                                     </TableRow>
@@ -336,6 +363,30 @@ const ViewAllNoteBooks = () => {
                     </Button>
                 </DialogActions>
             </Dialog>
+            <Dialog open={imageDialogOpen} onClose={handleCloseImageDialog} maxWidth="md" fullWidth>
+    <DialogTitle>Ảnh hiện có</DialogTitle>
+    <DialogContent>
+        {currentImages.length === 0 ? (
+            <p>Không có ảnh nào hiện tại</p>
+        ) : (
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
+                {currentImages.map((image) => (
+                    <img
+                        key={image.imgId}
+                        src={image.imgUrl}
+                        alt={`Image ${image.imgId}`}
+                        style={{ width: '90%', height: '50%', objectFit: 'cover', margin: '10px' }} // Thay đổi kích thước tại đây
+                    />
+                ))}
+            </div>
+        )}
+    </DialogContent>
+    <DialogActions>
+        <Button onClick={handleCloseImageDialog} color="primary">
+            Đóng
+        </Button>
+    </DialogActions>
+</Dialog>
 
             <Snackbar
                 open={snackbar.open}

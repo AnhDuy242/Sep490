@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Container, Typography, TextField, Button, Snackbar, Alert, Avatar, Box, IconButton } from '@mui/material';
+import { Container, Typography, TextField, Button, Snackbar, Alert, Avatar, Box, IconButton, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 
-const defaultImg = 'https://via.placeholder.com/150'; // Link đến ảnh mặc định
+const defaultImg = 'https://via.placeholder.com/150'; // Link to default image
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
@@ -12,7 +12,7 @@ const Profile = () => {
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [isEditing, setIsEditing] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState(defaultImg); // State to manage the avatar URL
+  const [avatarUrl, setAvatarUrl] = useState(defaultImg);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
@@ -20,19 +20,24 @@ const Profile = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [otp, setOtp] = useState(''); // OTP state
+  const [otpError, setOtpError] = useState('');
+  const [otpDialogOpen, setOtpDialogOpen] = useState(false); // OTP Dialog visibility state
   const accoundId = localStorage.getItem('accountId');
   const [emailError, setEmailError] = useState('');
+  const [originalEmail, setOriginalEmail] = useState(''); // Store original email
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const response = await axios.get(`https://localhost:7240/api/UpdateProfile/${accoundId}`);
-        console.log('Fetched profile data:', response.data);
         setProfile(response.data);
-        setAvatarUrl(response.data.img || defaultImg); // Set defaultImg if img is not available
+        setAvatarUrl(response.data.img || defaultImg);
         setDescription(response.data.description || '');
         setPhone(response.data.accountPhone || '');
         setEmail(response.data.accountEmail || '');
         setPassword(response.data.accountPassword || '');
+        setOriginalEmail(response.data.accountEmail || ''); // Set original email
       } catch (error) {
         setSnackbarMessage('Failed to fetch profile');
         setSnackbarSeverity('error');
@@ -42,16 +47,28 @@ const Profile = () => {
 
     fetchProfile();
   }, [accoundId]);
+
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   };
+
   const handleCloseSnackbar = () => {
     setOpenSnackbar(false);
   };
 
   const handleToggleEdit = () => {
     setIsEditing(!isEditing);
+  };
+
+  const handleOpenOtpDialog = () => {
+    setOtpDialogOpen(true);
+  };
+
+  const handleCloseOtpDialog = () => {
+    setOtpDialogOpen(false);
+    setOtp(''); // Reset OTP input
+    setOtpError(''); // Reset OTP error
   };
 
   const handleUpdateProfile = async () => {
@@ -78,24 +95,42 @@ const Profile = () => {
     }
 
     try {
-      const updatedProfile = {
-        img: avatarUrl,
-        description,
-        accountPhone: phone,
-        accountEmail: email,
-        accountPassword: password,
-      };
-
-      const response = await axios.put(`https://localhost:7240/doctorProfile/${accoundId}`, updatedProfile);
-
-      setSnackbarMessage(response.data.message || 'Cập nhật hồ sơ thành công');
-      setSnackbarSeverity('success');
-      setOpenSnackbar(true);
-      console.log(response);
+      // Call API to send OTP to the original email
+      await axios.post(`https://localhost:7240/api/Otp/SendOtp?Email=${originalEmail}`);
+      handleOpenOtpDialog(); // Open OTP dialog
     } catch (error) {
-      setSnackbarMessage(error.response.data || 'Không thể cập nhật hồ sơ');
+      setSnackbarMessage('Không thể gửi mã OTP');
       setSnackbarSeverity('error');
       setOpenSnackbar(true);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    try {
+      const response = await axios.post('https://localhost:7240/api/Otp/VerifyOtpEmail', {
+        email: originalEmail, 
+        otp,
+      });
+      if (response.status === 200) {
+        // Proceed to update profile after OTP verification
+        const updatedProfile = {
+          img: avatarUrl,
+          description,
+          accountPhone: phone,
+          accountEmail: email,
+          accountPassword: password,
+        };
+        await axios.put(`https://localhost:7240/doctorProfile/${accoundId}`, updatedProfile);
+        setSnackbarMessage('Cập nhật hồ sơ thành công');
+        setSnackbarSeverity('success');
+        setOpenSnackbar(true);
+        setIsEditing(false);
+        handleCloseOtpDialog();
+      } else {
+        setOtpError('OTP không đúng');
+      }
+    } catch (error) {
+      setOtpError('Xác minh OTP thất bại');
     }
   };
 
@@ -112,7 +147,6 @@ const Profile = () => {
           },
         });
 
-        console.log('Upload response:', uploadResponse.data);
         const { url } = uploadResponse.data;
         setAvatarUrl(url); // Update the avatar URL with the uploaded image URL
       } catch (error) {
@@ -153,14 +187,14 @@ const Profile = () => {
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              backgroundColor: 'rgba(0, 0, 0, 0.4)', // Semi-transparent background
+              backgroundColor: 'rgba(0, 0, 0, 0.4)',
               color: 'white',
               fontSize: '18px',
               fontWeight: 'bold',
               textAlign: 'center',
               borderRadius: '50%',
               zIndex: 1,
-              cursor: 'pointer', // Ensure the overlay is clickable
+              cursor: 'pointer',
             }}
           >
             Bấm để tải lên
@@ -193,7 +227,7 @@ const Profile = () => {
           value={phone}
           onChange={(e) => {
             const value = e.target.value;
-            if (/^\d{0,11}$/.test(value)) { // Chỉ cho phép số và tối đa 11 ký tự
+            if (/^\d{0,11}$/.test(value)) { 
               setPhone(value);
             }
           }}
@@ -220,70 +254,93 @@ const Profile = () => {
           value={password}
           onChange={(e) => {
             const value = e.target.value;
-            if (value.length <= 50) { // Giới hạn tối đa 50 ký tự
+            if (value.length <= 50) { 
               setPassword(value);
             }
           }}
           variant="outlined"
           disabled={!isEditing}
-          sx={{ border: '1px solid gray', borderRadius: 1 }}
           InputProps={{
             endAdornment: (
               <IconButton
-                edge="end"
                 onClick={() => setShowPassword(!showPassword)}
-                aria-label={showPassword ? 'Ẩn' : 'Hiện'}
+                edge="end"
               >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
             ),
           }}
+          sx={{ border: '1px solid gray', borderRadius: 1 }}
         />
-        {isEditing && (
-          <TextField
-            fullWidth
-            margin="normal"
-            label="Xác nhận mật khẩu"
-            type={showConfirmPassword ? 'text' : 'password'}
-            value={confirmPassword}
-            onChange={(e) => {
-              const value = e.target.value;
-              if (value.length <= 50) { // Giới hạn tối đa 50 ký tự
-                setConfirmPassword(value);
-              }
-            }}
-            variant="outlined"
-            sx={{ border: '1px solid gray', borderRadius: 1 }}
-            InputProps={{
-              endAdornment: (
-                <IconButton
-                  edge="end"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  aria-label={showConfirmPassword ? 'Ẩn' : 'Hiện'}
-                >
-                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              ),
-            }}
-          />
-        )}
-        <Box sx={{ mt: 2 }}>
-          <Button variant="contained" color="primary" onClick={handleToggleEdit}>
-            {isEditing ? 'Chế độ xem' : 'Chỉnh sửa'}
+        <TextField
+          fullWidth
+          margin="normal"
+          label="Xác nhận mật khẩu"
+          type={showConfirmPassword ? 'text' : 'password'}
+          value={confirmPassword}
+          onChange={(e) => {
+            const value = e.target.value;
+            if (value.length <= 50) { 
+              setConfirmPassword(value);
+            }
+          }}
+          variant="outlined"
+          disabled={!isEditing}
+          InputProps={{
+            endAdornment: (
+              <IconButton
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                edge="end"
+              >
+                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            ),
+          }}
+          sx={{ border: '1px solid gray', borderRadius: 1 }}
+        />
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Button variant="contained" color="primary" onClick={handleToggleEdit} sx={{ mr: 2 }}>
+            {isEditing ? 'Hủy' : 'Chỉnh sửa'}
           </Button>
           {isEditing && (
-            <Button variant="contained" color="secondary" onClick={handleUpdateProfile} sx={{ ml: 2 }}>
-              Cập nhật hồ sơ
+            <Button variant="contained" color="primary" onClick={handleUpdateProfile}>
+              Cập nhật
             </Button>
           )}
         </Box>
       </Box>
+
+      {/* OTP Dialog */}
+      <Dialog open={otpDialogOpen} onClose={handleCloseOtpDialog}>
+        <DialogTitle>Xác minh OTP</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Nhập mã OTP"
+            variant="outlined"
+            fullWidth
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            error={!!otpError}
+            helperText={otpError}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseOtpDialog} color="primary">
+            Hủy
+          </Button>
+          <Button onClick={handleVerifyOtp} color="primary">
+            Xác minh
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Snackbar
         open={openSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={3000}
         onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Adjust snackbar position here
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
           {snackbarMessage}
         </Alert>
       </Snackbar>

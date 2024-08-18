@@ -313,43 +313,107 @@ const EditSchedule = ({ doctors, setSnackbar }) => {
 
   const handleSubmit = async () => {
     if (!selectedDoctor) {
-      setSnackbar({ open: true, message: 'Vui lòng chọn bác sĩ trước khi lưu lịch làm việc!', severity: 'error' });
-      return;
+        setSnackbar({ open: true, message: 'Vui lòng chọn bác sĩ trước khi lưu lịch làm việc!', severity: 'error' });
+        return;
     }
-  
+
     try {
-      const selectedSchedules = schedules
-        .filter(schedule => schedule.morning || schedule.afternoon)
-        .map(schedule => ({
-          ...schedule,
-          doctorId: selectedDoctor, // Ensure doctorId is correctly set
+        // Log the schedules to ensure they are not null
+        console.log('Schedules before processing:', schedules);
+
+        // Prepare data for UpdateSchedule API
+        const selectedSchedules = schedules.map(schedule => ({
+            ...schedule,
+            doctorId: selectedDoctor, // Ensure doctorId is correctly set
         }));
-  
-      const response = await Promise.all(selectedSchedules.map(schedule =>
-        fetch(`https://localhost:7240/api/ManageSchedule/UpdateSchedule/${schedule.id}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(schedule)
-        })
-      ));
-  
-      const success = response.every(res => res.ok);
-  
-      if (success) {
-        setSnackbar({ open: true, message: 'Lịch làm việc đã được cập nhật thành công!', severity: 'success' });
-      } else {
-        // If any of the responses is not ok, handle the error accordingly
-        const errorMessages = await Promise.all(response.map(res => res.text()));
-        const detailedMessage = errorMessages.filter(msg => msg).join(', ');
-  
-        throw new Error(`Đã có lỗi xảy ra khi cập nhật lịch làm việc: ${detailedMessage}`);
-      }
+
+        // Log the selectedSchedules to verify the data
+        console.log('Selected Schedules:', selectedSchedules);
+
+        if (!selectedSchedules.length) {
+            setSnackbar({ open: true, message: 'Không có lịch làm việc để cập nhật!', severity: 'warning' });
+            return;
+        }
+
+        // Call UpdateSchedule API
+        const scheduleResponses = await Promise.all(selectedSchedules.map(schedule =>
+            fetch(`https://localhost:7240/api/ManageSchedule/UpdateSchedule/${schedule.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(schedule)
+            })
+        ));
+
+        // Check if all schedule updates were successful
+        const scheduleSuccess = scheduleResponses.every(res => res.ok);
+
+        if (!scheduleSuccess) {
+            // If any of the responses is not ok, handle the error accordingly
+            const scheduleErrorMessages = await Promise.all(scheduleResponses.map(res => res.text()));
+            const scheduleDetailedMessage = scheduleErrorMessages.filter(msg => msg).join(', ');
+            throw new Error(`Đã có lỗi xảy ra khi cập nhật lịch làm việc: ${scheduleDetailedMessage}`);
+        }
+
+        // Filter appointment updates to include only those transitioning from true to false
+        const appointmentUpdates = selectedSchedules.flatMap(schedule => {
+            const morningSlots = [1, 2, 5, 6];
+            const afternoonSlots = [3, 4, 7, 8];
+            
+            return [
+                ...morningSlots.map(slotId => ({
+                    ScheduleId: schedule.id,
+                    SlotId: slotId,
+                    Status: schedule.morning ? 'Có lịch' : 'Đã hủy',
+                    DoctorId: selectedDoctor
+                })),
+                ...afternoonSlots.map(slotId => ({
+                    ScheduleId: schedule.id,
+                    SlotId: slotId,
+                    Status: schedule.afternoon ? 'Có lịch' : 'Đã hủy',
+                    DoctorId: selectedDoctor
+                }))
+            ].filter(update => update.Status === 'Đã hủy'); // Filter to only include status changes from true to false
+        });
+
+        // Log the appointment updates to verify the data
+        console.log('Appointment Updates:', appointmentUpdates);
+
+        if (!appointmentUpdates.length) {
+            setSnackbar({ open: true, message: 'Không có cuộc hẹn để cập nhật trạng thái!', severity: 'warning' });
+            return;
+        }
+
+        // Call UpdateAppointmentsStatus API
+        const appointmentResponses = await Promise.all(appointmentUpdates.map(update =>
+            fetch('https://localhost:7240/api/AdminAppointment/UpdateAppointmentsStatus', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(update)
+            })
+        ));
+
+        // Check if all appointment updates were successful
+        const appointmentSuccess = appointmentResponses.every(res => res.ok);
+
+        if (appointmentSuccess) {
+            setSnackbar({ open: true, message: 'Lịch làm việc và trạng thái cuộc hẹn đã được cập nhật thành công!', severity: 'success' });
+        } else {
+            // If any of the responses is not ok, handle the error accordingly
+            const appointmentErrorMessages = await Promise.all(appointmentResponses.map(res => res.text()));
+            const appointmentDetailedMessage = appointmentErrorMessages.filter(msg => msg).join(', ');
+            throw new Error(`Đã có lỗi xảy ra khi cập nhật trạng thái cuộc hẹn: ${appointmentDetailedMessage}`);
+        }
     } catch (error) {
-      setSnackbar({ open: true, message: error.message, severity: 'error' });
+        setSnackbar({ open: true, message: error.message, severity: 'error' });
     }
-  };
+};
+
+
+  
 
   const getDaysOfWeek = (date) => {
     const start = startOfWeek(date, { weekStartsOn: 1 });

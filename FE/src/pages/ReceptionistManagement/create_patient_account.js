@@ -4,7 +4,10 @@ import {
     TextField, MenuItem, FormControl, InputLabel, Select, TablePagination, Autocomplete, Grid,
     Snackbar,
     Alert,
-    Box
+    Box,
+    Input,
+    InputAdornment,
+    IconButton
 } from '@mui/material';
 import { createPatient, getAllPatients, updatePatientStatus } from './../../services/receptionist_management'; // Import hàm updatePatientStatus
 import AddIcon from '@mui/icons-material/Add';
@@ -14,6 +17,8 @@ import { format, addDays, isAfter } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './component/rep.css'
 import dayjs from 'dayjs';
+import axios from 'axios';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const CreatePatientAccount = () => {
     const [open, setOpen] = useState(false);
@@ -56,7 +61,59 @@ const CreatePatientAccount = () => {
     const [dateOptions, setDateOptions] = useState([]);
     const [slotOptions, setSlotOptions] = useState([]);
     const formRef = useRef(null);
+    const [passwordVisible, setPasswordVisible] = useState({});
 
+    const handleTogglePasswordVisibility = (accId) => {
+        setPasswordVisible((prev) => ({
+            ...prev,
+            [accId]: !prev[accId]
+        }));
+    };
+    const [file, setFile] = useState(null);
+
+    const handleFileChange = (event) => {
+        setFile(event.target.files[0]);
+    };
+    const handleExtractText = async () => {
+        if (!file) {
+            setSnackbarMessage('Vui lòng chọn file trước khi trích xuất.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('https://localhost:7240/api/OCR_API/extract-text', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            const result = response.data;
+
+            // Cập nhật state với kết quả OCR
+            setPatientData({
+                ...patientData,
+                phone: result.phoneNumber || '',
+                name: result.fullName || '',
+                dob: result.dateOfBirth || '',
+                address: result.address || '',
+                // Thêm các trường khác nếu cần
+            });
+
+            setSnackbarMessage('Trích xuất thông tin thành công!');
+            setSnackbarSeverity('success');
+            setOpenSnackbar(true);
+        } catch (error) {
+            console.error('Lỗi khi trích xuất text:', error);
+            setSnackbarMessage('Có lỗi xảy ra khi trích xuất thông tin.');
+            setSnackbarSeverity('error');
+            setOpenSnackbar(true);
+        }
+    };
     useEffect(() => {
         // Fetch departments on component mount
         getListDepartment()
@@ -441,11 +498,23 @@ const CreatePatientAccount = () => {
             <Button className="btn_add" variant="contained" onClick={handleClickOpen}>
                 Thêm tài khoản
             </Button>
-
             {/* Dialog để thêm tài khoản */}
             <Dialog open={open} onClose={handleClose}>
                 <DialogTitle>Thêm tài khoản</DialogTitle>
                 <DialogContent>
+                    <Input
+                        type="file"
+                        onChange={handleFileChange}
+                        style={{ marginBottom: '1rem' }}
+                    />
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={handleExtractText}
+                        style={{ marginBottom: '1rem' }}
+                    >
+                        Extract Text
+                    </Button>
                     <TextField
                         margin="dense"
                         label="Số điện thoại"
@@ -508,7 +577,7 @@ const CreatePatientAccount = () => {
                         value={patientData.address}
                         onChange={handleChange}
                         required
-                       
+
                     />
                     <TextField
                         margin="dense"
@@ -574,23 +643,41 @@ const CreatePatientAccount = () => {
                                 <TableCell>{patient.patientId}</TableCell>
                                 <TableCell>{patient.phone}</TableCell>
                                 <TableCell>{patient.email}</TableCell>
-                                <TableCell>{patient.password}</TableCell>
+                                <TableCell>
+                                    <TextField
+                                        type={passwordVisible[patient.patientId] ? 'text' : 'password'}
+                                        value={patient.password}
+                                        InputProps={{
+                                            readOnly: true,
+                                            endAdornment: (
+                                                <InputAdornment position="end">
+                                                    <IconButton
+                                                        aria-label="toggle password visibility"
+                                                        onClick={() => handleTogglePasswordVisibility(patient.patientId)}
+                                                    >
+                                                        {passwordVisible[patient.patientId] ? <Visibility /> : <VisibilityOff />}
+                                                    </IconButton>
+                                                </InputAdornment>
+                                            ),
+                                        }}
+                                    />
+                                </TableCell>
                                 <TableCell>{patient.name}</TableCell>
                                 <TableCell>{patient.gender === 'Male' ? 'Nam' : 'Nữ'}</TableCell>
                                 <TableCell>{patient.address}</TableCell>
-                                <TableCell>{patient.dob}</TableCell>
+                                <TableCell>      {format(new Date(patient.dob), 'dd-MM-yyyy')}</TableCell>
                                 <TableCell>
-                        <Box
-                            sx={{
-                                width: 10,
-                                height: 10,
-                                borderRadius: '50%',
-                                backgroundColor: patient.isActive ? 'green' : 'red',
-                                display: 'inline-block',
-                              marginLeft:5
-                            }}
-                        />
-                    </TableCell>
+                                    <Box
+                                        sx={{
+                                            width: 10,
+                                            height: 10,
+                                            borderRadius: '50%',
+                                            backgroundColor: patient.isActive ? 'green' : 'red',
+                                            display: 'inline-block',
+                                            marginLeft: 5
+                                        }}
+                                    />
+                                </TableCell>
 
                                 <TableCell>
                                     <Button
@@ -764,7 +851,7 @@ const CreatePatientAccount = () => {
                 autoHideDuration={3000}
                 onClose={handleCloseSnackbar}
                 anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} // Adjust position here
-                sx={{ zIndex: 1300,position:'absolute' }} // Adjust zIndex if needed
+                sx={{ zIndex: 1300, position: 'absolute' }} // Adjust zIndex if needed
             >
                 <Alert onClose={handleCloseSnackbar} severity="success">
                     {snackbarMessage}

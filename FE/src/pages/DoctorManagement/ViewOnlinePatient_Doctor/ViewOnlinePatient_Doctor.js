@@ -25,7 +25,8 @@ const PatientManagement = () => {
     const [openSnackbar, setOpenSnackbar] = useState(false);
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-
+    const [searchQuery, setSearchQuery] = useState('');
+  
     const [medicalNotebooks, setMedicalNotebooks] = useState([]);
     const [activeTab, setActiveTab] = useState(0);
     const [openViewDialog, setOpenViewDialog] = useState(false);
@@ -57,6 +58,17 @@ const PatientManagement = () => {
         setFilter(event.target.value);
         setPage(1); // Reset to first page when filter changes
     };
+    const handleSearchChange = (event) => {
+        setSearchQuery(event.target.value);
+    };
+    useEffect(() => {
+        const searchResult = patients.filter((patient) =>
+            patient.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredPatients(searchResult);
+        setPage(1); // Reset lại trang khi có thay đổi trong tìm kiếm
+    }, [searchQuery, patients]);
+
 
     const handleOpenForm = (patient) => {
         setSelectedPatient(patient);
@@ -180,15 +192,15 @@ const PatientManagement = () => {
 
     return (
         <Box>
-            <Box mb={2}>
-                <Typography variant="h6">Lọc theo trạng thái</Typography>
-                <Select value={filter} onChange={handleFilterChange}>
-                    <MenuItem value="All">Tất cả</MenuItem>
-                    <MenuItem value="1">Hoạt động</MenuItem>
-                    <MenuItem value="2">Chưa đánh giá</MenuItem>
-                    <MenuItem value="3">Đã đánh giá</MenuItem>
-                </Select>
-            </Box>
+          <Box mb={2}>
+    <Typography variant="h6">Tìm kiếm bệnh nhân</Typography>
+    <TextField
+        fullWidth
+        placeholder="Nhập tên bệnh nhân"
+        value={searchQuery}
+        onChange={handleSearchChange}
+    />
+</Box>
 
             <TableContainer>
                 <Table>
@@ -298,6 +310,8 @@ const PatientManagement = () => {
                             id="diagnostic"
                             label="Chẩn đoán"
                             name="diagnostic"
+                            multiline={true} // Thuộc tính này sẽ cho phép nhiều dòng
+                            rows={20}
                             value={formData.diagnostic}
                             onChange={handleFormChange}
                             error={Boolean(errors.diagnostic)}
