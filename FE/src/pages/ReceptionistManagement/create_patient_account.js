@@ -524,8 +524,8 @@ const CreatePatientAccount = () => {
                         onClick={handleExtractText}
                         style={{ marginBottom: '1rem' }}
                     >
-                        Extract Text
-                    </Button>
+                        Điền dữ liệu từ ảnh
+                     </Button>
                     <TextField
                         margin="dense"
                         label="Số điện thoại"
