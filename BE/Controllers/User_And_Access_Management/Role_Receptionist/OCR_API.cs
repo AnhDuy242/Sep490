@@ -25,7 +25,9 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                     var text = OCRHelper.GetFilterNumber(bitmap, 2, 190, 1);
                     OCRResult result = new OCRResult();
                     result = OCRHelper.ExtractInformation(text);
-                    return Ok(result);
+                    OCRResult rs = OCRHelper.ParseOCRText(text);
+                    OCRResult rs2 = OCRHelper.ExtractInformation2(text);
+                    return Ok(rs2);
                 }
             }
             catch (Exception ex)

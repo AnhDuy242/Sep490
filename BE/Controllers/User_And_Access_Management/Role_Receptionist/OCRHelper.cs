@@ -41,7 +41,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             }
 
             var OCR = new TesseractEngine("tessdata", "vie", Tesseract.EngineMode.TesseractAndLstm);
-            string template = "0123456789aăâbcddđeêghiklmnôopqrstưuvxyAĂÂBCDĐEÊGHIKLMNÔOPQRSTƯUVXYàằầáắấảẳẩãẵẫạặậèẻẽẹéếểễệìỉĩịíòỏõọóốồổỗộớờởỡợùủũụúứừửữựỳỷỹỵýÀẰẦÁẮẤẢẲẨÃẴẪẠẶẬÈẺẼẸÉẾỂỄỆÌỈĨỊÍÒỎÕỌÓỐỒỔỖỘỚỜỞỠỢÙỦŨỤÚỨỪỬỮỰỲỶỸỴÝ ;?,.:/>-#()";
+            string template = "@0123456789aăâbcddđeêghiklmnôopqrstưuvxyAĂÂBCDĐEÊGHIKLMNÔOPQRSTƯUVXYàằầáắấảẳẩãẵẫạặậèẻẽẹéếểễệìỉĩịíòỏõọóốồổỗộớờởỡợùủũụúứừửữựỳỷỹỵýÀẰẦÁẮẤẢẲẨÃẴẪẠẶẬÈẺẼẸÉẾỂỄỆÌỈĨỊÍÒỎÕỌÓỐỒỔỖỘỚỜỞỠỢÙỦŨỤÚỨỪỬỮỰỲỶỸỴÝ ;?,.:/>-#()";
             OCR.SetVariable("tessedit_char_whitelist", template);
 
             string res = "";
@@ -222,6 +222,58 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             result.DiaChi = Regex.Match(text, @"(?i)Địa chỉ[: ]*(.+)").Groups[1].Value.Trim();
 
             return result;
+        }
+
+        public static OCRResult ExtractInformation2(string text)
+        {
+            OCRResult result = new OCRResult();
+
+            // Tìm và gán các giá trị từ văn bản
+            result.HoTen = Regex.Match(text, @"Họ và tên[: ]*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+            result.SoDienThoai = Regex.Match(text, @"SĐT[: ]*(\d{10,11})", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+            result.NgaySinh = Regex.Match(text, @"Ngày (sinh|ảinh)[: ]*(\d{2}/\d{2}/\d{4})", RegexOptions.IgnoreCase).Groups[2].Value.Trim();
+            result.DiaChi = Regex.Match(text, @"Địa chỉ[: ]*(.+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+
+            // Giới tính (thêm nếu cần)
+            result.GioiTinh = Regex.Match(text, @"Giới tính[: ]*(Nam|Nữ)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+
+            // Email (thêm nếu cần)
+            result.Email = Regex.Match(text, @"Email[: ]*(\S+@\S+\.\S+)", RegexOptions.IgnoreCase).Groups[1].Value.Trim();
+
+            return result;
+        }
+
+
+        public static OCRResult ParseOCRText(string ocrText)
+        {
+            var lines = ocrText.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            var ocrResult = new OCRResult
+            {
+                HoTen = ExtractValue(lines, "Họ và tên"),
+                SoDienThoai = ExtractValue(lines, "SĐT"),
+                GioiTinh = ExtractValue(lines, "Giới tính"),
+                Email = ExtractValue(lines, "Email"),
+                NgaySinh = ExtractValue(lines, "Ngày sinh"),
+                DiaChi = ExtractValue(lines, "Địa chỉ")
+            };
+
+            return ocrResult;
+        }
+
+        public static string ExtractValue(string[] lines, string key)
+        {
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Trim().Equals(key, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i + 1 < lines.Length)
+                    {
+                        return lines[i + 1].Trim();
+                    }
+                }
+            }
+            return null;
         }
 
     }
