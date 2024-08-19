@@ -35,6 +35,21 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                 return StatusCode(500, new { Error = ex.Message });
             }
         }
+        [HttpPost("extract-text23")]
+        public IActionResult ExtractText_23(IFormFile file)
+        {
+            OCRResult data = new OCRResult();
+            // Giả lập xử lý OCR và điền thông tin vào object data
+            data.HoTen = "Nguyen Van A";
+            data.SoDienThoai = "0123456789";
+            data.Email = "nguyenvana@example.com";
+            data.GioiTinh = "Nam";
+            data.NgaySinh = "01/01/1990";
+            data.DiaChi = "123 Le Loi, Ha Noi";
+
+            // Trả về kết quả đã xử lý
+            return Ok(data);
+        }
     }
 }
 

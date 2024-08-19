@@ -13,7 +13,7 @@ import { createPatient, getAllPatients, updatePatientStatus } from './../../serv
 import AddIcon from '@mui/icons-material/Add';
 import { bookAppointment, getListDepartment, fetchDoctors, fetchSlots, fetchServices, fetchDoctorByService, fetchSlotsByDoctorAndDate, fetchDateByDoctor, ReceptionbookAppointment } from '../../services/AppointmentPatient';
 import MuiAlert from '@mui/material/Alert';
-import { format, addDays, isAfter } from 'date-fns';
+import { format, addDays, isAfter, parse } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './component/rep.css'
 import dayjs from 'dayjs';
@@ -86,7 +86,7 @@ const CreatePatientAccount = () => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('https://localhost:7240/api/OCR_API/extract-text', formData, {
+            const response = await axios.post('https://localhost:7240/api/OCR_API/extract-text-test', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -94,13 +94,22 @@ const CreatePatientAccount = () => {
 
             const result = response.data;
 
+            // Chuyển đổi ngày sinh từ dd/MM/yyyy sang yyyy-MM-dd
+            let formattedDob = '';
+            if (result.ngaySinh) {
+                const parsedDate = parse(result.ngaySinh, 'dd/MM/yyyy', new Date());
+                formattedDob = format(parsedDate, 'yyyy-MM-dd');
+            }
+
             // Cập nhật state với kết quả OCR
             setPatientData({
                 ...patientData,
-                phone: result.phoneNumber || '',
-                name: result.fullName || '',
-                dob: result.dateOfBirth || '',
-                address: result.address || '',
+                phone: result.soDienThoai || '',
+                name: result.hoTen || '',
+                dob: formattedDob || '',
+                address: result.diaChi || '',
+                gender: result.gioiTinh.toLowerCase() === 'nam' ? 'male' : 'female', // Chuyển đổi giá trị giới tính
+                email: result.email || '',
                 // Thêm các trường khác nếu cần
             });
 
@@ -444,17 +453,19 @@ const CreatePatientAccount = () => {
             setPatients(patientsList);
         } catch (error) {
             // Show error message
-            let errorMessage = 'Đã xảy ra lỗi. Vui lòng thử lại!';
+            console.error('Error creating patient:', error);
+        
+            let errorMessage = 'Số điện thoại hoặc email đã tồn tại!';
             if (error.response && error.response.data && error.response.data.message) {
                 errorMessage = error.response.data.message;
-            } else if (error.message) {
-                errorMessage = error.message;
             }
-
+        
+            // Log ra message của lỗi
+            console.log('Error message:', errorMessage);
+        
             setSnackbarMessage(errorMessage);
             setSnackbarSeverity('error');
             setOpenSnackbar(true);
-            console.error('Error creating patient:', error);
         }
     };
 

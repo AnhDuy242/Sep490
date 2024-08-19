@@ -258,7 +258,7 @@ const MedicalNotebook = () => {
                         <Typography variant="body2">Đang tải dữ liệu...</Typography>
                     ) : filteredNotebooks.length > 0 ? (
                         filteredNotebooks.map((notebook) => (
-                            <Grid item xs={12} sm={6} md={4} key={notebook.$id}>
+                            <Grid item xs={12} sm={12} md={12} key={notebook.$id}>
                                 <Card className={classes.card}>
                                     <CardContent>
                                         <Typography variant="h6" gutterBottom>
