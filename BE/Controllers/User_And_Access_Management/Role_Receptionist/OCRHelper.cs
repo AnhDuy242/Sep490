@@ -340,10 +340,10 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             {
                 FullName = lines[6].Trim(),
                 PhoneNumber = lines[7].Trim(),
-                Email = lines[8].Trim(),
-                Gender = lines[9].Trim(),
-                Address = lines[10].Trim(),
-                DateOfBirth = DateTime.TryParse(lines[11].Trim(), out var dob) ? dob : DateTime.MinValue
+                Email = lines[10].Trim(),
+                Gender = lines[8].Trim(),
+                Address = lines[11].Trim(),
+                DateOfBirth = DateTime.TryParse(lines[9].Trim(), out var dob) ? dob : DateTime.MinValue
             };
 
             return userProfile;
