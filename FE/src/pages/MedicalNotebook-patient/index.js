@@ -114,6 +114,13 @@ const MedicalNotebook = () => {
     const [searchPrescription, setSearchPrescription] = useState('');
     const [filteredNotebooks, setFilteredNotebooks] = useState([]);
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng bắt đầu từ 0
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
     useEffect(() => {
         handleGetPatientId();
     }, []);
@@ -261,17 +268,21 @@ const MedicalNotebook = () => {
                             <Grid item xs={12} sm={12} md={12} key={notebook.$id}>
                                 <Card className={classes.card}>
                                     <CardContent>
+                                    <Typography variant="h6" gutterBottom>
+                                            Chỉ định: {notebook.prescription}
+                                        </Typography>
                                         <Typography variant="h6" gutterBottom>
+                                            Chẩn đoán: {notebook.diagnostic}
+                                        </Typography>
+                                        <Typography variant="body2" gutterBottom>
                                             Tên bệnh nhân: {notebook.patientName}
                                         </Typography>
                                         <Typography variant="subtitle1" gutterBottom>
                                             Bác sĩ chỉ định: {notebook.doctorName}
                                         </Typography>
+                                     
                                         <Typography variant="body2" gutterBottom>
-                                            Chỉ định: {notebook.prescription}
-                                        </Typography>
-                                        <Typography variant="body2" gutterBottom>
-                                            Chẩn đoán: {notebook.diagnostic}
+                                        Ngày chỉ định: {formatDate(notebook.dateCreate)}
                                         </Typography>
                                         {notebook.testResult && (
                                             <Typography variant="body2" color="textSecondary" gutterBottom>

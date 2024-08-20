@@ -45,6 +45,19 @@ export const fetchDoctorByService = async (seId) => {
     throw error;
   }
 };
+export const fetchDoctorByDepartments = async (seId) => {
+  try {
+    const response = await fetch(`https://localhost:7240/api/Department/GetDoctorsByDepartment/${seId}`);
+    if (!response.ok) {
+      throw new Error('Network response was not ok');
+    }
+    const data = await response.json();
+    return data.$values || []; // chỉ trả về mảng $values
+  } catch (error) {
+    console.error('Failed to fetch doctor by service:', error);
+    throw error;
+  }
+};
 //hàm book appointment cho patient 
 
 const bookAppoint = 'https://localhost:7240/api/PatientAppointment/BookAppointment';

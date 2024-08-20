@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using BE.DTOs.DepartmentDto;
+using BE.DTOs.DoctorDto;
 using BE.DTOs.ServiceDto;
 using BE.DTOs.ServiceDto.BE.DTOs;
 using BE.Models;
@@ -134,6 +135,22 @@ namespace BE.Controllers.User_And_Access_Management.Role_All
             var departments = await _context.Departments.ToListAsync();
             var departmentDtos = _mapper.Map<List<DepartmentDTO>>(departments);
             return Ok(departmentDtos);
+        }
+
+        [HttpGet("{departmentId}")]
+        public async Task<ActionResult<IEnumerable<DoctorMarketing>>> GetDoctorsByDepartment(int departmentId)
+        {
+            var doctors = await _context.Doctors
+                .Where(d => d.DepId == departmentId && d.IsActive == true)
+                .ToListAsync();
+
+            if (doctors == null || !doctors.Any())
+            {
+                return NotFound();
+            }
+
+            var doctorDtos = _mapper.Map<List<DoctorMarketing>>(doctors);
+            return Ok(doctorDtos);
         }
     }
 }

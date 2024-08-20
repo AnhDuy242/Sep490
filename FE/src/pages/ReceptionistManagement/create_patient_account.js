@@ -13,7 +13,7 @@ import { createPatient, getAllPatients, updatePatientStatus } from './../../serv
 import AddIcon from '@mui/icons-material/Add';
 import { bookAppointment, getListDepartment, fetchDoctors, fetchSlots, fetchServices, fetchDoctorByService, fetchSlotsByDoctorAndDate, fetchDateByDoctor, ReceptionbookAppointment } from '../../services/AppointmentPatient';
 import MuiAlert from '@mui/material/Alert';
-import { format, addDays, isAfter, parse } from 'date-fns';
+import { format, addDays, isAfter, parse, parseISO } from 'date-fns';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import './component/rep.css'
 import dayjs from 'dayjs';
@@ -86,7 +86,7 @@ const CreatePatientAccount = () => {
         formData.append('file', file);
 
         try {
-            const response = await axios.post('https://localhost:7240/api/OCR_API/extract-text-test', formData, {
+            const response = await axios.post('https://localhost:7240/api/OCR_API/extract-text', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -95,20 +95,28 @@ const CreatePatientAccount = () => {
             const result = response.data;
 
             // Chuyển đổi ngày sinh từ dd/MM/yyyy sang yyyy-MM-dd
-            let formattedDob = '';
-            if (result.ngaySinh) {
-                const parsedDate = parse(result.ngaySinh, 'dd/MM/yyyy', new Date());
-                formattedDob = format(parsedDate, 'yyyy-MM-dd');
-            }
 
+            let formattedDob = '';
+            if (result.dateOfBirth) {
+                try {
+                    const parsedDate = parseISO(result.dateOfBirth); // Ensure result.dateOfBirth is ISO format
+                    if (!isNaN(parsedDate.getTime())) {
+                        formattedDob = format(parsedDate, 'yyyy-MM-dd'); // Format to yyyy-MM-dd
+                    } else {
+                        console.error('Parsed date is invalid');
+                    }
+                } catch (error) {
+                    console.error('Date parsing error:', error);
+                }
+            }
             // Cập nhật state với kết quả OCR
             setPatientData({
                 ...patientData,
-                phone: result.soDienThoai || '',
-                name: result.hoTen || '',
-                dob: formattedDob || '',
-                address: result.diaChi || '',
-                gender: result.gioiTinh.toLowerCase() === 'nam' ? 'male' : 'female', // Chuyển đổi giá trị giới tính
+                phone: result.phoneNumber || '',
+                name: result.fullName || '',
+                dob: formattedDob,
+                address: result.address || '',
+                gender: result.gender.toLowerCase() === 'Nam' ? 'male' : result.gender.toLowerCase() === 'Nữ' ? 'female' : 'male',
                 email: result.email || '',
                 // Thêm các trường khác nếu cần
             });
@@ -454,15 +462,15 @@ const CreatePatientAccount = () => {
         } catch (error) {
             // Show error message
             console.error('Error creating patient:', error);
-        
+
             let errorMessage = 'Số điện thoại hoặc email đã tồn tại!';
             if (error.response && error.response.data && error.response.data.message) {
                 errorMessage = error.response.data.message;
             }
-        
+
             // Log ra message của lỗi
             console.log('Error message:', errorMessage);
-        
+
             setSnackbarMessage(errorMessage);
             setSnackbarSeverity('error');
             setOpenSnackbar(true);
@@ -525,7 +533,7 @@ const CreatePatientAccount = () => {
                         style={{ marginBottom: '1rem' }}
                     >
                         Điền dữ liệu từ ảnh
-                     </Button>
+                    </Button>
                     <TextField
                         margin="dense"
                         label="Số điện thoại"

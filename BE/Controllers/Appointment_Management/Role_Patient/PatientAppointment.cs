@@ -194,42 +194,47 @@ namespace BE.Controllers.Appointment_Management
         [HttpPost]
         public async Task<IActionResult> GetListSlot(int docid, [FromBody] DateTimeDto date)
         {
-            var s = _alo2Context.Schedules.Include(x => x.Doctor).Where(x => x.DoctorId == docid).FirstOrDefault(x => x.Date == date.Date);
+            var s = _alo2Context.Schedules.Include(x => x.Doctor).FirstOrDefault(x => x.DoctorId == docid && x.Date == date.Date);
             if (s == null) return NotFound(new { message = "Không tìm lịch làm việc." });
 
+            List<Slot> sl = null;
+
+            // Determine which slots to consider based on the schedule's shift availability
             if (s.Morning == true && s.Afternoon == true)
             {
-                var sl = _alo2Context.Slots.ToList();
-                foreach(var slot in sl)
-                {
-                    var a = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id).Where(x => x.SlotId == slot.SlotId).ToList();
-                    if(a.Count == 3) sl.Remove(slot);
-                }
-                return Ok(sl);
+                sl = _alo2Context.Slots.ToList();
             }
-            if (s.Morning == false && s.Afternoon == true)
+            else if (s.Morning == false && s.Afternoon == true)
             {
-                var sl = _alo2Context.Slots.Where(x => x.Shift == 2).ToList();
-                foreach (var slot in sl)
-                {
-                    var a = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id).Where(x => x.SlotId == slot.SlotId).ToList();
-                    if (a.Count == 3) sl.Remove(slot);
-                }
-                return Ok(sl);
+                sl = _alo2Context.Slots.Where(x => x.Shift == 2).ToList();
             }
-            if (s.Morning == true && s.Afternoon == false)
+            else if (s.Morning == true && s.Afternoon == false)
             {
-                var sl = _alo2Context.Slots.Where(x => x.Shift == 1).ToList();
-                foreach (var slot in sl)
-                {
-                    var a = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id).Where(x => x.SlotId == slot.SlotId).ToList();
-                    if (a.Count == 3) sl.Remove(slot);
-                }
-                return Ok(sl);
+                sl = _alo2Context.Slots.Where(x => x.Shift == 1).ToList();
             }
-            return NotFound(new { message = "Không tìm thấy dữ liệu slot." });
+            else
+            {
+                return NotFound(new { message = "Không tìm thấy dữ liệu slot." });
+            }
 
+            // Create a list to store slots that should be removed
+            var slotsToRemove = new List<Slot>();
+
+            foreach (var slot in sl)
+            {
+                var appointments = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id && x.SlotId == slot.SlotId).ToList();
+                if (appointments.Count == 3)
+                {
+                    slotsToRemove.Add(slot); // Mark the slot for removal
+                }
+            }
+
+            // Remove the marked slots after iteration
+            sl.RemoveAll(slot => slotsToRemove.Contains(slot));
+
+            return Ok(sl);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetListDate(int docid)

@@ -536,7 +536,10 @@ const LoginForm = ({ show, handleClose, handleLogin }) => {
     setShowRegisterForm(true);
     handleClose(); // Close LoginForm when RegisterForm opens
   };
-
+  const handleGoogleLogin = async () => {
+    // Redirect to Google login URL
+    window.location.href = '/identity/externallogin/?provider=Google';
+  };
   return (
     <>
       <Modal open={show} onClose={handleClose}>
@@ -598,7 +601,7 @@ const LoginForm = ({ show, handleClose, handleLogin }) => {
               <Typography variant="body2">Hoặc đăng nhập bằng</Typography>
             </Box>
             <Box sx={{ display: 'flex', justifyContent: 'center', mb: 2 }}>
-              <Button variant="outlined" startIcon={<img src={google_icon} alt="Google" className='google_icon' />} href="/identity/externallogin/?provider=Google">
+              <Button variant="outlined" startIcon={<img src={google_icon} alt="Google" className='google_icon' />} onClick={handleGoogleLogin}>
                 Google
               </Button>
             </Box>

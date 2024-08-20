@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Container, Typography, Grid, FormControl, InputLabel, Select, MenuItem, Box, Snackbar, Button } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { format, addDays, isAfter } from 'date-fns';
-import { bookAppointment, getListDepartment, fetchServices, fetchDoctorByService, fetchDateByDoctor, fetchSlotsByDoctorAndDate } from '../../services/AppointmentPatient';
+import { bookAppointment, getListDepartment, fetchServices, fetchDoctorByService, fetchDateByDoctor, fetchSlotsByDoctorAndDate, fetchDoctorByDepartments } from '../../services/AppointmentPatient';
 import Header from '../../layouts/Header';
 import Navbar from '../../layouts/Navbar';
 import Footer from '../../layouts/Footer';
@@ -48,8 +48,12 @@ const AppointmentScreen = () => {
       fetchDoctorByService(serviceId)
         .then(data => setDoctorOptions(data || []))
         .catch(error => console.error('Failed to fetch doctors:', error));
+    } else {
+      fetchDoctorByDepartments(depId)
+        .then(data => setDoctorOptions(data || []))
+        .catch(error => console.error('Failed to fetch doctors:', error));
     }
-  }, [serviceId]);
+  }, [depId]);
 
   // useEffect(() => {
   //   // Fetch dates by doctor
@@ -103,7 +107,7 @@ const AppointmentScreen = () => {
       setSlotOptions([]); // Clear slots if doctor or date is not selected
     }
   }, [doctorId, date]);
-  
+
 
 
   const handleDepartmentChange = (event) => {
@@ -115,7 +119,7 @@ const AppointmentScreen = () => {
     setDate('');
     setSlotOptions([]);
   };
-  
+
   const handleServiceChange = (event) => {
     const serviceId = event.target.value;
     setServId(serviceId);
@@ -124,14 +128,14 @@ const AppointmentScreen = () => {
     setDate('');
     setSlotOptions([]);
   };
-  
+
   const handleDoctorChange = (event) => {
     const doctorId = event.target.value;
     setDoctorId(doctorId);
     setDate(''); // Reset the date when doctor changes
     setSlotOptions([]); // Clear slots when doctor changes
   };
-  
+
   const handleDateChange = (event) => {
     const selectedDate = event.target.value;
     console.log('Selected Date:', selectedDate);
@@ -188,8 +192,9 @@ const AppointmentScreen = () => {
         setTime('');
         setSlotOptions([]);
 
-        //redirect
-        navigate('/getAppointment');
+        setTimeout(() => {
+          navigate('/getAppointment');
+        }, 3000);
 
       })
       .catch(error => {
@@ -233,48 +238,53 @@ const AppointmentScreen = () => {
 
   const handleRandomDoctor = async () => {
     try {
-      // Random chọn một chuyên khoa
-      const randomDep = departmentOptions[Math.floor(Math.random() * departmentOptions.length)];
-      setDepId(randomDep.depId);
+      setServId(null);
   
-      // Lấy danh sách dịch vụ của chuyên khoa đó
-      const services = await fetchServices(randomDep.depId);
+      // Lặp qua danh sách chuyên khoa cho đến khi tìm được một chuyên khoa có bác sĩ và ngày/slot
+      let foundValidDepartment = false;
+      while (!foundValidDepartment) {
+        // Random chọn một chuyên khoa
+        const randomDep = departmentOptions[Math.floor(Math.random() * departmentOptions.length)];
+        setDepId(randomDep.depId);
   
-      // Random chọn một dịch vụ
-      const randomService = services[Math.floor(Math.random() * services.length)];
-      setServId(randomService.serviceId);
+        // Lấy danh sách bác sĩ của chuyên khoa đó
+        const doctors = await fetchDoctorByDepartments(randomDep.depId);
   
-      // Lấy danh sách bác sĩ của dịch vụ đó
-      const doctors = await fetchDoctorByService(randomService.serviceId);
+        // Lặp qua danh sách bác sĩ cho đến khi tìm được một bác sĩ có ngày và slot
+        let foundValidDoctor = false;
+        for (const doctor of doctors) {
+          setDoctorId(doctor.docId);
+          handleDoctorChange({ target: { value: doctor.docId } });
   
-      // Random chọn một bác sĩ
-      const randomDoctor = doctors[Math.floor(Math.random() * doctors.length)];
-      setDoctorId(randomDoctor.docId);
+          // Lấy danh sách ngày của bác sĩ đó
+          const dates = await fetchDateByDoctor(doctor.docId);
+          const filteredDates = getNextFourDays(dates);
+          setDateOptions(filteredDates);
   
-      // Lấy danh sách ngày của bác sĩ đó
-      const dates = await fetchDateByDoctor(randomDoctor.docId);
-      const filteredDates = getNextFourDays(dates);
-      setDateOptions(filteredDates);
+          if (filteredDates.length > 0) {
+            // Chọn ngày đầu tiên nếu có
+            const selectedDate = filteredDates[0].date;
+            setDate(selectedDate);
   
-      if (filteredDates.length > 0) {
-        // Chọn ngày đầu tiên nếu có
-        const selectedDate = filteredDates[0].date;
-        setDate(selectedDate);
-  
-        // Lấy danh sách slot của ngày đó
-        const slots = await fetchSlotsByDoctorAndDate(randomDoctor.docId, selectedDate);
-        if (slots && slots.length > 0) {
-          // Chọn một slot ngẫu nhiên từ danh sách slot
-          const randomSlot = slots[Math.floor(Math.random() * slots.length)];
-          setSlotOptions(slots);
-          setTime(randomSlot.slotId);
-        } else {
-          setSlotOptions([]); // Clear slots if no slots available
+            // Lấy danh sách slot của ngày đó
+            const slots = await fetchSlotsByDoctorAndDate(doctor.docId, selectedDate);
+            if (slots && slots.length > 0) {
+              // Chọn một slot ngẫu nhiên từ danh sách slot
+              const randomSlot = slots[Math.floor(Math.random() * slots.length)];
+              setSlotOptions(slots);
+              setTime(randomSlot.slotId);
+              foundValidDoctor = true;
+              foundValidDepartment = true;
+              break;
+            }
+          }
         }
-      } else {
-        // Nếu không có ngày làm việc, xóa các slot
-        setDate('');
-        setSlotOptions([]);
+  
+        // Nếu không tìm được bác sĩ có ngày và slot, thử chuyên khoa khác
+        if (!foundValidDoctor) {
+          setDate('');
+          setSlotOptions([]);
+        }
       }
   
       setOpenSnackbar(true);
@@ -285,7 +295,7 @@ const AppointmentScreen = () => {
       setSnackbarMessage('Có lỗi xảy ra khi chọn ngẫu nhiên. Vui lòng thử lại!');
     }
   };
-  
+
   return (
     <>
       <Helmet>
@@ -362,7 +372,7 @@ const AppointmentScreen = () => {
                       value={doctorId || ''}
                       onChange={handleDoctorChange}
                       label="Bác sĩ"
-                      disabled={!serviceId}
+                    // disabled={!serviceId}
                     >
                       {doctorOptions.length > 0 ? (
                         doctorOptions.map(doc => (
@@ -424,15 +434,15 @@ const AppointmentScreen = () => {
                   </FormControl>
                 </Grid>
                 <Grid item xs={12}>
-                  <Button
-                    variant="outlined"
-                    color="secondary"
-                    fullWidth
+                  <Typography
+                    variant="body1"
+                    color="primary"
                     onClick={handleRandomDoctor}
-                    sx={{ marginTop: 2, marginBottom: 2 }}
+                    sx={{  cursor: 'pointer' }}
                   >
-                    Chọn ngẫu nhiên
-                  </Button>
+                    Nếu bạn chưa chọn được dịch vụ mong muốn hãy bấm vào đây
+                  </Typography>
+
                 </Grid>
                 <Grid item xs={12}>
                   <Button type="submit" variant="contained" color="primary" fullWidth>
