@@ -1,4 +1,5 @@
 ﻿using BE.DTOs;
+using BE.DTOs.OCRDto;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Drawing;
@@ -23,11 +24,15 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
 
                     // Extract text using OCRHelper
                     var text = OCRHelper.GetFilterNumber(bitmap, 2, 190, 1);
+                    string text2 = OCRHelper.ConvertText(text);
                     OCRResult result = new OCRResult();
                     result = OCRHelper.ExtractInformation(text);
                     OCRResult rs = OCRHelper.ParseOCRText(text);
                     OCRResult rs2 = OCRHelper.ExtractInformation2(text);
-                    return Ok(rs2);
+                    UserProfile rs3 = OCRHelper.ParseUserProfile(text);
+                    UserProfile rs4 = OCRHelper.ParseUserProfile2(text2);
+                    UserProfile rs5 = OCRHelper.ParseUserProfile3(text2);
+                    return Ok(rs5);
                 }
             }
             catch (Exception ex)

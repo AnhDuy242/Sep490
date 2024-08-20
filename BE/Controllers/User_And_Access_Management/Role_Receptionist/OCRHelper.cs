@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using Tesseract;
 using BE.DTOs;
 using System.Text.RegularExpressions;
+using BE.DTOs.OCRDto;
 
 namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
 {
@@ -243,7 +244,117 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             return result;
         }
 
+        public static UserProfile ParseUserProfile2(string text)
+        {
+            // Các từ khóa để tìm vị trí của từng trường
+            var keywords = new[]
+            {
+        "Họ và tên",
+        "Số điện thoại",
+        "Email",
+        "Giới tính",
+        "Địa chỉ",
+        "Ngày sinh"
+    };
 
+            var userProfile = new UserProfile();
+
+            // Tìm vị trí bắt đầu của từng trường
+            int index = 0;
+            foreach (var keyword in keywords)
+            {
+                int start = text.IndexOf(keyword, index);
+                if (start == -1) continue;
+
+                // Cập nhật vị trí bắt đầu cho từ khóa kế tiếp
+                index = start + keyword.Length;
+
+                // Tìm vị trí kết thúc của trường
+                int end = text.IndexOfAny(new[] { ' ', '\n' }, index);
+                if (end == -1) end = text.Length;
+
+                // Lấy dữ liệu của trường
+                var fieldValue = text.Substring(index, end - index).Trim();
+
+                switch (keyword)
+                {
+                    case "Họ và tên":
+                        userProfile.FullName = fieldValue;
+                        break;
+                    case "Số điện thoại":
+                        userProfile.PhoneNumber = fieldValue;
+                        break;
+                    case "Email":
+                        userProfile.Email = fieldValue;
+                        break;
+                    case "Giới tính":
+                        userProfile.Gender = fieldValue;
+                        break;
+                    case "Địa chỉ":
+                        userProfile.Address = fieldValue;
+                        break;
+                    case "Ngày sinh":
+                        if (DateTime.TryParse(fieldValue, out var dob))
+                        {
+                            userProfile.DateOfBirth = dob;
+                        }
+                        break;
+                }
+
+                // Cập nhật vị trí bắt đầu cho trường tiếp theo
+                index = end;
+            }
+
+            return userProfile;
+        }
+
+        public static UserProfile ParseUserProfile(string text)
+        {
+            // Sử dụng Regex để chia chuỗi dựa trên một hoặc nhiều dấu \n
+            var lines = Regex.Split(text, @"\n+");
+
+            var userProfile = new UserProfile
+            {
+                FullName = lines.Length > 7 ? lines[7] : string.Empty,
+                PhoneNumber = lines.Length > 8 ? lines[8] : string.Empty,
+                Email = lines.Length > 11 ? lines[11] : string.Empty,
+                Gender = lines.Length > 13 ? lines[13] : string.Empty,
+                Address = lines.Length > 15 ? lines[15] : string.Empty,
+                DateOfBirth = lines.Length > 19 && DateTime.TryParse(lines[19], out var dob) ? dob : DateTime.MinValue
+            };
+
+            return userProfile;
+        }
+
+        public static UserProfile ParseUserProfile3(string text)
+        {
+            // Tách chuỗi văn bản dựa trên dấu xuống dòng
+            var lines = text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+
+            if (lines.Length < 6)
+            {
+                throw new ArgumentException("Invalid input format");
+            }
+
+            var userProfile = new UserProfile
+            {
+                FullName = lines[6].Trim(),
+                PhoneNumber = lines[7].Trim(),
+                Email = lines[8].Trim(),
+                Gender = lines[9].Trim(),
+                Address = lines[10].Trim(),
+                DateOfBirth = DateTime.TryParse(lines[11].Trim(), out var dob) ? dob : DateTime.MinValue
+            };
+
+            return userProfile;
+        }
+
+        public static string ConvertText(string text)
+        {
+            string result = text.Replace("\r\n", "\n"); // Chuyển đổi tất cả xuống dòng sang định dạng \n
+            result = System.Text.RegularExpressions.Regex.Replace(result, @"(\n\s*){2,}", "\n").Trim(); 
+            return result;
+        }
         public static OCRResult ParseOCRText(string ocrText)
         {
             var lines = ocrText.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
