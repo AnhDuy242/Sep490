@@ -203,16 +203,15 @@ public class MappingProfile : Profile
 
         // Ánh xạ Receptionist với ReceptionistDto
         CreateMap<Receptionist, ReceptionistDto>()
-            .ForMember(dest => dest.AccId, opt => opt.MapFrom(src => src.Recep.AccId))
-            .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Recep.Email))
-            .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Recep.Phone))
-            .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Recep.Password))
-            .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Recep.RoleId))
-            .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
-            .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
-            .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Dob))
-            .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Recep.IsActive));
-
+                 .ForMember(dest => dest.AccId, opt => opt.MapFrom(src => src.Recep.AccId))
+                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Recep.Email))
+                 .ForMember(dest => dest.Phone, opt => opt.MapFrom(src => src.Recep.Phone))
+                 .ForMember(dest => dest.Password, opt => opt.MapFrom(src => src.Recep.Password))
+                 .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Recep.RoleId))
+                 .ForMember(dest => dest.IsActive, opt => opt.MapFrom(src => src.Recep.IsActive))
+                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                 .ForMember(dest => dest.Gender, opt => opt.MapFrom(src => src.Gender))
+                 .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Dob));
         //admin
         CreateMap<Admin, AdminAccountDTO>()
        .ForMember(dest => dest.Id, opt => opt.Ignore())
