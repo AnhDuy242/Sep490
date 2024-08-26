@@ -7,6 +7,8 @@ using Tesseract;
 using BE.DTOs;
 using System.Text.RegularExpressions;
 using BE.DTOs.OCRDto;
+using Microsoft.AspNetCore.Http;
+using System.Globalization;
 
 namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
 {
@@ -338,13 +340,13 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
 
             var userProfile = new UserProfile
             {
-                FullName = lines[6].Trim(),
-                PhoneNumber = lines[7].Trim(),
+                FullName = lines[5].Trim(),
+                PhoneNumber = lines[6].Trim(),
                 //Email = lines[10].Trim(),
-                Gender = lines[8].Trim(),
-                Address = lines[10].Trim(),
-                DateOfBirth = DateTime.TryParse(lines[9].Trim(), out var dob) ? dob : DateTime.MinValue
-            };
+                Gender = lines[7].Trim(),
+                Address = lines[9].Trim(),
+                DateOfBirth = DateTime.ParseExact(lines[8].Trim(), "dd/MM/yyyy", CultureInfo.InvariantCulture)
+        };
 
             return userProfile;
         }
