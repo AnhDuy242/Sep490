@@ -156,7 +156,6 @@ builder.Services.AddCors(options =>
 builder.Services.AddAutoMapper(typeof(Program));
 builder.Services.Configure<CloudinarySettings>(builder.Configuration.GetSection("Cloudinary"));
 builder.Services.AddSingleton<CloudinaryService>();
-builder.Services.AddScoped<IUserService, UserService>();
 
 var app = builder.Build();
 
