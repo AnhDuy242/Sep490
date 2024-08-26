@@ -2,6 +2,8 @@
 using BE.DTOs;
 using BE.DTOs.AppointmentDto;
 using BE.Models;
+using BE.Service;
+using Emgu.CV.Ocl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +16,12 @@ namespace BE.Controllers.Appointment_Management
     {
         private readonly MedPalContext _context;
         private readonly IMapper _mapper;
-        public AdminAppointment(MedPalContext context, IMapper mapper)
+        private readonly ISMSService _sMSService;
+        public AdminAppointment(MedPalContext context, IMapper mapper, ISMSService sMSService)
         {
             _context = context;
             _mapper = mapper;
+            _sMSService = sMSService;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllAppointment()
@@ -60,6 +64,12 @@ namespace BE.Controllers.Appointment_Management
             {
                 appointment.Status = "Đã hủy"; // Set status to "Đã hủy"
                 _context.Appointments.Update(appointment);
+                var patientId = appointment.Patient.PatientId;
+                var phone = _context.Patients
+                        .Where(p => p.PatientId == patientId)
+                        .Select(p => p.PatientNavigation.Phone)
+                        .FirstOrDefault();
+                _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phone), "Lịch khám đã đươc thay đổi, vui lòng truy cập trang web để xem lại thông tin!");
             }
 
             try
@@ -70,6 +80,7 @@ namespace BE.Controllers.Appointment_Management
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Đã có lỗi xảy ra.");
             }
+   
 
             return Ok(new { Message = "Cập nhật thành công!" });
         }
