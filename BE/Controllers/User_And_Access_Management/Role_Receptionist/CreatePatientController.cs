@@ -79,7 +79,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
             }
 
             // Check if email already exists
-            if (_context.Accounts.Any(a => a.Email == model.Email))
+            if (!string.IsNullOrEmpty(model.Email) && _context.Accounts.Any(a => a.Email == model.Email))
             {
                 return BadRequest(new { message = "Email đã tồn tại" });
             }

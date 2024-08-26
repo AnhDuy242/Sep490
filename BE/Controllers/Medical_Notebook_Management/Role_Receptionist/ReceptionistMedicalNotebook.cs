@@ -163,12 +163,18 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
         {
             var medicalNotebooks = await _context.MedicalNotebooks
                 .Include(m => m.TestResults)
+                .Include(m => m.Doctor)  // Include Doctor entity
+                .Include(m => m.Patient) // Include Patient entity
                 .Select(m => new MedicalNotebookDto
                 {
                     Id = m.Id,
                     Prescription = m.Prescription,
                     Diagnostic = m.Diagnostic,
                     DateCreate = m.DateCreate,
+                    DoctorName = m.Doctor.Name,   // Get Doctor's Name
+                    DoctorId=m.DoctorId,
+                    PatientId= m.PatientId,
+                    PatientName = m.Patient.Name, // Get Patient's Name
                     TestResults = m.TestResults.Select(tr => new TestResultDto
                     {
                         ImgId = tr.ImgId,
@@ -179,8 +185,8 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
 
             return Ok(medicalNotebooks);
         }
-    
-    [HttpPut]
+
+        [HttpPut]
         public async Task<IActionResult> SetOnlinePatientByPid(int pid)
         {
             try
