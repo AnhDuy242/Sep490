@@ -139,8 +139,6 @@ public class MappingProfile : Profile
         CreateMap<Conversation, ConversationDto>().ReverseMap();
         CreateMap<CreateConversationDto, Conversation>();
         CreateMap<UpdateConversationDto, Conversation>();
-
-        CreateMap<CreateConversationDto, Conversation>();
         CreateMap<Conversation, ConversationDto>();
 
         CreateMap<Blog,BlogDto>()
@@ -239,7 +237,16 @@ public class MappingProfile : Profile
         // Mapping for Service
         CreateMap<Service, ServiceDTO>()
             .ReverseMap(); // Allows mapping from ServiceDto back to Service
+        CreateMap<MedicalNotebook, MedicalNotebookDto>()
+         .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.Name))
+         .ForMember(dest => dest.Dob, opt => opt.MapFrom(src => src.Patient.Dob))
+         .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name))
+         .ForMember(dest => dest.TestResults, opt => opt.MapFrom(src => src.TestResults));
 
+        // Mapping between TestResult entity and TestResultDto
+        CreateMap<TestResult, TestResultDto>()
+            .ForMember(dest => dest.ImgId, opt => opt.MapFrom(src => src.ImgId))
+            .ForMember(dest => dest.ImgUrl, opt => opt.MapFrom(src => src.ImgUrl));
         // Mapping for DepartmentWithServicesDto
         CreateMap<Department, DepartmentWithServicesDto>()
             .ForMember(dest => dest.Department, opt => opt.MapFrom(src => src))

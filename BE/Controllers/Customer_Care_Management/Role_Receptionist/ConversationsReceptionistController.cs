@@ -18,7 +18,7 @@ public class ReceptionistConversationsController : ControllerBase
     }
 
     // GET: api/receptionistconversations/getall
-    [HttpGet]
+   /* [HttpGet]
     public async Task<IActionResult> GetAll()
     {
         var conversations = await _context.Conversations.ToListAsync();
@@ -28,9 +28,9 @@ public class ReceptionistConversationsController : ControllerBase
         }
         var result = _mapper.Map<List<ConversationDto>>(conversations);
         return Ok(result);
-    }
+    }*/
 
-    // GET: api/receptionistconversations/get/{id}
+  /*  // GET: api/receptionistconversations/get/{id}
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)
     {
@@ -126,13 +126,13 @@ public class ReceptionistConversationsController : ControllerBase
         var result = _mapper.Map<List<ConversationDto>>(conversations);
         return Ok(result);
     }
-
+*/
     // GET: api/receptionistconversations/getbyreceptionistandpatient
     [HttpGet("")]
     public async Task<IActionResult> GetByReceptionistIdAndPatientId([FromQuery] int receptionistId, [FromQuery] int patientId)
     {
         var conversations = await _context.Conversations
-            .Where(c => c.ReceptionistId == receptionistId && c.PatientId == patientId)
+            .Where(c => c.DoctorId == receptionistId && c.PatientId == patientId)
             .ToListAsync();
 
         if (conversations == null || !conversations.Any())

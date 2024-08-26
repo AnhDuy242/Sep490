@@ -15,7 +15,7 @@ namespace BE.Service.ImplService
 
         public async Task<Account?> GetUserByGoogleIdAsync(string googleId)
         {
-            return await _context.Accounts.SingleOrDefaultAsync(a => a.GoogleId == googleId);
+            return null;
         }
 
         public async Task<Account?> GetUserByEmailAsync(string email)
@@ -27,9 +27,9 @@ namespace BE.Service.ImplService
         {
             var newUser = new Account
             {
-                Email = email,
+             /*   Email = email,
                 GoogleId = googleId,
-                GoogleAccessToken = accessToken,
+                GoogleAccessToken = accessToken,*/
                 // Các thuộc tính khác cần thiết (ví dụ: Phone, RoleId, IsActive)
                 IsActive = true, // Đặt giá trị mặc định là active
                 RoleId = 3 // Hoặc đặt RoleId phù hợp
@@ -42,8 +42,8 @@ namespace BE.Service.ImplService
 
         public async Task UpdateLastLoginAsync(Account account)
         {
-            account.LastLoginAt = DateTime.UtcNow;
-            await _context.SaveChangesAsync();
+       /*     account.LastLoginAt = DateTime.UtcNow;
+            await _context.SaveChangesAsync();*/
         }
     }
 }

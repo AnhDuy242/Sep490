@@ -56,7 +56,7 @@ namespace BE.Controllers.Customer_Care_Management
 
             // Check if a conversation already exists for the given ReceptionistId and PatientId
             var existingConversation = await _context.Conversations
-                .FirstOrDefaultAsync(c => c.ReceptionistId == createConversationDto.ReceptionistId && c.PatientId == createConversationDto.PatientId);
+                .FirstOrDefaultAsync(c => c.DoctorId == createConversationDto.DoctorId && c.PatientId == createConversationDto.PatientId);
 
             if (existingConversation != null)
             {
@@ -117,7 +117,7 @@ namespace BE.Controllers.Customer_Care_Management
         public async Task<IActionResult> GetByReceptionistId(int receptionistId)
         {
             var conversations = await _context.Conversations
-                .Where(c => c.ReceptionistId == receptionistId)
+                .Where(c => c.DoctorId == receptionistId)
                 .ToListAsync();
 
             if (conversations == null || !conversations.Any())
@@ -129,12 +129,12 @@ namespace BE.Controllers.Customer_Care_Management
             return Ok(result);
         }
 
-        // GET: api/receptionistconversations?receptionistId={receptionistId}&patientId={patientId}
+        // GET: api/receptionistconversations?DoctorId={DoctorId}&patientId={patientId}
         [HttpGet("")]
-        public async Task<IActionResult> GetByReceptionistIdAndPatientId([FromQuery] int receptionistId, [FromQuery] int patientId)
+        public async Task<IActionResult> GetByDoctorIdAndPatientId([FromQuery] int DoctorId, [FromQuery] int patientId)
         {
             var conversations = await _context.Conversations
-                .Where(c => c.ReceptionistId == receptionistId && c.PatientId == patientId)
+                .Where(c => c.DoctorId == DoctorId && c.PatientId == patientId)
                 .ToListAsync();
 
             if (conversations == null || !conversations.Any())
@@ -163,12 +163,12 @@ namespace BE.Controllers.Customer_Care_Management
             return Ok(patient);
         }
 
-        // GET: api/receptionistconversations/receptionistname/{receptionistId}
-        [HttpGet("{receptionistId}")]
-        public async Task<IActionResult> GetReceptionistName(int receptionistId)
+        // GET: api/receptionistconversations/receptionistname/{DoctorId}
+        [HttpGet("{DoctorId}")]
+        public async Task<IActionResult> GetReceptionistName(int DoctorId)
         {
             var receptionist = await _context.Receptionists
-                .Where(r => r.RecepId == receptionistId)
+                .Where(r => r.RecepId == DoctorId)
                 .Select(r => r.Name)
                 .FirstOrDefaultAsync();
 

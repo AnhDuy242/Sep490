@@ -135,14 +135,14 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
         {
             if (string.IsNullOrEmpty(phoneNumber))
             {
-                return BadRequest(new { Status = "Phone number is required." });
+                return BadRequest(new { Status = "Số điện thoại bắt buộc." });
             }
 
             // Lấy tài khoản từ database
             var account = await _accountService.GetAccountByPhoneAsync(phoneNumber);
             if (account == null)
             {
-                return NotFound(new { Status = "Account not found." });
+                return NotFound(new { Status = "Tài khoản không tồn tại." });
             }
 
             // Tạo mật khẩu mới
@@ -161,7 +161,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
                 return StatusCode(500, new { Status = "Failed to send the new password.", Error = ex.Message });
             }
 
-            return Ok(new { Status = "A new password has been sent to your phone number." });
+            return Ok(new { Status = "Một mật khẩu mới đã được gửi về số điện thoại này." });
         }
 
         private string GenerateRandomPassword()

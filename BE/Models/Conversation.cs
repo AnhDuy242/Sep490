@@ -4,7 +4,6 @@
     {
         public int Id { get; set; }
         public int? DoctorId { get; set; }
-        public int? ReceptionistId { get; set; }
         public int PatientId { get; set; }
         public DateTime CreatedAt { get; set; }
         public string Conversation_Name { get; set; }

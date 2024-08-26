@@ -118,7 +118,7 @@ builder.Services.AddCors(options =>
         });
 });
 builder.Services.AddAuthorization();
-builder.Services.AddAuthentication(options =>
+/*builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -127,10 +127,10 @@ builder.Services.AddAuthentication(options =>
 .AddCookie() // Thêm xác thực Cookie
 .AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
 {
-    options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
+ *//*   options.ClientId = builder.Configuration["Authentication:Google:ClientId"];
     options.ClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
-    options.CallbackPath = "/signin-google";
-});
+    options.CallbackPath = "/signin-google";*//*
+});*/
 builder.Services.AddSignalR();
 
 // Cấu hình AutoMapper

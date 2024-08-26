@@ -158,7 +158,29 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             }
         }
 
-        [HttpPut]
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<MedicalNotebookDto>>> GetAllMedicalNotebooksWithTestResults()
+        {
+            var medicalNotebooks = await _context.MedicalNotebooks
+                .Include(m => m.TestResults)
+                .Select(m => new MedicalNotebookDto
+                {
+                    Id = m.Id,
+                    Prescription = m.Prescription,
+                    Diagnostic = m.Diagnostic,
+                    DateCreate = m.DateCreate,
+                    TestResults = m.TestResults.Select(tr => new TestResultDto
+                    {
+                        ImgId = tr.ImgId,
+                        ImgUrl = tr.ImgUrl
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(medicalNotebooks);
+        }
+    
+    [HttpPut]
         public async Task<IActionResult> SetOnlinePatientByPid(int pid)
         {
             try
