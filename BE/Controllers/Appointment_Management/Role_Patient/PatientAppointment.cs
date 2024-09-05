@@ -47,10 +47,7 @@ namespace BE.Controllers.Appointment_Management
         [HttpPost]
         public async Task<IActionResult> BookAppointment([FromBody] AppointmentCreate appointmentDto)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+
             Models.Appointment appointment = new Models.Appointment()
             {
                 Date = appointmentDto.Date.Date,
@@ -184,7 +181,20 @@ namespace BE.Controllers.Appointment_Management
                 return Ok(list);
             }
         }
+        [HttpGet]
+        public async Task<IActionResult> GetListAllSlot()
+        {
 
+
+            var listSlot = _alo2Context.Slots.ToList();
+            if (listSlot.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(listSlot);
+
+
+        }
         [HttpGet]
         public async Task<IActionResult> GetListService(int deId)
         {
@@ -256,6 +266,31 @@ namespace BE.Controllers.Appointment_Management
             return Ok(sl);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetPatientsWithAppointmentsToday()
+        {
+            try
+            {
+                var today = DateTime.Today;
+
+                var patientsWithAppointments = await _alo2Context.Patients
+                    .Include(p => p.Appointments)
+                    .Where(p => p.Appointments.Any(a => a.Date.Date == today))
+                    .ToListAsync();
+
+                if (!patientsWithAppointments.Any())
+                {
+                    return NotFound("No patients found with appointments today.");
+                }
+
+                // Trả về trực tiếp danh sách bệnh nhân với lịch hẹn của họ
+                return Ok(patientsWithAppointments);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"An error occurred while retrieving patients: {ex.Message}");
+            }
+        }
 
         [HttpGet]
         public async Task<IActionResult> GetListDate(int docid)
@@ -280,7 +315,7 @@ namespace BE.Controllers.Appointment_Management
             }
             return Ok(app);
         }
-      
+
 
     }
 }
