@@ -1,4 +1,6 @@
 ﻿using BE.DTOs;
+using BE.DTOs.AppointmentDto;
+using BE.DTOs.PatientDto;
 using BE.Models;
 using BE.Service;
 using BE.Service.ImplService;
@@ -54,6 +56,48 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                 .ToListAsync();
 
             return Ok(accountsWithPatient);
+        }
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<PatientWithAppointmentsDto>>> GetAllPatientsWithAppointments()
+        {
+            if (_context.Patients == null || _context.Accounts == null || _context.Appointments == null)
+            {
+                return NotFound();
+            }
+
+            var patientsWithAppointments = await _context.Accounts
+                .Where(account => account.Patient != null)
+                .Select(account => new PatientWithAppointmentsDto
+                {
+                    AccId = account.AccId,
+                    Phone = account.Phone,
+                    Email = account.Email,
+                    Password = account.Password,
+                    Address = account.Patient.Address,
+                    Name = account.Patient.Name,
+                    Gender = account.Patient.Gender,
+                    Dob = account.Patient.Dob,
+                    IsActive = account.IsActive,
+                    Check = account.Patient.Check,
+                    RoleId = account.RoleId,
+                    Appointments = account.Patient.Appointments.Select(appointment => new AppointmentReceptionistDto
+                    {
+                        Id = appointment.Id,
+                        PatientId = appointment.PatientId,
+                        DoctorId = (int)appointment.DoctorId,
+                        Date = appointment.Date,
+                        SlotId = appointment.SlotId,
+                        Status = appointment.Status,
+                        Note = appointment.Note,
+                        ServiceId = appointment.ServiceId,
+                        ServiceName=appointment.Service.Name,
+                        ScheduleId = appointment.ScheduleId,
+                    }
+                    ).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(patientsWithAppointments);
         }
 
         // GET api/<CreatePatientController>/5

@@ -110,7 +110,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             return Ok(t);
 
         }
-
+    
 
         [HttpPut]
         public async Task<IActionResult> SetOfflinePatientByMid(int mid)
@@ -212,6 +212,32 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             {
                 return BadRequest(
                 ex.Message);
+            }
+        }
+        [HttpDelete]
+        public async Task<IActionResult> RemoveTestResult(int testResultId)
+        {
+            // Find the TestResult by its ID
+            var testResult = await _context.TestResults.FindAsync(testResultId);
+
+            if (testResult == null)
+            {
+                return NotFound("Không tìm thấy kết quả này.");
+            }
+
+            // Remove the TestResult
+            _context.TestResults.Remove(testResult);
+
+            try
+            {
+                // Save changes to the database
+                await _context.SaveChangesAsync();
+                return Ok("Đã gỡ thành công kết quả bệnh án này.");
+            }
+            catch (Exception ex)
+            {
+                // Handle errors (e.g., log the exception if necessary)
+                return StatusCode(500, "Đã có lỗi xảy ra khi gỡ kết quả bệnh án này.");
             }
         }
 

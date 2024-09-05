@@ -1,35 +1,35 @@
-﻿    using System;
-    using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-    namespace BE.Models;
+namespace BE.Models;
 
-    public partial class Appointment
-    {
-        public int Id { get; set; }
+public partial class Appointment
+{
+    public int Id { get; set; }
 
-        public int PatientId { get; set; }
+    public int PatientId { get; set; }
 
-        public int? DoctorId { get; set; }
+    public int? DoctorId { get; set; }
 
-        public DateTime Date { get; set; }
+    public DateTime Date { get; set; }
 
-        public int SlotId { get; set; }
+    public int SlotId { get; set; }
 
-        public string Status { get; set; } = null!;
+    public string Status { get; set; } = null!;
 
-        public string? Note { get; set; }
+    public string? Note { get; set; }
 
-        public int? ServiceId { get; set; }
+    public int? ServiceId { get; set; }
 
-        public int? ScheduleId { get; set; }
+    public int? ScheduleId { get; set; }
 
-        public virtual Doctor? Doctor { get; set; }
+    public virtual Doctor? Doctor { get; set; }
 
-        public virtual Patient Patient { get; set; } = null!;
+    public virtual Patient Patient { get; set; } = null!;
 
-        public virtual Schedule? Schedule { get; set; }
+    public virtual Schedule? Schedule { get; set; }
 
-        public virtual Service? Service { get; set; }
+    public virtual Service? Service { get; set; }
 
-        public virtual Slot Slot { get; set; } = null!;
-    }
+    public virtual Slot Slot { get; set; } = null!;
+}

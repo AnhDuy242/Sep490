@@ -19,4 +19,21 @@ namespace BE.DTOs.AppointmentDto
 
         public string? Note { get; set; }
     }
+    public class AppointmentDetailDto
+    {
+          public int Id { get; set; }
+
+        public int PatientId { get; set; }
+
+        public int DoctorId { get; set; }
+        [JsonConverter(typeof(DateOnlyJsonConverter))]
+        public DateTime Date { get; set; }
+
+        public string Status { get; set; } = null!;
+
+        public int SlotId { get; set; }
+
+
+        public string? Note { get; set; }
+    }
 }

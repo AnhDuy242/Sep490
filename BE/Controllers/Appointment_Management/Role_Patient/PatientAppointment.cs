@@ -3,6 +3,7 @@ using BE.DTOs.AppointmentDto;
 using BE.DTOs.DateDto;
 using BE.DTOs.DepartmentDto;
 using BE.DTOs.DoctorDto;
+using BE.DTOs.PatientDto;
 using BE.DTOs.ScheduleDto;
 using BE.DTOs.ServiceDto;
 using BE.DTOs.SlotDto;
@@ -68,7 +69,6 @@ namespace BE.Controllers.Appointment_Management
             _alo2Context.SaveChanges();
             return Ok(appointment);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> UpdateAppointment(int appId, [FromBody] AppointmentDto appointmentDto)
@@ -145,7 +145,26 @@ namespace BE.Controllers.Appointment_Management
 
             return Ok("Appointment deleted successfully.");
         }
+        [HttpGet]
+        public async Task<IActionResult> GetDoctorsByDepartment(int departmentId)
+        {
+            // Lấy danh sách bác sĩ theo departmentId
+            var doctors = await _alo2Context.Doctors
+                .Include(d => d.Dep)
+                .Where(d => d.DepId == departmentId && (bool)d.IsActive)
+                .ToListAsync();
 
+            // Kiểm tra nếu không có bác sĩ nào thuộc phòng ban được chỉ định
+            if (!doctors.Any())
+            {
+                return NotFound(new { message = "Không có bác sĩ nào trong phòng ban này." });
+            }
+
+            // Sử dụng AutoMapper để map dữ liệu từ Model sang DTO
+            var doctorDtos = _mapper.Map<List<DoctorDto>>(doctors);
+
+            return Ok(doctorDtos);
+        }
         [HttpGet]
         public async Task<IActionResult> GetListDoctor(int seId)
         {
@@ -222,7 +241,9 @@ namespace BE.Controllers.Appointment_Management
 
             foreach (var slot in sl)
             {
-                var appointments = _alo2Context.Appointments.Where(x => x.ScheduleId == s.Id && x.SlotId == slot.SlotId).ToList();
+                var appointments = _alo2Context.Appointments
+              .Where(x => x.ScheduleId == s.Id && x.SlotId == slot.SlotId && x.Status == "Đã phê duyệt")
+              .ToList();
                 if (appointments.Count == 3)
                 {
                     slotsToRemove.Add(slot); // Mark the slot for removal
@@ -259,7 +280,7 @@ namespace BE.Controllers.Appointment_Management
             }
             return Ok(app);
         }
-
+      
 
     }
 }

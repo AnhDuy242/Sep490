@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using BE.DTOs;
 using BE.DTOs.AppointmentDto;
+using BE.DTOs.PatientDto;
 using BE.Models;
 using BE.Service;
 using Emgu.CV.Ocl;
@@ -63,13 +64,14 @@ namespace BE.Controllers.Appointment_Management
             foreach (var appointment in appointments)
             {
                 appointment.Status = "Đã hủy"; // Set status to "Đã hủy"
+                appointment.Note = "Bác sĩ đã báo nghỉ";
                 _context.Appointments.Update(appointment);
-                var patientId = appointment.Patient.PatientId;
+                var patientId = appointment.PatientId;
                 var phone = _context.Patients
                         .Where(p => p.PatientId == patientId)
                         .Select(p => p.PatientNavigation.Phone)
                         .FirstOrDefault();
-                _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phone), "Lịch khám đã đươc thay đổi, vui lòng truy cập trang web để xem lại thông tin!");
+           //     _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phone), "Lịch khám đã đươc thay đổi, vui lòng truy cập trang web để xem lại thông tin!");
             }
 
             try
@@ -84,11 +86,62 @@ namespace BE.Controllers.Appointment_Management
 
             return Ok(new { Message = "Cập nhật thành công!" });
         }
+  
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<AppointmentDto>>> GetAppointments(DateTime date)
+        {
+            var appointments = await _context.Appointments
+                .Where(a => a.Date.Date == date.Date)
+                .OrderBy(a => a.SlotId)
+                .Select(a => new AppointmentDetailDto
+                {
+                    Id =a.Id,
+                    PatientId = a.PatientId,
+                    DoctorId = (int)a.DoctorId,
+                    Date = a.Date,
+                    Status = a.Status,
+                    SlotId = a.SlotId,
+                    Note = a.Note
+                })
+                .ToListAsync();
 
+            if (!appointments.Any())
+            {
+                return NotFound("No appointments found for the specified date.");
+            }
 
+            return Ok(appointments);
+        }
 
+        [HttpGet("by-doctor")]
+        public async Task<ActionResult<IEnumerable<AppointmentDto>>> GetAppointmentsByDoctor(int doctorId, DateTime date)
+        {
+            var appointments = await _context.Appointments
+                .Where(a => a.DoctorId == doctorId && a.Date.Date == date.Date)
+                .OrderBy(a => a.SlotId)
+                .Select(a => new AppointmentDto
+                {
+                    PatientId = a.PatientId,
+                    DoctorId = (int)a.DoctorId,
+                    Date = a.Date,
+                    Status = a.Status,
+                    SlotId = a.SlotId,
+                    Note = a.Note
+                })
+                .ToListAsync();
 
+            if (!appointments.Any())
+            {
+                return NotFound("Không tìm thấy lịch hẹn nào .");
+            }
 
+            return Ok(appointments);
+        }
+       
+        private bool AppointmentExists(int id)
+        {
+            return _context.Appointments.Any(e => e.Id == id);
+        }
         private bool ScheduleExists(int id)
         {
             return _context.Schedules.Any(e => e.Id == id);
