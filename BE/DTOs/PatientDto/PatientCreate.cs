@@ -1,4 +1,6 @@
 ﻿using BE.Models;
+using BE.Service.ImplService;
+using System.Text.Json.Serialization;
 
 namespace BE.DTOs.PatientDto
 {
@@ -41,6 +43,7 @@ namespace BE.DTOs.PatientDto
         public int Id { get; set; }
         public int PatientId { get; set; }
         public int? DoctorId { get; set; }
+        [JsonConverter(typeof(DateTimeJsonConverter))]
         public DateTime Date { get; set; }
         public int SlotId { get; set; }
         public string Status { get; set; } = null!;

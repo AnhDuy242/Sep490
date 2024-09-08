@@ -50,7 +50,7 @@ namespace BE.Controllers.Appointment_Management
 
             Models.Appointment appointment = new Models.Appointment()
             {
-                Date = appointmentDto.Date.Date,
+                Date = appointmentDto.Date,
                 PatientId = appointmentDto.PatientId,
                 DoctorId = appointmentDto.DoctorId,
                 SlotId = appointmentDto.SlotId,
@@ -275,7 +275,7 @@ namespace BE.Controllers.Appointment_Management
 
                 var patientsWithAppointments = await _alo2Context.Patients
                     .Include(p => p.Appointments)
-                    .Where(p => p.Appointments.Any(a => a.Date.Date == today))
+                    .Where(p => p.Appointments.Any(a => a.Date == today))
                     .ToListAsync();
 
                 if (!patientsWithAppointments.Any())

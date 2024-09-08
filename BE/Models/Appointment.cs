@@ -1,6 +1,7 @@
-﻿    using System;
+﻿using System;
     using System.Collections.Generic;
-
+using System.Text.Json.Serialization;
+using BE.Service.ImplService; 
     namespace BE.Models;
 
     public partial class Appointment
@@ -11,7 +12,8 @@
 
         public int? DoctorId { get; set; }
 
-        public DateTime Date { get; set; }
+    [JsonConverter(typeof(DateTimeJsonConverter))]
+    public DateTime Date { get; set; }
 
         public int SlotId { get; set; }
 

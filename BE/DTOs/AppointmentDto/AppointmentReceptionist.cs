@@ -12,7 +12,10 @@ namespace BE.DTOs.AppointmentDto
 
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }
-        [JsonConverter(typeof(DateOnlyJsonConverter))]
+        /*        [JsonConverter(typeof(DateOnlyJsonConverter))]
+        */
+        [JsonConverter(typeof(DateTimeJsonConverter))]
+
         public DateTime Date { get; set; }
 
         public int SlotId { get; set; }

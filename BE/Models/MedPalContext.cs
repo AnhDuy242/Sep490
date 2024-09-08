@@ -156,7 +156,7 @@ public partial class MedPalContext : DbContext
 
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Date)
-                .HasColumnType("date")
+                .HasColumnType("datetime")
                 .HasColumnName("date");
             entity.Property(e => e.DoctorId).HasColumnName("doctor_id");
             entity.Property(e => e.Note).HasColumnName("note");

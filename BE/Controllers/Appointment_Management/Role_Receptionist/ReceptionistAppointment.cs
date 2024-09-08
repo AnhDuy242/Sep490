@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
+using System.Text.Json;
 
 namespace BE.Controllers.Appointment
 {
@@ -21,6 +22,9 @@ namespace BE.Controllers.Appointment
         {
             var appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).ToList();
             var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            var jsonString = JsonSerializer.Serialize(list);
+            Console.WriteLine(jsonString); // This will show the output in your console logs
+
             return Ok(list);
         }
         [HttpPut]
@@ -53,7 +57,7 @@ namespace BE.Controllers.Appointment
             {
                 Models.Appointment appointment = new Models.Appointment()
                 {
-                    Date = appointmentDto.Date.Date,
+                    Date = appointmentDto.Date,
                     PatientId = appointmentDto.PatientId,
                     DoctorId = appointmentDto.DoctorId,
                     SlotId = appointmentDto.SlotId,
