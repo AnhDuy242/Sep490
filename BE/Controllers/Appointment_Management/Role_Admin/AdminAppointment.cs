@@ -4,6 +4,7 @@ using BE.DTOs.AppointmentDto;
 using BE.DTOs.PatientDto;
 using BE.Models;
 using BE.Service;
+using BE.Service.IService;
 using Emgu.CV.Ocl;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -18,11 +19,13 @@ namespace BE.Controllers.Appointment_Management
         private readonly MedPalContext _context;
         private readonly IMapper _mapper;
         private readonly ISMSService _sMSService;
-        public AdminAppointment(MedPalContext context, IMapper mapper, ISMSService sMSService)
+        private readonly IEmailService _emailService;
+        public AdminAppointment(MedPalContext context, IMapper mapper, ISMSService sMSService, IEmailService emailService)
         {
             _context = context;
             _mapper = mapper;
             _sMSService = sMSService;
+            _emailService = emailService;
         }
         [HttpGet]
         public async Task<IActionResult> GetAllAppointment()
@@ -66,12 +69,19 @@ namespace BE.Controllers.Appointment_Management
                 appointment.Status = "Đã hủy"; // Set status to "Đã hủy"
                 appointment.Note = "Bác sĩ đã báo nghỉ";
                 _context.Appointments.Update(appointment);
-                var patientId = appointment.PatientId;
                 var phone = _context.Patients
-                        .Where(p => p.PatientId == patientId)
+                        .Where(p => p.PatientId == appointment.PatientId)
                         .Select(p => p.PatientNavigation.Phone)
                         .FirstOrDefault();
-           //     _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phone), "Lịch khám đã đươc thay đổi, vui lòng truy cập trang web để xem lại thông tin!");
+                _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phone), "Lịch khám đã đươc thay đổi, vui lòng truy cập trang web để xem lại thông tin!");
+                var email = _context.Patients
+                        .Where(p => p.PatientId == appointment.PatientId)
+                        .Select(p => p.PatientNavigation.Email)
+                        .FirstOrDefault();
+                if (email != null)
+                {
+                    _emailService.SendEmailAsync(new Mailrequest { Email = email, Emailbody = "Lịch khám đã đươc thay đổi, vui lòng truy cập trang web để xem lại thông tin!", Subject = "Thông báo về việc thay đổi lịch khám" });
+                }
             }
 
             try
@@ -82,11 +92,11 @@ namespace BE.Controllers.Appointment_Management
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Đã có lỗi xảy ra.");
             }
-   
+
 
             return Ok(new { Message = "Cập nhật thành công!" });
         }
-  
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AppointmentDto>>> GetAppointments(DateTime date)
         {
@@ -95,7 +105,7 @@ namespace BE.Controllers.Appointment_Management
                 .OrderBy(a => a.SlotId)
                 .Select(a => new AppointmentDetailDto
                 {
-                    Id =a.Id,
+                    Id = a.Id,
                     PatientId = a.PatientId,
                     DoctorId = (int)a.DoctorId,
                     Date = a.Date,
@@ -137,7 +147,7 @@ namespace BE.Controllers.Appointment_Management
 
             return Ok(appointments);
         }
-       
+
         private bool AppointmentExists(int id)
         {
             return _context.Appointments.Any(e => e.Id == id);
