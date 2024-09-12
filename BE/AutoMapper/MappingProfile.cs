@@ -31,6 +31,24 @@ public class MappingProfile : Profile
         //// Các ánh xạ khác...
         /// appointment
         CreateMap<Appointment, AppointmentDto>().ForMember(dest => dest.Date, otp => otp.MapFrom(src => src.Date.Date)).ReverseMap();
+        CreateMap<Appointment, UpcomingAppointmentDetailDto>()
+              .ForMember(dest => dest.AppointmentId, opt => opt.MapFrom(src => src.Id))
+              .ForMember(dest => dest.AppointmentDate, opt => opt.MapFrom(src => src.Date))
+              .ForMember(dest => dest.AppointmentStatus, opt => opt.MapFrom(src => src.Status))
+              .ForMember(dest => dest.AppointmentNote, opt => opt.MapFrom(src => src.Note))
+              .ForMember(dest => dest.AppointmentCheck, opt => opt.MapFrom(src => src.Check))
+              .ForMember(dest => dest.PatientName, opt => opt.MapFrom(src => src.Patient.Name))
+              .ForMember(dest => dest.PatientGender, opt => opt.MapFrom(src => src.Patient.Gender))
+              .ForMember(dest => dest.PatientDob, opt => opt.MapFrom(src => src.Patient.Dob))
+              .ForMember(dest => dest.DoctorName, opt => opt.MapFrom(src => src.Doctor.Name))
+              .ForMember(dest => dest.DoctorGender, opt => opt.MapFrom(src => src.Doctor.Gender))
+              .ForMember(dest => dest.DoctorAge, opt => opt.MapFrom(src => src.Doctor.Age))
+              .ForMember(dest => dest.DepartmentId, opt => opt.MapFrom(src => src.Doctor.DepId))
+              .ForMember(dest => dest.SlotTime, opt => opt.MapFrom(src => src.Slot.Time))
+              .ForMember(dest => dest.ServiceId, opt => opt.MapFrom(src => src.ServiceId))
+              .ForMember(dest => dest.ScheduleId, opt => opt.MapFrom(src => src.ScheduleId))
+              .ForMember(dest => dest.ScheduleDate, opt => opt.MapFrom(src => src.Schedule.Date));
+
         CreateMap<Appointment, AppointmentPatient>()
             .ForMember(dest => dest.PatientName, otp => otp.MapFrom(src => src.Patient.Name))
             .ForMember(dest => dest.DoctorName, otp => otp.MapFrom(src => src.Doctor.Name))

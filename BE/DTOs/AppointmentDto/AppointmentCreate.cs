@@ -20,7 +20,7 @@ namespace BE.DTOs.AppointmentDto
         public int DepartmentId { get; set; }
         public int? ServiceId { get; set; }
 
-
+        public int? ScheduleId { get; set; }
      
 
     }

@@ -24,6 +24,8 @@ using BE.Service.ImplService;
         public int? ServiceId { get; set; }
 
         public int? ScheduleId { get; set; }
+    
+        public int? Check {  get; set; }
 
         public virtual Doctor? Doctor { get; set; }
 

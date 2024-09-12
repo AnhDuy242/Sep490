@@ -19,10 +19,14 @@ namespace BE.DTOs.AppointmentDto
         public DateTime Date { get; set; }
 
         public int SlotId { get; set; }
+        public int? Check {  get; set; }
         public string Time { get; set; } = null!;
 
         public string Status { get; set; } = null!;
 
         public string? Note { get; set; }
+        [JsonConverter(typeof(DateOnlyJsonConverter))]
+        public DateTime? ScheduleDate { get; set; }
+
     }
 }

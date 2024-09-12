@@ -5,9 +5,9 @@ namespace BE.DTOs.ScheduleDto
 {
     public class DateAppointment
     {
-/*        [JsonConverter(typeof(DateOnlyJsonConverter))]
-*/
-     
+        public int Id { get; set; }
+
+        [JsonConverter(typeof(DateOnlyJsonConverter))]
         public DateTime Date { get; set; }
 
     }

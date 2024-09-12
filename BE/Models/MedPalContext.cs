@@ -163,6 +163,7 @@ public partial class MedPalContext : DbContext
             entity.Property(e => e.PatientId).HasColumnName("patient_id");
             entity.Property(e => e.ScheduleId).HasColumnName("schedule_id");
             entity.Property(e => e.ServiceId).HasColumnName("service_id");
+            entity.Property(e => e.Check).HasColumnName("check");
             entity.Property(e => e.SlotId).HasColumnName("slot_id");
             entity.Property(e => e.Status).HasColumnName("status");
 

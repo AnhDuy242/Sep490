@@ -31,10 +31,38 @@ namespace BE.Controllers.Appointment_Management
         [HttpGet]
         public async Task<IActionResult> GetAppointment(int pid)
         {
-            var appointments = _alo2Context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Include(x => x.Service).ThenInclude(x => x.Dep).Where(x => x.PatientId == pid).ToList();
-            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            var appointments = await _alo2Context.Appointments
+                .Include(x => x.Doctor)
+                .Include(x => x.Patient)
+                .Include(x => x.Slot)
+                .Include(x => x.Service)
+                .ThenInclude(x => x.Dep)
+                .Include(x => x.Schedule) // Bao gồm Schedule để lấy ngày của lịch trình
+                .Where(x => x.PatientId == pid)
+                .ToListAsync();
+
+            var list = appointments.Select(a => new AppointmentPatient
+            {
+                Id = a.Id,
+                PatientId = a.PatientId,
+                PatientName = a.Patient?.Name ?? "N/A", // Kiểm tra null và cung cấp giá trị mặc định
+                DoctorId = a.DoctorId.HasValue ? a.DoctorId.Value : 0, // Kiểm tra null và cung cấp giá trị mặc định
+                DoctorName = a.Doctor?.Name ?? "N/A", // Kiểm tra null và cung cấp giá trị mặc định
+                ServiceId = a.ServiceId,
+                ServiceName = a.Service?.Name ?? "N/A", // Kiểm tra null và cung cấp giá trị mặc định
+                Date = a.Date,
+                SlotId = a.SlotId,
+                Check = a.Check,
+                Time = a.Slot?.Time ?? "N/A", // Kiểm tra null và cung cấp giá trị mặc định
+                Status = a.Status,
+                Note = a.Note,
+                ScheduleDate = a.Schedule?.Date ?? DateTime.MinValue // Kiểm tra null và cung cấp giá trị mặc định
+            }).ToList();
+
             return Ok(list);
         }
+
+
         [HttpGet]
         public async Task<IActionResult> GetAppointmentForDoctor(int did)
         {
@@ -60,7 +88,7 @@ namespace BE.Controllers.Appointment_Management
             if (appointment.DoctorId != null)
             {
                 var s = _alo2Context.Schedules.Include(x => x.AppointmentsNavigation).Include(x => x.Doctor).Where(x => x.DoctorId == appointment.DoctorId).FirstOrDefault(x => x.Date == appointment.Date);
-                appointment.ScheduleId = s.Id;
+                appointment.ScheduleId = appointmentDto.ScheduleId;
             }
             _alo2Context.Appointments.Add(appointment);
             _alo2Context.SaveChanges();
@@ -273,24 +301,45 @@ namespace BE.Controllers.Appointment_Management
             {
                 var today = DateTime.Today;
 
-                var patientsWithAppointments = await _alo2Context.Patients
-                    .Include(p => p.Appointments)
-                    .Where(p => p.Appointments.Any(a => a.Date == today))
+                // Retrieve the appointments with necessary related data
+                var appointments = await _alo2Context.Appointments
+                    .Include(a => a.Patient)
+                    .Include(a => a.Doctor)
+                    .Where(a => a.Date == today && a.Check!=null)
+                    .Select(a => new UpcomingAppointmentDetailDto
+                    {
+                        AppointmentId = a.Id,
+                        AppointmentDate = a.Date,
+                        AppointmentStatus = a.Status, // Assuming Status is a property in Appointment
+                        AppointmentNote = a.Note,     // Assuming Note is a property in Appointment
+                        AppointmentCheck=(int)a.Check,
+                        PatientName = a.Patient.Name,
+                        PatientGender = a.Patient.Gender,
+                        PatientDob = a.Patient.Dob,
+
+                        DoctorName = a.Doctor.Name,
+
+                        SlotTime = a.Slot.Time, // Assuming SlotTime is a property in Appointment
+                        ServiceId = a.ServiceId, // Assuming ServiceId is a property in Appointment
+                        ScheduleId = a.ScheduleId, // Assuming ScheduleId is a property in Appointment
+                        ScheduleDate=a.Schedule.Date
+                    })
                     .ToListAsync();
 
-                if (!patientsWithAppointments.Any())
+                if (!appointments.Any())
                 {
                     return NotFound("No patients found with appointments today.");
                 }
 
-                // Trả về trực tiếp danh sách bệnh nhân với lịch hẹn của họ
-                return Ok(patientsWithAppointments);
+                // Return the list of appointments mapped to the DTO
+                return Ok(appointments);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"An error occurred while retrieving patients: {ex.Message}");
+                return StatusCode(500, $"An error occurred while retrieving appointments: {ex.Message}");
             }
         }
+
 
         [HttpGet]
         public async Task<IActionResult> GetListDate(int docid)

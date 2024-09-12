@@ -91,6 +91,7 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
                         Note = appointment.Note,
                         ServiceId = appointment.ServiceId,
                         ServiceName=appointment.Service.Name,
+                        Check=appointment.Check,
                         ScheduleId = appointment.ScheduleId,
                     }
                     ).ToList()
