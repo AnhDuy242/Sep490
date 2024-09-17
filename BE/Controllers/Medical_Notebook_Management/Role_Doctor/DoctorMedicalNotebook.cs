@@ -147,6 +147,19 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
             }
         }
         [HttpGet]
+        public async Task<IActionResult> ViewOnlinePatient()
+        {
+            try
+            {
+                var list = _context.Patients.Where(x => x.Check ==1 ).ToList();
+                return Ok(list);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        [HttpGet]
         public async Task<IActionResult> GetAllPatient()
         {
             try
