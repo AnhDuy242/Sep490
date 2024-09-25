@@ -107,6 +107,22 @@ namespace BE.Controllers.User_And_Access_Management.Role_Receptionist
         {
             return "value";
         }
+        [HttpPut("{patientId}")]
+        public async Task<IActionResult> UpdateCheckStatus(int patientId, [FromBody] PatientUpdateCheckDto model)
+        {
+            var patient = await _context.Patients.FindAsync(patientId);
+            if (patient == null)
+            {
+                return NotFound("Không tìm thấy bệnh nhân.");
+            }
+
+            patient.Check = model.Check;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Cập nhật trạng thái thành công.");
+        }
+
 
         // POST api/<CreatePatientController>
         [HttpPost]

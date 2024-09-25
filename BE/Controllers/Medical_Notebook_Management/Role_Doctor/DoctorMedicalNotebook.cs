@@ -53,7 +53,9 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
         {
             var list = await _context.MedicalNotebooks
                 .Include(x => x.Patient)
+                    .ThenInclude(p => p.PatientNavigation) // Include Patient's Account
                 .Include(x => x.Doctor)
+                    .ThenInclude(d => d.Doc) // Include Doctor's Account
                 .ToListAsync();
 
             if (list.Count == 0)
@@ -61,9 +63,20 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
                 return NotFound("Không tìm thấy hồ sơ bệnh án");
             }
 
-            var lists = _mapper.Map<List<MedicalNotebookPatient>>(list);
+            // Map to DTO with Phone included
+            var lists = list.Select(m => new MedicalNotebookPatient2
+            {
+                Id = m.Id,
+                Prescription=m.Prescription,
+                Diagnostic=m.Diagnostic,
+                PatientName = m.Patient.Name,
+                DoctorName = m.Doctor.Name,
+                PatientPhone = m.Patient.PatientNavigation.Phone
+            }).ToList();
+
             return Ok(lists);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> ViewMedicalNoteBookByPatientId(int pid)

@@ -54,4 +54,9 @@ namespace BE.DTOs.PatientDto
         public string? ServiceName { get; set; } // Add ServiceName field
         public int? ScheduleId { get; set; }
     }
+    public class PatientUpdateCheckDto
+    {
+        public int Check { get; set; }
+    }
+
 }

@@ -33,6 +33,17 @@ namespace BE.Controllers.Appointment
 
             return Ok(list);
         }
+        [HttpGet]
+        public async Task<IActionResult> GetAllUnRegistedAppointment()
+        {
+            var appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).Where(x=> x.Status.Equals("Đang chờ phê duyệt")).ToList();
+            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            int count=list.Count();
+            var jsonString = JsonSerializer.Serialize(list);
+            Console.WriteLine(jsonString); // This will show the output in your console logs
+
+            return Ok(count);
+        }
         [HttpPut]
         public async Task<IActionResult> ApproveAppointment(int appId)
         {
@@ -107,7 +118,9 @@ namespace BE.Controllers.Appointment
                     DoctorId = appointmentDto.DoctorId,
                     SlotId = appointmentDto.SlotId,
                     Status = "Tái khám",
+                    ScheduleId=appointmentDto.ScheduleId,
                     ServiceId = appointmentDto.ServiceId,
+                    Check=1
                 };
                 _context.Appointments.Add(appointment);
                 _context.SaveChanges();
