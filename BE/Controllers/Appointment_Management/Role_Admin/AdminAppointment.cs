@@ -136,15 +136,17 @@ namespace BE.Controllers.Appointment_Management
                     Date = a.Date,
                     Status = a.Status,
                     SlotId = a.SlotId,
-                    Note = a.Note
+                    Note = a.Note,
+                    DoctorName = a.Doctor.Name, 
+                    time = a.Slot.Time, 
+                    PatientName = a.Patient.Name 
                 })
                 .ToListAsync();
 
             if (!appointments.Any())
             {
-                return NotFound("Không tìm thấy lịch hẹn nào .");
+                return NotFound("Không tìm thấy lịch hẹn nào.");
             }
-
             return Ok(appointments);
         }
 

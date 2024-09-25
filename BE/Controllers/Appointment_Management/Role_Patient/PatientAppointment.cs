@@ -299,13 +299,14 @@ namespace BE.Controllers.Appointment_Management
         {
             try
             {
-                var today = DateTime.Today;
+                var today = DateTime.Today.Date;
 
                 // Retrieve the appointments with necessary related data
                 var appointments = await _alo2Context.Appointments
                     .Include(a => a.Patient)
                     .Include(a => a.Doctor)
-                    .Where(a => a.Date == today && a.Check!=null)
+                      .Include(a => a.Schedule) // Include Schedule for the appointments
+            .Where(a => a.Schedule.Date == today && a.Check != null)
                     .Select(a => new UpcomingAppointmentDetailDto
                     {
                         AppointmentId = a.Id,

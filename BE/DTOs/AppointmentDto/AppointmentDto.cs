@@ -23,6 +23,11 @@ namespace BE.DTOs.AppointmentDto
         public int? Check { get; set; }
 
         public string? Note { get; set; }
+        public string? DoctorName { get; set; }
+        public string time { get; set; }
+        public string PatientName { get; set; }
+
+
     }
     public class AppointmentDetailDto
     {
