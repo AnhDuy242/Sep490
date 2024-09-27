@@ -227,7 +227,7 @@ namespace BE.Controllers.Appointment
                                 .Include(a => a.Slot)
                                 .Include(a => a.Service)
                                 .Where(a => a.SlotId == slot.SlotId &&
-                                            a.Check == 1 &&
+                                              (a.Check == 1 || a.Check == 2) &&
                                             a.ScheduleId == schedule.Id)
                                 .ToListAsync();
 
@@ -243,9 +243,9 @@ namespace BE.Controllers.Appointment
             }
 
             await _context.SaveChangesAsync();
-                return Ok();
-
-         /*   if (filteredAppointments.Any())
+                return Ok(filteredAppointments);
+            
+           if (filteredAppointments.Any())  
             {
                 var mappedAppointments = filteredAppointments.Select(appointment => new UpcomingAppointmentDetailDto
                 {
@@ -268,7 +268,8 @@ namespace BE.Controllers.Appointment
                 return Ok(mappedAppointments);
             }
 
-            return NotFound("No past appointments found.");*/
+            return NotFound("Không tìm thấy cuộc hẹn nào cần cập nhật.");
+
         }
     }
 }
