@@ -121,19 +121,22 @@ namespace BE.Controllers.Admin
             }
             var member = await _context.Accounts.Where(a => a.AccId.Equals(id)).FirstOrDefaultAsync();
             var doctor = await _context.Doctors.Where(a => a.DocId.Equals(id)).FirstOrDefaultAsync();
-            if (member == null)
+            if (member == null || doctor == null)
             {
                 return NotFound();
             }
             var department = await _context.Departments
-     .Where(d => d.DepId == doctor.DepId)
-     .FirstOrDefaultAsync();
+                .Where(d => d.DepId == doctor.DepId)
+                .FirstOrDefaultAsync();
+
+            // Kiểm tra xem trạng thái có thay đổi từ active sang inactive không
+            bool statusChanged = member.IsActive == true && model.IsActive == false;
+
             //update Account
             member.Phone = model.Phone;
             member.Password = model.Password;
             member.IsActive = model.IsActive;
             member.Email = model.Email;
-
             //update Doctor
             doctor.Name = model.Name;
             doctor.Gender = model.Gender;
@@ -141,8 +144,24 @@ namespace BE.Controllers.Admin
             doctor.IsActive = model.IsActive;
             doctor.DepId = model.DepId;
 
+            // Nếu trạng thái thay đổi từ active sang inactive
+            if (statusChanged)
+            {
+                // Cập nhật các appointment liên quan
+                var appointments = await _context.Appointments
+                    .Where(a => a.DoctorId == doctor.DocId && (a.Status.Equals("Đã phê duyệt") || a.Status.Equals("Đang chờ phê duyệt"))).ToListAsync();
+
+                foreach (var appointment in appointments)
+                {
+                    appointment.Note = "Bác sĩ đã nghỉ";
+                    appointment.Status = "Đã hủy"; // Hoặc trạng thái phù hợp khác
+                    _context.Appointments.Update(appointment);
+                }
+            }
+
             _context.Doctors.Update(doctor);
             _context.Accounts.Update(member);
+
             await _context.SaveChangesAsync();
 
             //return
@@ -158,15 +177,11 @@ namespace BE.Controllers.Admin
                 RoleId = member.RoleId,
                 DepId = doctor.DepId,
                 DepartmentName = department?.Name,
-                // Các thuộc tính khác của Account
                 IsActive = member.IsActive
             };
-            await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetDoctorAccountDetail), new { phone = newUpdate.Phone }, newUpdate);
         }
-
-
 
 
 
