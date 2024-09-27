@@ -24,37 +24,65 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Receptionist
             _cloudinaryService = cloudinaryService;
         }
 
-        [HttpPut]
-        public async Task<IActionResult> CreateMedicalNoteBook(int mid, IFormFile file)
+        [HttpPost]
+        public async Task<IActionResult> CreateMedicalNoteBook([FromForm] MedicalNoteBookCreate medicalNoteBookCreate, IFormFile file)
         {
-            if (file == null || file.Length == 0)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("No file uploaded.");
+                return BadRequest(ModelState);
             }
 
-            var filePath = Path.GetTempFileName();
-
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                await file.CopyToAsync(stream);
+                try
+                {
+                    // Create MedicalNotebook
+                    var medicalNoteBook = new MedicalNotebook()
+                    {
+                        Prescription = medicalNoteBookCreate.Prescription,
+                        Diagnostic = medicalNoteBookCreate.Diagnostic,
+                        DoctorId = medicalNoteBookCreate.DoctorId,
+                        PatientId = medicalNoteBookCreate.PatientId,
+                        DateCreate = medicalNoteBookCreate.DateCreate,
+                    };
+
+                    _context.MedicalNotebooks.Add(medicalNoteBook);
+                    await _context.SaveChangesAsync();
+
+                    // Handle file upload if present
+                    if (file != null && file.Length > 0)
+                    {
+                        var filePath = Path.GetTempFileName();
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        var uploadResult = await _cloudinaryService.UploadImageAsync(filePath);
+                        if (uploadResult == null)
+                        {
+                            throw new Exception("Error uploading file to Cloudinary.");
+                        }
+
+                        var testResult = new TestResult
+                        {
+                            ImgUrl = uploadResult.Url.ToString(),
+                            MId = medicalNoteBook.Id
+                        };
+
+                        _context.TestResults.Add(testResult);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    transaction.Commit();
+                    return Ok(new { MedicalNotebook = medicalNoteBook, Message = "Medical notebook created successfully" });
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return StatusCode(500, $"An error occurred while creating the medical notebook: {ex.Message}");
+                }
             }
-
-            var uploadResult = await _cloudinaryService.UploadImageAsync(filePath);
-
-            if (uploadResult == null)
-            {
-                return StatusCode(500, "Error uploading file to Cloudinary.");
-            }
-
-            var m = _context.MedicalNotebooks.FirstOrDefault(x => x.Id == mid);
-            var testResult = new TestResult
-            {
-                ImgUrl = uploadResult.Url.ToString()
-                // Set other properties of TestResult as necessary
-            };
-            m.TestResults.Add(testResult);
-            await _context.SaveChangesAsync();
-            return Ok(testResult);
         }
         [HttpGet]
         public async Task<IActionResult> GetAllMedicalNoteBook()

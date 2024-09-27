@@ -2,6 +2,7 @@
 using BE.DTOs.MedicalNoteBookDro;
 using BE.DTOs.PatientDto;
 using BE.Models;
+using BE.Service.ImplService;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,31 +16,75 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
     {
         private readonly MedPalContext _context;
         private readonly IMapper _mapper;
-        public DoctorMedicalNotebook(MedPalContext context, IMapper mapper)
+        private readonly CloudinaryService _cloudinaryService;
+
+        public DoctorMedicalNotebook(MedPalContext context, IMapper mapper, CloudinaryService cloudinaryService)
         {
             _context = context;
             _mapper = mapper;
+            _cloudinaryService = cloudinaryService;
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> CreateMedicalNoteBook([FromBody] MedicalNoteBookCreate medicalNoteBookCreate)
+        public async Task<IActionResult> CreateMedicalNoteBook([FromForm] MedicalNoteBookCreate medicalNoteBookCreate, IFormFile? file)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            MedicalNotebook medicalNoteBook = new MedicalNotebook()
+
+            using (var transaction = _context.Database.BeginTransaction())
             {
-                Prescription = medicalNoteBookCreate.Prescription,
-                Diagnostic = medicalNoteBookCreate.Diagnostic,
-                DoctorId = medicalNoteBookCreate.DoctorId,
-                PatientId = medicalNoteBookCreate.PatientId,
-                DateCreate=medicalNoteBookCreate.DateCreate,
-            };
-            _context.MedicalNotebooks.Add(medicalNoteBook);
-            _context.SaveChanges();
-            return Ok(medicalNoteBook);
+                try
+                {
+                    // Create MedicalNotebook
+                    var medicalNoteBook = new MedicalNotebook()
+                    {
+                        Prescription = medicalNoteBookCreate.Prescription,
+                        Diagnostic = medicalNoteBookCreate.Diagnostic,
+                        DoctorId = medicalNoteBookCreate.DoctorId,
+                        PatientId = medicalNoteBookCreate.PatientId,
+                        DateCreate = medicalNoteBookCreate.DateCreate,
+                    };
+
+                    _context.MedicalNotebooks.Add(medicalNoteBook);
+                    await _context.SaveChangesAsync();
+
+                    // Handle file upload if present
+                    if (file != null && file.Length > 0)
+                    {
+                        var filePath = Path.GetTempFileName();
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        var uploadResult = await _cloudinaryService.UploadImageAsync(filePath);
+                        if (uploadResult == null)
+                        {
+                            throw new Exception("Error uploading file to Cloudinary.");
+                        }
+
+                        var testResult = new TestResult
+                        {
+                            ImgUrl = uploadResult.Url.ToString(),
+                            MId = medicalNoteBook.Id
+                        };
+
+                        _context.TestResults.Add(testResult);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    transaction.Commit();
+                    return Ok(new { MedicalNotebook = medicalNoteBook, Message = "Medical notebook created successfully" });
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+                    return StatusCode(500, $"An error occurred while creating the medical notebook: {ex.Message}");
+                }
+            }
         }
         [HttpGet]
         public async Task<IActionResult> ViewAllMedicalNoteBooks()
@@ -76,7 +121,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
 
             return Ok(lists);
         }
-
+       
 
         [HttpGet]
         public async Task<IActionResult> ViewMedicalNoteBookByPatientId(int pid)
@@ -130,7 +175,7 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
             return Ok(lists);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet(template: "{id}")]
         public async Task<IActionResult> GetMedicalNoteBookById(int id)
         {
             var medicalNoteBook = await _context.MedicalNotebooks
@@ -188,7 +233,50 @@ namespace BE.Controllers.Medical_Notebook_Management.Role_Doctor
             }
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateMedicalNoteBook(int id, [FromBody] MedicalNoteBookUpdate updateDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var medicalNoteBook = await _context.MedicalNotebooks.FindAsync(id);
+
+            if (medicalNoteBook == null)
+            {
+                return NotFound("Medical notebook not found");
+            }
+ 
+                medicalNoteBook.Prescription = updateDto.Prescription;
+                medicalNoteBook.Diagnostic = updateDto.Diagnostic;
+            
 
 
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!MedicalNoteBookExists(id))
+                {
+                    return NotFound("Medical notebook not found");
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return Ok(new { Message = "Medical notebook updated successfully", MedicalNotebook = medicalNoteBook });
+        }
+        private bool MedicalNoteBookExists(int id)
+        {
+            return _context.MedicalNotebooks.Any(e => e.Id == id);
+        }
     }
+
+
 }
+

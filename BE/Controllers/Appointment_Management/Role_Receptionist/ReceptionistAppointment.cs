@@ -26,13 +26,21 @@ namespace BE.Controllers.Appointment
         [HttpGet]
         public async Task<IActionResult> GetAllAppointment()
         {
-            var appointments = _context.Appointments.Include(x => x.Doctor).Include(x => x.Patient).Include(x => x.Slot).ToList();
+            // Sắp xếp theo AppointmentId giảm dần
+            var appointments = _context.Appointments
+                .Include(x => x.Doctor)
+                .Include(x => x.Patient)
+                .Include(x => x.Slot)
+                .OrderByDescending(x => x.Id) 
+                .ToList();
+
             var list = _mapper.Map<List<AppointmentPatient>>(appointments);
             var jsonString = JsonSerializer.Serialize(list);
-            Console.WriteLine(jsonString); // This will show the output in your console logs
+            Console.WriteLine(jsonString); // Log để hiển thị danh sách trong console
 
             return Ok(list);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAllUnRegistedAppointment()
         {

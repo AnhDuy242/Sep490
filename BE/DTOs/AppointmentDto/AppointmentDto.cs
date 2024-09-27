@@ -63,6 +63,7 @@ namespace BE.DTOs.AppointmentDto
         public string PatientGender { get; set; }
         public DateTime PatientDob { get; set; }
 
+        public string PatientPhone { get; set; } = null!;
         public string DoctorName { get; set; }
         public string DoctorGender { get; set; }
         public int DoctorAge { get; set; }

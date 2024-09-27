@@ -22,6 +22,11 @@
         public DateTime? DateCreate { get; set; }
 
     }
+    public class MedicalNoteBookUpdate
+    {   
+        public string Prescription { get; set; }
+        public string Diagnostic { get; set; }
+    }
     public class MedicalNotebookPatient2
     {
         public int Id { get; set; }

@@ -154,7 +154,7 @@ namespace BE.Controllers.Admin
                 foreach (var appointment in appointments)
                 {
                     appointment.Note = "Bác sĩ đã nghỉ";
-                    appointment.Status = "Đã hủy"; // Hoặc trạng thái phù hợp khác
+                    appointment.Status = "Đã hủy"; 
                     _context.Appointments.Update(appointment);
                 }
             }
