@@ -26,21 +26,43 @@ namespace BE.Controllers.Appointment
         [HttpGet]
         public async Task<IActionResult> GetAllAppointment()
         {
-            // Sắp xếp theo AppointmentId giảm dần
-            var appointments = _context.Appointments
+            var appointments = await _context.Appointments
                 .Include(x => x.Doctor)
                 .Include(x => x.Patient)
                 .Include(x => x.Slot)
-                .OrderByDescending(x => x.Id) 
-                .ToList();
+                .Include(x => x.Service)
+                .Include(x => x.Schedule)
+                .OrderByDescending(x => x.Id)
+                .ToListAsync();
 
-            var list = _mapper.Map<List<AppointmentPatient>>(appointments);
+            var patientIds = appointments.Select(a => a.PatientId).Distinct().ToList();
+            var patientAccounts = await _context.Accounts
+                .Where(a => a.Patient != null && patientIds.Contains(a.Patient.PatientId))
+                .ToDictionaryAsync(a => a.Patient.PatientId, a => a.Phone);
+
+            var list = appointments.Select(a => new AppointmentPatient
+            {
+                Id = a.Id,
+                PatientId = a.PatientId,
+                PatientName = a.Patient.Name, // Assuming Patient has a Name property
+                Phone = patientAccounts.TryGetValue(a.PatientId, out var phone) ? phone : null,
+                DoctorId = a.DoctorId ?? 0,
+                DoctorName = a.Doctor?.Name ?? "", // Assuming Doctor has a Name property
+                ServiceId = a.ServiceId,
+                ServiceName = a.Service?.Name, // Assuming Service has a Name property
+                Date = a.Date,
+                SlotId = a.SlotId,
+                Check = a.Check,
+                Time = a.Slot.Time, // Assuming Slot has a Time property
+                Status = a.Status,
+                Note = a.Note,
+                ScheduleDate = a.Schedule?.Date // Assuming Schedule has a Date property
+            }).ToList();
+
             var jsonString = JsonSerializer.Serialize(list);
             Console.WriteLine(jsonString); // Log để hiển thị danh sách trong console
-
             return Ok(list);
         }
-
         [HttpGet]
         public async Task<IActionResult> GetAllUnRegistedAppointment()
         {

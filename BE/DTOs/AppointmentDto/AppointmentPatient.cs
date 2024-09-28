@@ -9,6 +9,7 @@ namespace BE.DTOs.AppointmentDto
 
         public int PatientId { get; set; }
         public string PatientName { get; set; }
+        public string Phone { get; set; } = null!;
 
         public int DoctorId { get; set; }
         public string DoctorName { get; set; }

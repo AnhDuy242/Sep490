@@ -317,7 +317,7 @@ namespace BE.Controllers.Appointment_Management
                         PatientName = a.Patient.Name,
                         PatientGender = a.Patient.Gender,
                         PatientDob = a.Patient.Dob,
-
+                        PatientPhone=a.Patient.PatientNavigation.Phone,
                         DoctorName = a.Doctor.Name,
 
                         SlotTime = a.Slot.Time, // Assuming SlotTime is a property in Appointment
