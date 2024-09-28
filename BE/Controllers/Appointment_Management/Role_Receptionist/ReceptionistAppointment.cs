@@ -74,6 +74,16 @@ namespace BE.Controllers.Appointment
 
             return Ok(count);
         }
+
+        [HttpGet]
+        public async Task<int> GetAppointmentCountBySlotAndDate(int slotId, DateTime date)
+        {
+            return await _context.Appointments
+                .Include(a => a.Schedule)
+                .Where(a => a.SlotId == slotId && a.Schedule.Date.Date == date.Date && a.Status.Equals("Đã phê duyệt"))
+                .CountAsync();
+        }
+
         [HttpPut]
         public async Task<IActionResult> ApproveAppointment(int appId)
         {
