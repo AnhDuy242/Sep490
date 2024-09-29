@@ -56,7 +56,7 @@ namespace BE.Controllers.Appointment_Management
                 Time = a.Slot?.Time ?? "N/A", // Kiểm tra null và cung cấp giá trị mặc định
                 Status = a.Status,
                 Note = a.Note,
-                ScheduleDate = a.Schedule?.Date ?? DateTime.MinValue // Kiểm tra null và cung cấp giá trị mặc định
+                ScheduleDate = a.Schedule?.Date ?? DateTime.Today.AddDays(2) // Kiểm tra null và cung cấp giá trị mặc định
             }).ToList();
 
             return Ok(list);

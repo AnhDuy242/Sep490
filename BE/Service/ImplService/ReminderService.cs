@@ -33,7 +33,8 @@
         public async Task CheckAppointmentsAsync()
         {
             var appointments = await _context.Appointments
-                .Where(a => a.Status == "Tái khám" || a.Status == "Đã phê duyệt" && a.Date.Date <= DateTime.Today.AddDays(3).Date && a.Date.Date > DateTime.Today.AddDays(1).Date)
+                .Include(x => x.Schedule)
+                .Where(a => a.Status == "Tái khám" || a.Status == "Đã phê duyệt" && a.Schedule.Date <= DateTime.Today.AddDays(3).Date && a.Schedule.Date >= DateTime.Today.AddDays(1).Date)
                 .ToListAsync();
 
             foreach (var appointment in appointments)
@@ -44,10 +45,11 @@
                 {
                     Email = GetPatientEmail(appointment.PatientId),
                     Subject = "Nhắc nhở lịch khám",
-                    Emailbody = $"Bạn có một lịch khám vào ngày {appointment.Date.ToShortDateString()}."
+                    Emailbody = $"Bạn có một lịch khám vào ngày {appointment.Schedule.Date.ToShortDateString()}."
                 };
                 _emailService.SendEmailAsync(mailrequest);
-                string body = $"Bạn có một lịch khám vào ngày {appointment.Date.ToShortDateString()}.";
+
+                string body = $"Bạn có một lịch khám vào ngày {appointment.Schedule.Date.ToShortDateString()}.";
                 _sMSService.SendSmsAsync(GetPatientPhone(appointment.PatientId), body);
 
             }
