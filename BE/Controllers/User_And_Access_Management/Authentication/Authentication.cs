@@ -154,7 +154,7 @@ namespace BE.Controllers.User_And_Access_Management.Authentication
             // Gửi mật khẩu mới qua SMS
             try
             {
-                _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phoneNumber), $"Your new password is: {newPassword}");
+                await _sMSService.SendSmsAsync(_sMSService.ConvertPhoneNumberToInternationalFormat(phoneNumber), $"Your new password is: {newPassword}");
             }
             catch (Exception ex)
             {

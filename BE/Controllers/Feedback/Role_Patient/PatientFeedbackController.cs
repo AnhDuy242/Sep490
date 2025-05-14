@@ -22,7 +22,7 @@ namespace BE.Controllers.Feedback.Role_Patient
         [HttpGet]
         public async Task<IActionResult> GetAllFeedback()
         {
-            var list = _context.Feedbacks.Include(x => x.Patient).ToList();
+            var list = await _context.Feedbacks.Include(x => x.Patient).ToListAsync();
             var l = _mapper.Map<List<FeedbackView>>(list);
             return Ok(l);
 
@@ -38,11 +38,11 @@ namespace BE.Controllers.Feedback.Role_Patient
                 PatientId = pid,
                 Star = feedbackCreate.Star,
             };
-            _context.Feedbacks.Add(f);
-            var p = _context.Patients.FirstOrDefault(x => x.PatientId == pid);
-            p.Check = 2;
+            await _context.Feedbacks.AddAsync(f);
+            var p = await _context.Patients.FirstOrDefaultAsync(x => x.PatientId == pid);
+            p.Check = 0;
             _context.Patients.Update(p);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(f);
 
         }
@@ -50,10 +50,10 @@ namespace BE.Controllers.Feedback.Role_Patient
         [HttpPut]
         public async Task<IActionResult> UpdateFeedback(int fid, string content)
         {
-            var f = _context.Feedbacks.FirstOrDefault(x => x.FeedId == fid);
+            var f = await _context.Feedbacks.FirstOrDefaultAsync(x => x.FeedId == fid);
             f.Content = content;
             _context.Feedbacks.Update(f);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
             return Ok(f);
 
         }
